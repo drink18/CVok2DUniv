@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <gtest/gtest.h>
 
 #include <cvok2d/core/collection/cvFreeList.h>

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.6.0)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE INTERNAL "limited configs")
 project(unittest)
 
@@ -22,5 +22,6 @@ set(LINK_LIBRARY optimized ${GTEST_REL_LIB} debug ${GTEST_DBG_LIB})
 
 add_executable(${PROJECT_NAME} ${FILES})
 target_link_libraries(${PROJECT_NAME} CVok2D)
-target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARY})
+target_link_libraries(${PROJECT_NAME} debug gtestd.lib debug gtest_maind.lib)
+target_link_libraries(${PROJECT_NAME} optimized gtest.lib optimized gtest_main.lib)
 

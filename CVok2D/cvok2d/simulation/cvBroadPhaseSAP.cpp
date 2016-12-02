@@ -1,5 +1,3 @@
-#include "cvok2dPCH.h"
-
 #include "cvok2d.h"
 #include "cvBroadPhaseSAP.h"
 

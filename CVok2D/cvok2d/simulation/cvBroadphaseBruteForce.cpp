@@ -1,5 +1,3 @@
-#include "cvok2dPCH.h"
-
 #include "cvBroadphaseBruteForce.h"
 
 cvBroadphaseBruteForce::cvBroadphaseBruteForce(cvBroadphaseCInfo& cInfo)

@@ -1,5 +1,3 @@
-#include "cvok2dPCH.h"
-
 #include "cvBody.h"
 
 cvBody::cvBody(cvBodyCInfo& cinfo)

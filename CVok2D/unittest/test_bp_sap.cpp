@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include "gtest/gtest.h"
 #include <cvok2d/cvok2d.h>
 #include <cvok2d/simulation/cvBroadphase.h>
