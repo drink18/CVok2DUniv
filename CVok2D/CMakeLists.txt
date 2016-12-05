@@ -12,3 +12,4 @@ endif()
 
 add_subdirectory(cvok2d)
 add_subdirectory(unittest)
+add_subdirectory(cvok2dTestBed)

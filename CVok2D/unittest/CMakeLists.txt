@@ -15,7 +15,7 @@ if(MSVC)
 endif()
 
 if(MSVC)
-   link_directories(${GTEST_DIR}/libs)
+   link_directories(${GTEST_DIR}/libs/win64)
 else()
    link_directories(${GTEST_DIR}/libs/macos)
 endif()
