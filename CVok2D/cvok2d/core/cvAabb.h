@@ -5,7 +5,7 @@
 class cvAabb
 {
 public:
-	cvAabb(const cvVec2f& min, const cvVec2f& max) :m_Max(max), m_Min(min) {}
+	cvAabb(const cvVec2f& min, const cvVec2f& max) : m_Min(min), m_Max(max) {}
 	cvAabb() { setEmpty(); }
 	inline void setEmpty();
 	inline void include(const cvAabb& other);

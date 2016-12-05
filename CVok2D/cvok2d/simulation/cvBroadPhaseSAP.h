@@ -23,7 +23,7 @@ public:
 
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override;
-	virtual void removeNode(cvBroadphaseHandle handle);
+	virtual void removeNode(cvBroadphaseHandle handle) override;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) override;
 protected:
 

@@ -8,7 +8,7 @@
 template<typename T, typename Handle>
 class cvFreeList
 {
-private:
+public:
 	struct FREESLOT
 	{
 		int m_nextFreeSlot;

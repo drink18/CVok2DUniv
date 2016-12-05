@@ -10,7 +10,7 @@ public:
 	bool isValid() const { return m_val != INVALID_VALUE;	}
 	static T invalid() { return INVALID_VALUE; }
 
-	cvHandle& operator=(cvHandle& other) { m_val = other.m_val; return *this; }
+	cvHandle& operator=(const cvHandle& other) { m_val = other.m_val; return *this; }
 
 	bool operator==(const cvHandle<T, INVALID_VALUE>& other)  const
 	{return  m_val == other.m_val; }

@@ -19,7 +19,7 @@ TEST(TestFreeList, addAndFree)
 	// insert 100 node
 	for (int i = 0; i < initHandles; i++)
 	{
-		handles[i]= dummyFreeList.alloc();
+		handles[i] = dummyFreeList.alloc();
 		DummyNode& node = dummyFreeList.getAt(handles[i]);
 		node.index = i;
 		EXPECT_TRUE(handles[i].isValid());
