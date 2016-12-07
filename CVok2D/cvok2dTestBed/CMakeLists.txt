@@ -24,7 +24,7 @@ endif()
 
 add_executable(${PROJECT_NAME} ${FILES})
 target_link_libraries(${PROJECT_NAME} CVok2D)
+target_link_libraries(${PROJECT_NAME} glew)
 target_link_libraries(${PROJECT_NAME} glfw3)
 target_link_libraries(${PROJECT_NAME} opengl32)
-target_link_libraries(${PROJECT_NAME} glew32s)
 target_link_libraries(${PROJECT_NAME} legacy_stdio_definitions)
