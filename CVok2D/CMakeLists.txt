@@ -11,6 +11,8 @@ else()
 endif()
 
 add_subdirectory(extern/glew)
+add_subdirectory(extern/glfw)
 add_subdirectory(cvok2d)
 add_subdirectory(unittest)
 add_subdirectory(cvok2dTestBed)
+
