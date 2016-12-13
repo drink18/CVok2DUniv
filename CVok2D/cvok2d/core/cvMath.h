@@ -37,10 +37,13 @@ public:
 	inline void setNegate();
 	inline void setSub(const cvVec2f& v1, const cvVec2f& v2);
 	inline void sub(const cvVec2f& v);
+
+    // this = this + v * s
+    inline void addMul(const cvVec2f& v, float s);
 	
 	inline void setScale(float s);
 	
-	inline float dot(const cvVec2f& v1);
+	inline float dot(const cvVec2f& v1) const;
 
 	inline void normalize();
 	inline cvVec2f getNormalized() const;

@@ -27,6 +27,12 @@ void cvVec2f::setAdd(const cvVec2f& v1, const cvVec2f& v2)
 	m_y = v1.m_y + v2.m_y;
 }
 
+void cvVec2f::addMul(const cvVec2f& v, float s)
+{
+    m_x += v.m_x * s;
+    m_y += v.m_y * s;
+}
+
 void cvVec2f::setSub(const cvVec2f& v1, const cvVec2f& v2)
 {
 	m_x = v1.m_x - v2.m_x;
@@ -39,7 +45,7 @@ void cvVec2f::setScale(float s)
 	m_y *= s;
 }
 
-float cvVec2f::dot(const cvVec2f& v1)
+float cvVec2f::dot(const cvVec2f& v1) const
 {
 	return m_x * v1.m_x + m_y * v1.m_y;
 }
