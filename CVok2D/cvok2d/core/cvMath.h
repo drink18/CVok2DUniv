@@ -73,6 +73,35 @@ public:
 	inline static bool greater(const cvVec2f& v1, const cvVec2f& v2);
 	// v2 >= v1 ? 
 	inline static bool greatOrEqual(const cvVec2f& v1, const cvVec2f& v2);
+
+
+    ////////////////////////////////////////////////////////////////////
+    // overloaded operators
+    // ///////////////////////////////////////////////////////////////
+    
+    //  v1 = v * s
+    inline cvVec2f operator*(float s) const;
+
+    // v *= s
+    inline cvVec2f& operator*=(float s);
+    
+    // v1 = v / s
+    inline cvVec2f operator/(float s) const;
+
+    // v /= s
+    inline cvVec2f& operator/=(float s);
+
+    // v1 = v + v2
+    inline cvVec2f operator+(const cvVec2f& v2) const;
+
+    // v1 += v2
+    inline cvVec2f& operator+=(const cvVec2f& v2);
+
+    // v1 = v - v2
+    inline cvVec2f operator-(const cvVec2f& v2) const;
+
+    // v1 -= v2
+    inline cvVec2f& operator-=(const cvVec2f& v2);
 };
 
 class cvVec3f
@@ -131,6 +160,18 @@ public:
 	inline void transformVector(const cvVec2f& v, cvVec2f& ov) const;
 	inline void transformPoint(const cvVec2f& v, cvVec2f& ov) const;
 
+    /////////////////////////////////////////////////////////////////////
+    // Overloaded operators
+    /////////////////////////////////////////////////////////////////////
+    // transform vertex
+    inline cvVec2f operator*(const cvVec2f& v) const;
+ 
+    // matrix multiplication 
+    // ret = this * m
+    inline cvMat33 operator*(const cvMat33& m) const;
+
+    // this *= m
+    inline cvMat33& operator*=(const cvMat33& m);
 public:
 	cvVec3f m_cols[3];
 
