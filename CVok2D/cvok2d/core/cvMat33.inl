@@ -90,23 +90,3 @@ void cvMat33::transformPoint(const cvVec2f& v, cvVec2f& ov) const
 	ov.m_x = v.m_x; ov.m_y = v.m_y;
 	transformPoint(ov);
 }
-
-cvVec2f cvMat33::operator*(const cvVec2f& v) const
-{
-    cvVec2f ret;
-    transformPoint(v, ret);
-    return ret;
-}
-
-cvMat33 cvMat33::operator*(const cvMat33& m) const
-{
-    cvMat33 ret = *this;
-    ret.setMul(m);
-    return ret;
-}
-
-cvMat33& cvMat33::operator*=(const cvMat33& m)
-{
-    setMul(m);
-    return *this;
-}
