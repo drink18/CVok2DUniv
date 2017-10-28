@@ -6,10 +6,14 @@
 #include <GL/gl3w.h>
 #include <imgui.h>
 #include "imgui_gl3/imgui_impl_glfw_gl3.h"
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
+
 #include "DebugDraw.h"
+#include "testcases/TestBase.h"
+#include "testcases/BasicTest.h"
 
 Camera g_camera;
+TestBase* g_currentTest = nullptr;
 
 
 static void error_callback(int error, const char* description)
@@ -67,6 +71,8 @@ int main(int, char**)
 		return 1;
 	}
 
+    g_currentTest = new BasicTest();
+
 
 	bool show_test_window = true;
 	bool show_another_window = false;
@@ -75,14 +81,16 @@ int main(int, char**)
 	// main loop
 	while (!glfwWindowShouldClose(window))
 	{
-		pdbgDraw->AddPoint(cvVec2f(0, 0), 2.0f, cvColorf(1, 1, 1));
-		pdbgDraw->AddLine(cvVec2f(0, 0), cvVec2f(23, 23), cvColorf(1, 1, 0));
+
+        if(g_currentTest)
+            g_currentTest->tick(*pdbgDraw);
 
 		glfwPollEvents();
 
 		glfwGetWindowSize(window, &g_camera.m_width, &g_camera.m_height);
 		glViewport(0, 0, g_camera.m_width, g_camera.m_height);
-		
+
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		pdbgDraw->Flush();
 

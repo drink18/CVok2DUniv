@@ -36,16 +36,16 @@ import ycm_core
 flags = [
     '-x',
     'c++',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/cvok2d',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/cvok2dTestBed',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/cvok2dTestBed/gl3w',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/cvok2dTestBed/imgui',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/extern/glfw/include',
-    '-I/Users/weiwu/github/CVok2DUniversal/CVok2D/extern/gtest/include',
+    '-ICVok2D',
+    '-ICVok2D/cvok2d',
+    '-Icvok2dTestBed',
+    '-Icvok2dTestBed/gl3w',
+    '-Icvok2dTestBed/imgui',
+    '-Iextern/glfw/include',
+    '-Iextern/gtest/include',
     '-I/usr/X11/include',
     '-std=c++11',
-    '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk',
+    '-isysroot', '/usr/include/c++/4.2.1'
 ]
 
 
