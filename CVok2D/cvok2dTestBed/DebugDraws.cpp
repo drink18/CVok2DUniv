@@ -17,6 +17,7 @@
 #include <shape/cvShape.h>
 #include <shape/cvPolygonShape.h>
 #include <shape/cvCircle.h>
+#include <simulation/cvBody.h>
 
 
 extern Camera g_camera;
@@ -461,8 +462,11 @@ void cvDebugDraw::Flush()
 	m_lineRender->Flush();
 }
 
-void cvDebugDraw::DrawShape(const cvShape& shape)
+void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
 {
+    cvMat33 mat;
+    mat.setTranslation(trans.m_Translation);
+    mat.setRotation(trans.m_Rotation);
     switch(shape.getShapeType())
     {
         case cvShape::ePolygon:
@@ -472,7 +476,8 @@ void cvDebugDraw::DrawShape(const cvShape& shape)
                 for(int i = 0; i < verts.size(); ++i)
                 {
                     int ni = (i == verts.size() - 1) ? 0 : i + 1;
-                    AddLine(verts[i], verts[ni], cvColorf(1.0, 1.0, 1.0, 1.0f));
+
+                    AddLine(mat * verts[i], mat * verts[ni], cvColorf(1.0, 1.0, 1.0, 1.0f));
                 }
             }
             break;
@@ -480,7 +485,7 @@ void cvDebugDraw::DrawShape(const cvShape& shape)
             {
                 const cvCircle& circle = static_cast<const cvCircle&>(shape);
                 const cvVec2f c = circle.m_center;
-                const int subDiv = 32;
+                const int subDiv = 16;
                 float x0 = c.m_x;
                 float y0 = circle.m_radius + c.m_y;
                 const float dA = 2 * CV_PI / subDiv;
@@ -489,7 +494,7 @@ void cvDebugDraw::DrawShape(const cvShape& shape)
                     float x = circle.m_radius * std::sin(i * dA) + c.m_x;
                     float y = circle.m_radius * std::cos(i * dA) + c.m_y;
 
-                    AddLine(cvVec2f(x0, y0), cvVec2f(x, y), cvColorf(1.0, 1.0, 1.0, 1.0f));
+                    AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), cvColorf(1.0, 1.0, 1.0, 1.0f));
                     x0 = x;
                     y0 = y;
                 }
@@ -499,4 +504,10 @@ void cvDebugDraw::DrawShape(const cvShape& shape)
         default:
             break;
     }
+}
+
+void cvDebugDraw::DrawBody(const cvBody& body)
+{
+    cvShape* shape = body.getShape().get();
+    DrawShape(*shape, body.getTransform());
 }

@@ -147,6 +147,7 @@ public:
 
 	inline void setTranslation(const cvVec2f& t);
 	inline void setRotationDeg(float angleDeg);
+	inline void setRotation(float angleDeg);
 
 	inline void mul(cvVec3f& v) const;
 	inline void mul(cvVec2f& v) const;

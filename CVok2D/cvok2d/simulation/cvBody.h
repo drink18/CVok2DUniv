@@ -19,7 +19,8 @@ public:
 	const cvTransform& getTransform() const { return m_transform; }
 	bool isStatic() const;
 	bool isDynamic() const;
-		
+
+    std::shared_ptr<cvShape> getShape() const {return m_shape;}
 private:
 	cvTransform m_transform;
 	std::shared_ptr<cvShape> m_shape;

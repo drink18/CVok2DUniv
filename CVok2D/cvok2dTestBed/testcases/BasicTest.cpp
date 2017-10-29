@@ -14,6 +14,8 @@ void BasicTest::tick(cvDebugDraw& dbgDraw)
     dbgDraw.AddPoint(cvVec2f(0, 0), 2.0f, cvColorf(1, 1, 1));
     dbgDraw.AddLine(cvVec2f(0, 0), cvVec2f(23, 23), cvColorf(1, 1, 0));
 
-    dbgDraw.DrawShape(*m_box);
-    dbgDraw.DrawShape(*m_circle);
+    cvTransform trans;
+    trans.m_Rotation = DEG2RAD(10);
+    dbgDraw.DrawShape(*m_box, trans);
+    dbgDraw.DrawShape(*m_circle, trans);
 }

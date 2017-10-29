@@ -19,8 +19,13 @@ void cvMat33::setTranslation(const cvVec2f& v)
 
 void cvMat33::setRotationDeg(float angleDeg)
 {
-	float cosA = cos(DEG2RAD(angleDeg));
-	float sinA = sin(DEG2RAD(angleDeg));
+    setRotation(DEG2RAD(angleDeg));
+}
+
+void cvMat33::setRotation(float angle)
+{
+	float cosA = cos(angle);
+	float sinA = sin(angle);
 
 	m_cols[0].m_x = cosA;
 	m_cols[0].m_y = -sinA;
