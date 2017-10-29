@@ -10,9 +10,14 @@
 #include <vector>
 
 #include <imgui/imgui.h>
+#include <cmath>
 
 #include <core/cvColor.h>
 #include <core/cvMath.h>
+#include <shape/cvShape.h>
+#include <shape/cvPolygonShape.h>
+#include <shape/cvCircle.h>
+
 
 extern Camera g_camera;
 
@@ -454,4 +459,44 @@ void cvDebugDraw::Flush()
 {
 	m_pointRender->Flush();
 	m_lineRender->Flush();
+}
+
+void cvDebugDraw::DrawShape(const cvShape& shape)
+{
+    switch(shape.getShapeType())
+    {
+        case cvShape::ePolygon:
+            {
+                const cvPolygonShape& poly = static_cast<const cvPolygonShape&>(shape);
+                auto& verts = poly.getVertices();
+                for(int i = 0; i < verts.size(); ++i)
+                {
+                    int ni = (i == verts.size() - 1) ? 0 : i + 1;
+                    AddLine(verts[i], verts[ni], cvColorf(1.0, 1.0, 1.0, 1.0f));
+                }
+            }
+            break;
+        case cvShape::eCircle:
+            {
+                const cvCircle& circle = static_cast<const cvCircle&>(shape);
+                const cvVec2f c = circle.m_center;
+                const int subDiv = 32;
+                float x0 = c.m_x;
+                float y0 = circle.m_radius + c.m_y;
+                const float dA = 2 * CV_PI / subDiv;
+                for(int i = 0; i <= subDiv; i++)
+                {
+                    float x = circle.m_radius * std::sin(i * dA) + c.m_x;
+                    float y = circle.m_radius * std::cos(i * dA) + c.m_y;
+
+                    AddLine(cvVec2f(x0, y0), cvVec2f(x, y), cvColorf(1.0, 1.0, 1.0, 1.0f));
+                    x0 = x;
+                    y0 = y;
+                }
+            }
+            break;
+
+        default:
+            break;
+    }
 }

@@ -17,4 +17,25 @@ cvVec2f cvPolygonShape::getSupport(const cvVec2f& direction) const
     }
 
     return bestVert;
-};
+}
+
+cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& halfExt, float radius)
+{
+
+    return createBox(cvVec2f(-halfExt.m_x, -halfExt.m_y), cvVec2f(halfExt.m_x, halfExt.m_y), radius);
+}
+
+cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& min, const cvVec2f& max, float radius)
+{
+    cvVec2f verts[4];
+    verts[0].m_x = min.m_x;
+    verts[0].m_y = min.m_y;
+    verts[1].m_x = max.m_x;
+    verts[1].m_y = min.m_y;
+    verts[2].m_x = max.m_x;
+    verts[2].m_y = max.m_y;
+    verts[3].m_x = min.m_x;
+    verts[3].m_y = max.m_y;
+
+    return new cvPolygonShape(verts, 4, radius);
+}

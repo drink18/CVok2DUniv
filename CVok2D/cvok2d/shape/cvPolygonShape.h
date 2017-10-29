@@ -21,7 +21,12 @@ public:
     }
 
     virtual cvVec2f getSupport(const cvVec2f& direction) const override;
+    const vector<cvVec2f>& getVertices() const {return m_vertices;};
 
+    static cvPolygonShape* createBox(const cvVec2f& halfExt, float radius);
+    static cvPolygonShape* createBox(const cvVec2f& min, const cvVec2f& max, float radius);
+
+private:
     vector<cvVec2f> m_vertices;
     float m_radius;
 };
