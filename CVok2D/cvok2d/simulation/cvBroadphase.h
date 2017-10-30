@@ -10,6 +10,7 @@
 #include <core/cvAabb.h>
 
 class cvAabb;
+class cvBody;
 
 typedef  cvHandle<int32_t, (int32_t)0x7fffffff> cvBroadphaseHandle;
 
@@ -87,6 +88,9 @@ public:
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) = 0;
 	virtual void removeNode(cvBroadphaseHandle handle) = 0;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) = 0;
+
+    virtual void addBody(cvBody& body) = 0;
+    virtual void removeBody(cvBody& body) = 0;
 
 protected:
 

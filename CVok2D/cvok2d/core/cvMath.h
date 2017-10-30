@@ -192,6 +192,7 @@ public:
 	// convert to matrix 33
 	inline void toMat33(cvMat33& outMat) const;
 	inline void setIdentity();
+    static cvTransform getIdentity() {return cvTransform();}
 public:
 	cvVec2f m_Translation;
 	float m_Rotation;

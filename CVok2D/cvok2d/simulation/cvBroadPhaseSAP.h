@@ -25,7 +25,9 @@ public:
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override;
 	virtual void removeNode(cvBroadphaseHandle handle) override;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) override;
+    virtual void addBody(cvBody& body) override;
 protected:
+    virtual void removeBody(cvBody& body) override;
 
 	bool addPair(NodeEndPoint& ep1, NodeEndPoint& ep2);
 	bool removePair(NodeEndPoint& ep1, NodeEndPoint& ep2);

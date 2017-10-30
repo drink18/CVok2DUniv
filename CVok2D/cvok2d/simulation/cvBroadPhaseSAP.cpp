@@ -1,5 +1,6 @@
 #include "cvok2d.h"
 #include "cvBroadPhaseSAP.h"
+#include <simulation/cvBody.h>
 
 cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 	:cvBroadphase(cinfo)
@@ -230,4 +231,17 @@ void cvBroadphaseSAP::getAllPairs(std::vector<BPPair>& pairs)
 	{
 		pairs.push_back(end.first);
 	}
+}
+
+void cvBroadphaseSAP::addBody(cvBody& body)
+{
+    cvAabb aabb;
+    body.getAabb(aabb);
+    body.setBroadphaseHandle(addNode(aabb));
+}
+
+void cvBroadphaseSAP::removeBody(cvBody& body)
+{
+    removeNode(body.getBroadphaseHandle());
+    body.setBroadphaseHandle(cvBroadphaseHandle::invalid());
 }

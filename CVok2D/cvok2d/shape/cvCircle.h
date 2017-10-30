@@ -13,7 +13,6 @@ public:
 
     cvVec2f m_center;
     float m_radius;
-    
     virtual ShapeType getShapeType() const override
     {
         return cvShape::eCircle;
@@ -25,4 +24,6 @@ public:
         support.addMul(direction, m_radius);
         return support;
     }
+
+    virtual void updateAabb() override;
 };

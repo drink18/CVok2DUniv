@@ -6,6 +6,7 @@ struct GLRenderPoints;
 struct GLRenderLines;
 class cvShape;
 class cvBody;
+class cvWorld;
 
 struct Camera
 {
@@ -40,6 +41,8 @@ public:
 
     void DrawShape(const cvShape& shape, const cvTransform& trans);
     void DrawBody(const cvBody& body);
+
+    void DrawWorld(const cvWorld& world);
 
 	void Flush();
 

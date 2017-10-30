@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 
+#include <unordered_set>
 #include <core/collection/cvFreeList.h>
 #include <core/cvHandle.h>
 
+using namespace std;
 struct DummyNode
 {
     int index;
@@ -20,12 +22,24 @@ struct DummyNode
     }
 };
 
+typedef cvHandle<int32_t, 0x7fffffff> Handle;
+namespace std
+{
+    template<> struct hash<Handle>
+    {
+        std::size_t operator()(const Handle& h) const
+        {
+            return hash{}(h.getVal());
+        }
+    };
+}
+
 TEST(TestFreeList, addAndFree)
 {
 
-	typedef cvHandle<int32_t, 0x7fffffff> Handle;
 	cvFreeList<DummyNode, Handle> dummyFreeList;
 
+    unordered_set<Handle> handleset;
 	const int initHandles = 100;
 	Handle handles[initHandles];
 	// insert 100 node

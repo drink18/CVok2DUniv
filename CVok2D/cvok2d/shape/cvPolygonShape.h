@@ -13,6 +13,8 @@ public:
         m_vertices.reserve(numVertices);
         m_vertices.insert(m_vertices.end(), vertices, vertices + numVertices);
         m_radius = radius;;
+
+        updateAabb();
     }
 
     virtual ShapeType getShapeType() const override
@@ -26,6 +28,8 @@ public:
     static cvPolygonShape* createBox(const cvVec2f& halfExt, float radius);
     static cvPolygonShape* createBox(const cvVec2f& min, const cvVec2f& max, float radius);
 
+
+    virtual void updateAabb() override;
 private:
     vector<cvVec2f> m_vertices;
     float m_radius;

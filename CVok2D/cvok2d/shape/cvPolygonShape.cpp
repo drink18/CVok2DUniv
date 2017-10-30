@@ -39,3 +39,18 @@ cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& min, const cvVec2f& max
 
     return new cvPolygonShape(verts, 4, radius);
 }
+
+void cvPolygonShape::updateAabb()
+{
+    cvVec2f min = m_vertices[0];
+    cvVec2f max = m_vertices[0];
+
+    for(int i = 1; i < m_vertices.size(); ++i)
+    {
+        auto vert = m_vertices[i];
+        min.m_x = std::min(min.m_x, vert.m_x);
+        min.m_y = std::min(min.m_y, vert.m_y);
+        max.m_x = std::max(max.m_x, vert.m_x);
+        max.m_y = std::max(max.m_y, vert.m_y);
+    }
+}
