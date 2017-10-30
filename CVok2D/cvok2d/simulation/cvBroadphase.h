@@ -10,7 +10,6 @@
 #include <core/cvAabb.h>
 
 class cvAabb;
-class cvBody;
 
 typedef  cvHandle<int32_t, (int32_t)0x7fffffff> cvBroadphaseHandle;
 

@@ -1,27 +1,38 @@
 #include <gtest/gtest.h>
 
-#include <cvok2d/core/collection/cvFreeList.h>
-#include <cvok2d/core/cvHandle.h>
+#include <core/collection/cvFreeList.h>
+#include <core/cvHandle.h>
+
+struct DummyNode
+{
+    int index;
+    int crap;
+
+    DummyNode()
+    {
+        index = 0;
+        crap = 0;
+    }
+    DummyNode(int i, int val)
+    {
+        index = i;
+        crap = val;
+    }
+};
 
 TEST(TestFreeList, addAndFree)
 {
-	struct DummyNode
-	{
-		int index;
-		int crap;
-	};
 
 	typedef cvHandle<int32_t, 0x7fffffff> Handle;
 	cvFreeList<DummyNode, Handle> dummyFreeList;
-	
+
 	const int initHandles = 100;
 	Handle handles[initHandles];
 	// insert 100 node
 	for (int i = 0; i < initHandles; i++)
 	{
-		handles[i] = dummyFreeList.alloc();
+		handles[i] = dummyFreeList.alloc(i, i);
 		DummyNode& node = dummyFreeList.getAt(handles[i]);
-		node.index = i;
 		EXPECT_TRUE(handles[i].isValid());
 	}
 
@@ -33,16 +44,28 @@ TEST(TestFreeList, addAndFree)
 	// alloc again, should get 52, 51, 50
 	{
 		Handle h = dummyFreeList.alloc();
-		EXPECT_TRUE(h.getVal() == 52);
+		EXPECT_EQ(52, h.getVal());
 	}
 
 	{
 		Handle h = dummyFreeList.alloc();
-		EXPECT_TRUE(h.getVal() == 51);
+		EXPECT_EQ(51, h.getVal());
 	}
 
 	{
 		Handle h = dummyFreeList.alloc();
-		EXPECT_TRUE(h.getVal() == 50);
+		EXPECT_EQ(50, h.getVal());
 	}
 }
+
+TEST(TestFreeList, Constructor_Invok)
+{
+	typedef cvHandle<int32_t, 0x7fffffff> Handle;
+	cvFreeList<DummyNode, Handle> dummyFreeList;
+
+    Handle id = dummyFreeList.alloc(12, 13);
+
+    DummyNode& node = dummyFreeList.getAt(id);
+    EXPECT_EQ(node.index, 12);
+}
+

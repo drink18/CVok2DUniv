@@ -18,7 +18,8 @@ public:
 	cvFreeList(int capacity = 512);
 
 public:
-	Handle alloc(); // allcoate from a know free slot
+    template<typename ... Args>
+	Handle alloc(Args... args); // allcoate from a know free slot
 	void free(Handle handle);
 	T& getAt(Handle handle) { return m_vector[handle.getVal()]; }
 private:
@@ -42,11 +43,14 @@ cvFreeList<T, Handle>::cvFreeList(int capacity)
 }
 
 template<typename T, typename Handle>
-Handle cvFreeList<T, Handle>::alloc()
+template<typename ... Args>
+Handle cvFreeList<T, Handle>::alloc(Args... args)
 {
 	Handle h(m_nextFreeSlot);
 	FREESLOT* fs = reinterpret_cast<FREESLOT*>(&m_vector[m_nextFreeSlot]);
 	m_nextFreeSlot = fs->m_nextFreeSlot;
+
+    new (fs)T(args...);
 	return h;
 }
 
