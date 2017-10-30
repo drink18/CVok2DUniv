@@ -11,8 +11,15 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
 
 void cvWorld::addBody(cvBodyId bodyId)
 {
-    const cvBody& body = m_bodyBuffer.getAt(bodyId);
+    cvBody& body = m_bodyBuffer.getAt(bodyId);
     cvAabb aabb;
     body.getAabb(aabb);
-    cvBroadphaseHandle handle = m_broadPhase->addNode(aabb);
+    m_broadPhase->addBody(body);
+}
+
+void cvWorld::removeBody(cvBodyId bodyId)
+{
+    cvBody& body = m_bodyBuffer.getAt(bodyId);
+    cvAabb aabb;
+    m_broadPhase->removeBody(body);
 }
