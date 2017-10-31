@@ -3,6 +3,7 @@
 #include <core/collection/cvFreeList.h>
 #include "cvBody.h"
 #include <dyanmic/cvMotion.h>
+#include <simulation/cvBodyManager.h>
 
 struct cvWorldCInfo
 {
@@ -13,12 +14,9 @@ struct cvWorldCInfo
 class cvWorld
 {
 public:
-
-    typedef cvFreeList<cvBody, cvBodyId> BodyBuffer;
     typedef cvFreeList<cvMotion, cvMotionId> MotionBuffer;
 public:
-	cvWorld(cvWorldCInfo&  cinfo)
-	{}
+	cvWorld(cvWorldCInfo&  cinfo);
 
     cvBodyId createBody(const cvBodyCInfo& cInfo, bool addBody);
     void addBody(cvBodyId bodyId);
@@ -26,10 +24,11 @@ public:
 
     cvMotionId createMotion();
 
-    const BodyBuffer& getBodyBuffer() const {return m_bodyBuffer;}
+    const cvBodyManager& getBodyManager()const {return m_bodyManager;}
+
 private:
 	cvBroadphase* m_broadPhase;
 
-    BodyBuffer  m_bodyBuffer;
+    cvBodyManager m_bodyManager;
     MotionBuffer m_motionBuffer;
 };

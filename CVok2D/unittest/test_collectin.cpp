@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 
-#include <unordered_set>
 #include <core/collection/cvFreeList.h>
 #include <core/cvHandle.h>
 
@@ -23,30 +22,18 @@ struct DummyNode
 };
 
 typedef cvHandle<int32_t, 0x7fffffff> Handle;
-namespace std
-{
-    template<> struct hash<Handle>
-    {
-        std::size_t operator()(const Handle& h) const
-        {
-            return hash{}(h.getVal());
-        }
-    };
-}
 
 TEST(TestFreeList, addAndFree)
 {
-
 	cvFreeList<DummyNode, Handle> dummyFreeList;
 
-    unordered_set<Handle> handleset;
 	const int initHandles = 100;
 	Handle handles[initHandles];
 	// insert 100 node
 	for (int i = 0; i < initHandles; i++)
 	{
 		handles[i] = dummyFreeList.alloc(i, i);
-		DummyNode& node = dummyFreeList.getAt(handles[i]);
+		DummyNode& node = dummyFreeList.accessAt(handles[i]);
 		EXPECT_TRUE(handles[i].isValid());
 	}
 
@@ -79,7 +66,7 @@ TEST(TestFreeList, Constructor_Invok)
 
     Handle id = dummyFreeList.alloc(12, 13);
 
-    DummyNode& node = dummyFreeList.getAt(id);
+    DummyNode& node = dummyFreeList.accessAt(id);
     EXPECT_EQ(node.index, 12);
 }
 

@@ -8,16 +8,6 @@
 #include <simulation/cvBroadphase.h>
 
 typedef cvHandle<std::uint16_t, 0x7FFF> cvBodyId;
-namespace std
-{
-    template<> struct hash<cvBodyId>
-    {
-        std::size_t operator()(const cvBodyId& h) const
-        {
-            return hash{}(h.getVal());
-        }
-    };
-}
 
 struct cvBodyCInfo
 {

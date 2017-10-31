@@ -21,7 +21,8 @@ public:
     template<typename ... Args>
 	Handle alloc(Args... args); // allcoate from a know free slot
 	void free(Handle handle);
-	T& getAt(Handle handle) { return m_vector[handle.getVal()]; }
+	const T& getAt(Handle handle) const { return m_vector[handle.getVal()]; }
+	T& accessAt(Handle handle) { return m_vector[handle.getVal()]; }
 private:
 	std::vector<T> m_vector;
 	int m_nextFreeSlot;

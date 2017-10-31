@@ -31,7 +31,7 @@ protected:
 
 	bool addPair(NodeEndPoint& ep1, NodeEndPoint& ep2);
 	bool removePair(NodeEndPoint& ep1, NodeEndPoint& ep2);
-	
+
 	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 private:

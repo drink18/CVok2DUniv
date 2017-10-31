@@ -15,7 +15,7 @@ cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 {
 	cvBroadphaseHandle handle = m_Nodes.alloc();
-	BPNode& newNode = m_Nodes.getAt(handle);
+	BPNode& newNode = m_Nodes.accessAt(handle);
 	newNode.m_aabb = nodeAabb;
 	NodeEndPoint min0, min1;
 	NodeEndPoint max0, max1;
@@ -52,7 +52,7 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 
 void cvBroadphaseSAP::removeNode(cvBroadphaseHandle handle)
 {
-	BPNode &node = m_Nodes.getAt(handle);
+	BPNode &node = m_Nodes.accessAt(handle);
 	for (int axis = 0; axis < 2; ++axis)
 	{
 		const int minIdx = node.m_MinIdx[axis];
@@ -68,7 +68,7 @@ void cvBroadphaseSAP::removeNode(cvBroadphaseHandle handle)
 			}
 
 			cvBroadphaseHandle h1 = ep.getBPHandle();
-			BPNode& n1 = m_Nodes.getAt(h1);
+			BPNode& n1 = m_Nodes.accessAt(h1);
 			
 			// update endpoint indices in bp node
 			if (ep.getIsMin())
@@ -102,7 +102,7 @@ void cvBroadphaseSAP::updateOneNode(cvBroadphaseHandle handle, const cvAabb& new
 
 void cvBroadphaseSAP::updateNodeOnOneAxis(int nodeIdx, float min, float max, int axis)
 {
-	BPNode& dirtyNode = m_Nodes.getAt(nodeIdx);
+	BPNode& dirtyNode = m_Nodes.accessAt(nodeIdx);
 	std::vector<NodeEndPoint>& endPointsOneAxis = m_EndPoints[axis];
 	NodeEndPoint& oldMinPt = endPointsOneAxis[dirtyNode.m_MinIdx[axis]];
 	NodeEndPoint& oldMaxPt = endPointsOneAxis[dirtyNode.m_MaxIdx[axis]];
@@ -172,12 +172,12 @@ void cvBroadphaseSAP::swapEndPoints(int epIdx1, int epIdx2, int axis)
 	NodeEndPoint tmpNode;
 
 	// update ep index in owner of ep1
-	BPNode& node2 = m_Nodes.getAt(ep2.getBPHandle().getVal());
+	BPNode& node2 = m_Nodes.accessAt(ep2.getBPHandle().getVal());
 	const bool isMin2 = ep2.getIsMin();
 	int& nextEpIdx2 = isMin2 ? node2.m_MinIdx[axis] : node2.m_MaxIdx[axis];
 	nextEpIdx2 = epIdx1;
 
-	BPNode& node1 = m_Nodes.getAt(ep1.getBPHandle().getVal());
+	BPNode& node1 = m_Nodes.accessAt(ep1.getBPHandle().getVal());
 	const bool isMin1 = ep1.getIsMin();
 	int& nextEpIdx1 = isMin1 ? node1.m_MinIdx[axis] : node1.m_MaxIdx[axis];
 	nextEpIdx1 = epIdx1;
@@ -195,8 +195,8 @@ bool cvBroadphaseSAP::addPair(NodeEndPoint& ep1, NodeEndPoint& ep2)
 
 bool cvBroadphaseSAP::addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2)
 {
-	BPNode& node1 = m_Nodes.getAt(handle1);
-	BPNode& node2 = m_Nodes.getAt(handle2);
+	BPNode& node1 = m_Nodes.accessAt(handle1);
+	BPNode& node2 = m_Nodes.accessAt(handle2);
 
 	if (node1.m_aabb.overlaps(node2.m_aabb))
 	{

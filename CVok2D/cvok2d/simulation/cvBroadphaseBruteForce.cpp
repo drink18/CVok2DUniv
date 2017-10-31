@@ -13,7 +13,7 @@ void cvBroadphaseBruteForce::updateOneNode(cvBroadphaseHandle/* handle*/, const 
 cvBroadphaseHandle cvBroadphaseBruteForce::addNode(const cvAabb& nodeAabb)
 {
 	cvBroadphaseHandle handle = m_Nodes.alloc();
-	BPNode& node = m_Nodes.getAt(handle);
+	BPNode& node = m_Nodes.accessAt(handle);
 	node.m_aabb = nodeAabb;
 	return handle;
 }

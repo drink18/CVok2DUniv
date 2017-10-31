@@ -13,6 +13,16 @@ class cvAabb;
 class cvBody;
 
 typedef  cvHandle<int32_t, (int32_t)0x7fffffff> cvBroadphaseHandle;
+namespace std
+{
+    template<> struct hash<cvBroadphaseHandle>
+    {
+        size_t operator()(const cvBroadphaseHandle& h) const
+        {
+            return std::hash<int32_t>{}(h.getVal());
+        }
+    };
+}
 
 struct cvBroadphaseCInfo
 {
@@ -36,7 +46,7 @@ public:
 		{}
 		cvBroadphaseHandle getBPHandle() const { return  BPHANDLE_MASK & m_NodeHandleAndMinFlag; }
 		void setBPHandle(cvBroadphaseHandle handle) 
-		{ 
+		{
 			m_NodeHandleAndMinFlag = handle.getVal() | (~BPHANDLE_MASK & m_NodeHandleAndMinFlag);
 		}
 		bool getIsMin() const { return (~BPHANDLE_MASK & m_NodeHandleAndMinFlag) != 0; }

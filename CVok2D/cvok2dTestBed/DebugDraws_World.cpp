@@ -3,6 +3,5 @@
 
 void cvDebugDraw::DrawWorld(const cvWorld& world)
 {
-    auto& bodyBuffer = world.getBodyBuffer();
 
 }
