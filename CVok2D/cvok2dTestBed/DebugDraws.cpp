@@ -18,6 +18,7 @@
 #include <shape/cvPolygonShape.h>
 #include <shape/cvCircle.h>
 #include <simulation/cvBody.h>
+#include <simulation/cvWorld.h>
 
 
 extern Camera g_camera;
@@ -510,4 +511,4 @@ void cvDebugDraw::DrawBody(const cvBody& body)
 {
     cvShape* shape = body.getShape().get();
     DrawShape(*shape, body.getTransform());
-}
+} 

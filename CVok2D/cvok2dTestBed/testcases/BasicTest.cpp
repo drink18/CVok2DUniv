@@ -2,20 +2,36 @@
 #include <DebugDraw.h>
 #include <shape/cvPolygonShape.h>
 #include <shape/cvCircle.h>
+#include <simulation/cvWorld.h>
 
 BasicTest::BasicTest()
 {
     m_box = cvPolygonShape::createBox(cvVec2f(5, 5), 0.01f);
-    m_circle = new cvCircle(cvVec2f(10, 0), 3);
+    m_circle = new cvCircle(cvVec2f(0, 0), 3);
+
+    cvWorldCInfo cinfo;
+    m_world = new cvWorld(cinfo);
+
+    cvBodyCInfo bInfo;
+    bInfo.m_shape.reset(m_box);
+    bInfo.m_initTransform.setIdentity();
+    bInfo.m_initTransform.m_Rotation = DEG2RAD(20);
+    m_world->createBody(bInfo, true);
+
+    bInfo.m_shape.reset(m_circle);
+    bInfo.m_initTransform.m_Rotation = 0;
+    m_world->createBody(bInfo, true);
 }
 
 void BasicTest::tick(cvDebugDraw& dbgDraw)
 {
-    dbgDraw.AddPoint(cvVec2f(0, 0), 2.0f, cvColorf(1, 1, 1));
-    dbgDraw.AddLine(cvVec2f(0, 0), cvVec2f(23, 23), cvColorf(1, 1, 0));
+    dbgDraw.AddPoint(cvVec2f(0, 0), 3.0f, cvColorf(1, 1, 1, 1));
+    //cvTransform trans;
+    //trans.m_Rotation = DEG2RAD(10);
+    //dbgDraw.DrawShape(*m_box, trans);
+    //dbgDraw.DrawShape(*m_circle, trans);
 
-    cvTransform trans;
-    trans.m_Rotation = DEG2RAD(10);
-    dbgDraw.DrawShape(*m_box, trans);
-    dbgDraw.DrawShape(*m_circle, trans);
+
+
+    dbgDraw.DrawWorld(*m_world);
 }

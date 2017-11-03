@@ -12,6 +12,18 @@
                 "environment": [],
                 "externalConsole": true,
                 "MIMode": "lldb"
+            },
+            {
+                "name": "(lldb) Launch test bed",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/build/cvok2dTestBed/cvok2dTestBed",
+                "args": [],
+                "stopAtEntry":false, 
+                "cwd": "${workspaceRoot}",
+                "environment": [],
+                "externalConsole": true,
+                "MIMode": "lldb"
             }
         ]
     }
