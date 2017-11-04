@@ -18,12 +18,7 @@ public:
         return cvShape::eCircle;
     }
 
-    virtual cvVec2f getSupport(const cvVec2f& direction) const override
-    {
-        cvVec2f support = m_center;
-        support.addMul(direction, m_radius);
-        return support;
-    }
+    virtual cvVec2f getSupport(const cvVec2f& direction) const override;
 
     virtual void updateAabb() override;
 };
