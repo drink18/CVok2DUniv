@@ -31,3 +31,12 @@ void cvWorld::removeBody(cvBodyId bodyId)
     cvAabb aabb;
     m_broadPhase->removeBody(body);
 }
+
+void cvWorld::integrate(float dt)
+{
+    auto iter = m_bodyManager.getBodyIter();
+    while(iter.isValid())
+    {
+        cvBody& body = m_bodyManager.accessBody(*iter);
+    }
+}

@@ -26,6 +26,9 @@ public:
 
     const cvBodyManager& getBodyManager()const {return m_bodyManager;}
 
+    // Simulation related
+protected:
+    void integrate(float dt);
 private:
 	cvBroadphase* m_broadPhase;
 
