@@ -127,7 +127,7 @@ public:
 class cvMat33
 {
 public:
-	cvMat33() {}
+	cvMat33() {setIdentity();}
 	cvMat33(const cvMat33& o) 
 	{
 		m_cols[0].set(o.m_cols[0]);
@@ -160,6 +160,9 @@ public:
 	inline void transformPoint(cvVec2f& v) const;
 	inline void transformVector(const cvVec2f& v, cvVec2f& ov) const;
 	inline void transformPoint(const cvVec2f& v, cvVec2f& ov) const;
+
+    inline void getInvert(cvMat33& om) const;
+    inline float getDet() const;
 
     /////////////////////////////////////////////////////////////////////
     // Overloaded operators

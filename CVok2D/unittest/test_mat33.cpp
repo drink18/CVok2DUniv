@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <cvok2d/core/cvMath.h>
+#include <core/cvMath.h>
 
 TEST(cvMat33, SetIdentity)
 {
@@ -182,4 +182,43 @@ TEST(cvMat33, OpSelfMul)
 	mm.transformPoint(v, tv);
 	EXPECT_NEAR(tv.m_x, -1.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(tv.m_y, 1.0f, CV_FLOAT_EPS);
+}
+
+void testMatrixIdentity(const cvMat33& m1, const cvMat33& m2)
+{
+    EXPECT_NEAR(m1.m_cols[0].m_x, m2.m_cols[0].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[0].m_y, m2.m_cols[0].m_y, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[0].m_z, m2.m_cols[0].m_z, CV_FLOAT_EPS);
+
+    EXPECT_NEAR(m1.m_cols[1].m_x, m2.m_cols[1].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[1].m_y, m2.m_cols[1].m_y, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[1].m_z, m2.m_cols[1].m_z, CV_FLOAT_EPS);
+
+    EXPECT_NEAR(m1.m_cols[2].m_x, m2.m_cols[2].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[2].m_y, m2.m_cols[2].m_y, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[2].m_z, m2.m_cols[2].m_z, CV_FLOAT_EPS);
+}
+
+TEST(cvMat33, invertIdentity)
+{
+    cvMat33 iden;
+    cvMat33 invIden;
+    iden.getInvert(invIden);
+
+    testMatrixIdentity(iden, invIden);
+}
+
+TEST(cvMat33, invert)
+{
+    cvMat33 rotM;
+    rotM.setRotationDeg(12);
+    rotM.setTranslation(cvVec2f(12, -9));
+    cvMat33 invRotM;
+    rotM.getInvert(invRotM);
+
+    cvMat33 shouldBeIden = rotM * invRotM;
+
+    cvMat33 identity;
+
+    testMatrixIdentity( identity, shouldBeIden);
 }

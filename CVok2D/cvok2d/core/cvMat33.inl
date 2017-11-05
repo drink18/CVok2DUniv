@@ -115,3 +115,43 @@ cvMat33& cvMat33::operator*=(const cvMat33& m)
     setMul(m);
     return *this;
 }
+
+float cvMat33::getDet() const
+{
+    float det = m_cols[0].m_x * m_cols[1].m_y * m_cols[2].m_z
+        + m_cols[0].m_y * m_cols[1].m_z * m_cols[2].m_x
+        + m_cols[0].m_z * m_cols[1].m_x * m_cols[2].m_y
+        - m_cols[0].m_z * m_cols[1].m_y * m_cols[2].m_x
+        - m_cols[0].m_y * m_cols[1].m_x * m_cols[2].m_z
+        - m_cols[0].m_x * m_cols[1].m_z * m_cols[2].m_y;
+    return det;
+}
+
+void cvMat33::getInvert(cvMat33& om) const
+{
+
+    float det = getDet();
+    if(det > -CV_FLOAT_EPS || det < CV_FLOAT_EPS)
+        cvAssertMsg(false, "Matrix not invertable");
+    else
+    {
+        om.m_cols[0].m_x =  m_cols[1].m_y * m_cols[2].m_z - m_cols[1].m_z * m_cols[2].m_y;
+        om.m_cols[1].m_x = -m_cols[1].m_x * m_cols[2].m_z + m_cols[1].m_z * m_cols[2].m_x;
+        om.m_cols[2].m_x = m_cols[1].m_x * m_cols[2].m_y - m_cols[1].m_y * m_cols[2].m_x;
+
+        om.m_cols[0].m_y = -m_cols[0].m_y * m_cols[2].m_z + m_cols[0].m_z * m_cols[2].m_y;
+        om.m_cols[1].m_y = m_cols[0].m_x * m_cols[2].m_z - m_cols[0].m_z * m_cols[2].m_x;
+        om.m_cols[2].m_y = -m_cols[0].m_x * m_cols[2].m_y + m_cols[0].m_y * m_cols[2].m_x;
+
+        om.m_cols[0].m_z =  m_cols[0].m_y * m_cols[1].m_z - m_cols[0].m_z * m_cols[1].m_y;
+        om.m_cols[1].m_z = -m_cols[0].m_x * m_cols[1].m_z + m_cols[0].m_z * m_cols[1].m_x;
+        om.m_cols[2].m_z =  m_cols[0].m_x * m_cols[1].m_y - m_cols[0].m_y * m_cols[1].m_x;
+
+        for(int c = 0; c < 3; c++)
+        {
+            om.m_cols[c].m_x /= det;
+            om.m_cols[c].m_y /= det;
+            om.m_cols[c].m_z /= det;
+        }
+    }
+}
