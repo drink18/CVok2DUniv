@@ -131,7 +131,7 @@ void cvMat33::getInvert(cvMat33& om) const
 {
 
     float det = getDet();
-    if(det > -CV_FLOAT_EPS || det < CV_FLOAT_EPS)
+    if(abs(det) < CV_FLOAT_EPS)
         cvAssertMsg(false, "Matrix not invertable");
     else
     {

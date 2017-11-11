@@ -100,8 +100,12 @@ public:
     // v1 = v - v2
     inline cvVec2f operator-(const cvVec2f& v2) const;
 
+    // unary minus
+    inline cvVec2f operator-() const;
+
     // v1 -= v2
     inline cvVec2f& operator-=(const cvVec2f& v2);
+
 };
 
 class cvVec3f
@@ -116,6 +120,83 @@ public:
 		m_y = v.m_y;
 		m_z = v.m_z;
 	}
+
+	inline float length() const;
+	inline float sqrLength() const;
+
+	inline void add(const cvVec3f& v);
+	inline void setAdd(const cvVec3f& v1, const cvVec3f& v2);
+
+	inline void setNegate();
+	inline void setSub(const cvVec3f& v1, const cvVec3f& v2);
+	inline void sub(const cvVec3f& v);
+
+    // this = this + v * s
+    inline void addMul(const cvVec3f& v, float s);
+
+	inline void setScale(float s);
+
+	inline float dot(const cvVec3f& v1) const;
+
+	inline void normalize();
+	inline cvVec3f getNormalized() const;
+
+	/// project this to v
+	inline void setProj(const cvVec3f& v);
+	inline cvVec3f project(const cvVec3f& v) const;
+
+	// this cross v
+	inline cvVec3f cross(const cvVec3f& v) const;
+
+	// distance to v
+	inline float distance(const cvVec3f& v) const;
+
+	static inline cvVec3f min3(const cvVec3f& v1, const cvVec3f& v2);
+	static inline cvVec3f max3(const cvVec3f& v1, const cvVec3f& v2);
+
+	// v1 == v2 ? with epsilon
+	inline static bool equal(const cvVec3f& v1, const cvVec3f& v2);
+
+	// v1 < v2 ?
+	inline static bool less(const cvVec3f& v1, const cvVec3f& v2);
+	// v1 <= v2 ?
+	inline static bool lessOrEqual(const cvVec3f& v1, const cvVec3f& v2);
+
+	// v2 > v1 ? 
+	inline static bool greater(const cvVec3f& v1, const cvVec3f& v2);
+	// v2 >= v1 ? 
+	inline static bool greatOrEqual(const cvVec3f& v1, const cvVec3f& v2);
+
+    ////////////////////////////////////////////////////////////////////
+    // overloaded operators
+    // ///////////////////////////////////////////////////////////////
+
+    //  v1 = v * s
+    inline cvVec3f operator*(float s) const;
+
+    // v *= s
+    inline cvVec3f& operator*=(float s);
+
+    // v1 = v / s
+    inline cvVec3f operator/(float s) const;
+
+    // v /= s
+    inline cvVec3f& operator/=(float s);
+
+    // v1 = v + v2
+    inline cvVec3f operator+(const cvVec3f& v2) const;
+
+    // v1 += v2
+    inline cvVec3f& operator+=(const cvVec3f& v2);
+
+    // v1 = v - v2
+    inline cvVec3f operator-(const cvVec3f& v2) const;
+
+    // unary minus
+    inline cvVec3f operator-() const;
+
+    // v1 -= v2
+    inline cvVec3f& operator-=(const cvVec3f& v2);
 
 public:
 	float m_x;
