@@ -3,6 +3,16 @@
 #include <algorithm>
 #include <core/cvAabb.h>
 
+struct SimplexVertex
+{
+    cvVec2f p;
+    int index;
+    float u;
+
+    SimplexVertex(const cvVec2f& v, int i, float _u)
+        :p(v), index(i), u(_u) { }
+};
+
 class cvShape
 {
 public:

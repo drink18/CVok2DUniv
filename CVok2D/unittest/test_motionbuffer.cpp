@@ -7,7 +7,7 @@ TEST(cvMotionManager, creation)
     cvMotionManager mgr;
     cvMotion motion;
 }
-
+/*
 TEST(cvMotionManager, has_presets)
 {
     cvMotionManager mgr;
@@ -40,4 +40,4 @@ TEST(cvMotionManager, removeMotion)
     auto id = mgr.addMotion(motion);
     mgr.removeMotion(id);
 }
-
+*/

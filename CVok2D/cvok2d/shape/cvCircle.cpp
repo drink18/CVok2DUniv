@@ -2,14 +2,14 @@
 
 void cvCircle::updateAabb()
 {
-    cvVec2f radiusV(m_radius, m_radius);
-    m_aabb.m_Min = m_center - radiusV;
-    m_aabb.m_Max = m_center + radiusV;
+    cvVec2f radiusV(getRadius(), getRadius());
+    m_aabb.m_Min = getCenter() - radiusV;
+    m_aabb.m_Max = getCenter() + radiusV;
 }
 
 cvVec2f cvCircle::getSupport(const cvVec2f& direction) const
 {
-    cvVec2f support = m_center;
-    support.addMul(direction, m_radius);
+    cvVec2f support = getCenter();
+    support.addMul(direction, getRadius());
     return support;
 }

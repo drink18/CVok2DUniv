@@ -198,6 +198,13 @@ cvVec2f& cvVec2f::operator/=(float s)
     return *this;
 }
 
+/*
+bool cvVec2f::operator==(const cvVec2f& v) const
+{
+    return abs(v.m_x - m_x) < CV_FLOAT_EPS && abs(v.m_y - m_y) < CV_FLOAT_EPS;
+}
+*/
+
 inline float cvVec3f::length() const
 {
     float sl = sqrLength();

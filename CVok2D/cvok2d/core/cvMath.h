@@ -40,9 +40,9 @@ public:
 
     // this = this + v * s
     inline void addMul(const cvVec2f& v, float s);
-	
+
 	inline void setScale(float s);
-	
+
 	inline float dot(const cvVec2f& v1) const;
 
 	inline void normalize();
@@ -105,6 +105,8 @@ public:
 
     // v1 -= v2
     inline cvVec2f& operator-=(const cvVec2f& v2);
+
+    //bool operator==(const cvVec2f& v) const;
 
 };
 

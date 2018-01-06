@@ -485,15 +485,15 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
         case cvShape::eCircle:
             {
                 const cvCircle& circle = static_cast<const cvCircle&>(shape);
-                const cvVec2f c = circle.m_center;
+                const cvVec2f c = circle.getCenter();;
                 const int subDiv = 16;
                 float x0 = c.m_x;
-                float y0 = circle.m_radius + c.m_y;
+                float y0 = circle.getRadius() + c.m_y;
                 const float dA = 2 * CV_PI / subDiv;
                 for(int i = 0; i <= subDiv; i++)
                 {
-                    float x = circle.m_radius * std::sin(i * dA) + c.m_x;
-                    float y = circle.m_radius * std::cos(i * dA) + c.m_y;
+                    float x = circle.getRadius() * std::sin(i * dA) + c.m_x;
+                    float y = circle.getRadius() * std::cos(i * dA) + c.m_y;
 
                     AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), cvColorf(1.0, 1.0, 1.0, 1.0f));
                     x0 = x;
