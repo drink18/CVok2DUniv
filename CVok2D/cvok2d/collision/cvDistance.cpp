@@ -14,13 +14,17 @@ namespace cvDist
         cvVec2f d = p1 - p0;
         float lenD = d.length();
         d /= lenD;
-        float u = 1.0f - (queryPt - p0).dot(d) / lenD;
-        float v = 1.0f - u;
+        float v =  (queryPt - p0).dot(d) / lenD;
+        float u = 1.0f - v;
 
         cvPt2LineClosestPt res;
-        u = min(1.0f, max(u, 0.0f));
-        v = min(1.0f, max(v, 0.0f));
-        res.pt = p0 * u + p1 * v;
+        if(u < 0)
+            res.pt = p1;
+        else if(v < 0)
+            res.pt = p0;
+        else
+            res.pt = p0 * u + p1 * v;
+
         res.u = u;
         res.v = v;
 

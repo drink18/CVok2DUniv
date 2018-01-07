@@ -45,7 +45,7 @@ TEST(TestDistance, closestPt_Zone1)
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
 }
 
-TEST(TestDistance, closestPt_Zone1_1)
+TEST(TestDistance, closestPt_Zone2)
 {
     cvVec2f p0(-1.0f, 0);
     cvVec2f p1(1.0f, 0);
