@@ -11,6 +11,7 @@
 #include "DebugDraw.h"
 #include "testcases/TestBase.h"
 #include "testcases/BasicTest.h"
+#include "testcases/TestDistance.h"
 
 Camera g_camera;
 TestBase* g_currentTest = nullptr;
@@ -71,7 +72,7 @@ int main(int, char**)
 		return 1;
 	}
 
-    g_currentTest = new BasicTest();
+    g_currentTest = new ClosestPointTest();
 
 
 	bool show_test_window = true;
