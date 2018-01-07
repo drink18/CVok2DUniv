@@ -56,3 +56,81 @@ TEST(TestDistance, closestPt_Zone2)
     EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
 }
+
+TEST(TestDistanceTriangle, vertexRegA)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (0.0f, 1.5f);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(0.0, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(1.0, res.pt.m_y, CV_FLOAT_EPS);
+}
+
+TEST(TestDistanceTriangle, vertexRegB)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (-1.5f, 0);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(-1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+}
+
+TEST(TestDistanceTriangle, vertexRegC)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (1.5f, 0);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+}
+
+TEST(TestDistanceTriangle, edgeRegAB)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (-1.0f, 1.0f);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(-0.5f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+}
+
+TEST(TestDistanceTriangle, edgeRegCA)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (1.0f, 1.0f);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(0.5f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+}
+
+TEST(TestDistanceTriangle, edgeRegBC)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (0.0f, -1.0f);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+}
