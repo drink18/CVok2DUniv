@@ -134,3 +134,16 @@ TEST(TestDistanceTriangle, edgeRegBC)
     EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
 }
+
+TEST(TestDistanceTriangle, interior)
+{
+    cvVec2f a(0.0f, 1.0f);
+    cvVec2f b(-1.0f, 0);
+    cvVec2f c(1.0f, 0);
+    cvVec2f q (0, 0.5f);
+
+    auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
+
+    EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+}
