@@ -1,15 +1,11 @@
 #include "DebugDraw.h"
 
 
-#include <GL/gl3w.h>
-
-#include <GLFW/glfw3.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <vector>
 
-#include <imgui/imgui.h>
 #include <cmath>
 
 #include <core/cvColor.h>
@@ -20,6 +16,10 @@
 #include <simulation/cvBody.h>
 #include <simulation/cvWorld.h>
 
+
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
+#include <imgui/imgui.h>
 
 extern Camera g_camera;
 
@@ -263,6 +263,9 @@ struct GLRenderPoints
 
 	void Flush()
 	{
+		if (m_vertices.size() == 0)
+			return;
+
 		glUseProgram(m_programId);
 
 		float proj[16] = { 0.0f };

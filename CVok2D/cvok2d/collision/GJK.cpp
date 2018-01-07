@@ -80,6 +80,7 @@ namespace GJK
         //get support point
         auto support = shape.getSupport(d);
         //simplex.addVertex(support);
+		return 0;
 
     }
 }
