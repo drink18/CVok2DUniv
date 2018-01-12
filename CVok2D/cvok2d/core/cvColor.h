@@ -14,4 +14,13 @@ struct cvColorf
 	}
 
 	float r, g, b, a;
+
+    static cvColorf Red;
+    static cvColorf Blue;
+    static cvColorf Green;
+    static cvColorf White;
+    static cvColorf Gray;
+    static cvColorf Purple;
+    static cvColorf Yellow;
+    static cvColorf Cyan;
 };

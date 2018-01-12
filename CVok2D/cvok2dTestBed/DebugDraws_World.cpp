@@ -9,7 +9,7 @@ void cvDebugDraw::DrawWorld(const cvWorld& world)
     while(iter.isValid())
     {
         const cvBody& body = bodyManager.getBody(*iter);
-        DrawBody(body);
+        DrawBody(body, cvColorf::White);
         iter++;
     }
 }

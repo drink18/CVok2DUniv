@@ -25,7 +25,7 @@ BasicTest::BasicTest()
 
 void BasicTest::tick(cvDebugDraw& dbgDraw)
 {
-    dbgDraw.AddPoint(cvVec2f(0, 0), 3.0f, cvColorf(1, 1, 1, 1));
+    dbgDraw.AddPoint(cvVec2f(0, 0), 3.0f, cvColorf::White);
     //cvTransform trans;
     //trans.m_Rotation = DEG2RAD(10);
     //dbgDraw.DrawShape(*m_box, trans);

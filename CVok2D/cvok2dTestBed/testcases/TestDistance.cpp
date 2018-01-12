@@ -13,9 +13,9 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
     cvVec2f b(-10, 0);
     cvVec2f c(10, 0);
 
-    gdbDraw.AddLine(a, b, cvColorf(1.0f, 1.0f, 1.0f));
-    gdbDraw.AddLine(c, b, cvColorf(1.0f, 1.0f, 1.0f));
-    gdbDraw.AddLine(a, c, cvColorf(1.0f, 1.0f, 1.0f));
+    gdbDraw.AddLine(a, b, cvColorf::White);
+    gdbDraw.AddLine(c, b, cvColorf::Yellow);
+    gdbDraw.AddLine(a, c, cvColorf::Cyan);
 
     std::srand(0);
     for(int i = 0; i < 10; ++i)
@@ -25,7 +25,7 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
 
         cvVec2f q(x, y);
         auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
-        gdbDraw.AddLine(q, res.pt, cvColorf(1.0f, 0.0f, 1.0f));
+        gdbDraw.AddLine(q, res.pt, cvColorf::Purple);
     }
 
 }

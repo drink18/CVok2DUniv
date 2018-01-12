@@ -466,7 +466,7 @@ void cvDebugDraw::Flush()
 	m_lineRender->Flush();
 }
 
-void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
+void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, const cvColorf& color)
 {
     cvMat33 mat;
     mat.setTranslation(trans.m_Translation);
@@ -481,7 +481,7 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
                 {
                     int ni = (i == verts.size() - 1) ? 0 : i + 1;
 
-                    AddLine(mat * verts[i], mat * verts[ni], cvColorf(1.0, 1.0, 1.0, 1.0f));
+                    AddLine(mat * verts[i], mat * verts[ni], color);
                 }
             }
             break;
@@ -498,7 +498,7 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
                     float x = circle.getRadius() * std::sin(i * dA) + c.m_x;
                     float y = circle.getRadius() * std::cos(i * dA) + c.m_y;
 
-                    AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), cvColorf(1.0, 1.0, 1.0, 1.0f));
+                    AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), color);
                     x0 = x;
                     y0 = y;
                 }
@@ -510,8 +510,8 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans)
     }
 }
 
-void cvDebugDraw::DrawBody(const cvBody& body)
+void cvDebugDraw::DrawBody(const cvBody& body, const cvColorf& color)
 {
     cvShape* shape = body.getShape().get();
-    DrawShape(*shape, body.getTransform());
-} 
+    DrawShape(*shape, body.getTransform(), color);
+}

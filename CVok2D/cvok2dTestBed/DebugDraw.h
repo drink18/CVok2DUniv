@@ -39,8 +39,8 @@ public:
 	void AddPoint(const cvVec2f& pos, float size, const cvColorf& color);
 	void AddLine(const cvVec2f& p1, const cvVec2f& p2, const cvColorf& color);
 
-    void DrawShape(const cvShape& shape, const cvTransform& trans);
-    void DrawBody(const cvBody& body);
+    void DrawShape(const cvShape& shape, const cvTransform& trans, const cvColorf& color);
+    void DrawBody(const cvBody& body, const cvColorf& color);
 
     void DrawWorld(const cvWorld& world);
 
