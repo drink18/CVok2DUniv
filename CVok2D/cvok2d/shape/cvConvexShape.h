@@ -6,7 +6,7 @@
 class cvConvexShape : public cvShape
 {
 public:
-    virtual cvVec2f getSupport(const cvVec2f& direction) const = 0;
+    virtual SimplexVertex getSupport(const cvVec2f& direction) const = 0;
     const std::vector<cvVec2f>& getVertices() const {return m_vertices;};
 
 protected:

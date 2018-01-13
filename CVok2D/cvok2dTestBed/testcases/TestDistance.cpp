@@ -1,10 +1,13 @@
 #include "TestDistance.h"
 #include <collision/cvDistance.h>
+#include <collision/GJK.h>
+#include <shape/cvPolygonShape.h>
 #include <DebugDraw.h>
 #include <cstdlib>
 
 ClosestPointTest::ClosestPointTest()
 {
+    m_box = cvPolygonShape::createBox(cvVec2f(5, 5), cvVec2f(15, 15), 0.05f);
 }
 
 void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
@@ -27,5 +30,11 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
         auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
         gdbDraw.AddLine(q, res.pt, cvColorf::Purple);
     }
+
+
+    cvVec2f q(0, 0);
+    auto gjkRes = GJK::pointToConvex(q, *m_box);
+
+    gdbDraw.AddLine(q, gjkRes.closetPt, cvColorf::Yellow);
 
 }

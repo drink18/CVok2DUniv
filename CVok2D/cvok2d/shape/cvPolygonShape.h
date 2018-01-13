@@ -22,7 +22,7 @@ public:
         return ePolygon;
     }
 
-    virtual cvVec2f getSupport(const cvVec2f& direction) const override;
+    virtual SimplexVertex getSupport(const cvVec2f& direction) const override;
 
     static cvPolygonShape* createBox(const cvVec2f& halfExt, float radius);
     static cvPolygonShape* createBox(const cvVec2f& min, const cvVec2f& max, float radius);

@@ -17,7 +17,7 @@ public:
         return cvShape::eCircle;
     }
 
-    virtual cvVec2f getSupport(const cvVec2f& direction) const override;
+    virtual SimplexVertex getSupport(const cvVec2f& direction) const override;
 
     virtual void updateAabb() override;
 

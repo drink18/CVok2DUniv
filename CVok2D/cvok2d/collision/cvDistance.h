@@ -37,7 +37,10 @@ namespace cvDist
         FeatureType featureType;
     };
 
-     cvPt2LineClosestPt pointDistanceToLine(const cvVec2f& queryPt, const cvVec2f& p0, const cvVec2f& p1);
+    cvPt2LineClosestPt pointDistanceToLine(const cvVec2f& queryPt, const cvVec2f& p0, const cvVec2f& p1);
 
-     cvPt2TriangleClosestPt pointDistanceToTriangle(const cvVec2f& q, const cvVec2f& a, const cvVec2f& b, const cvVec2f& c);
+    cvPt2TriangleClosestPt pointDistanceToTriangle(const cvVec2f& q, 
+            const cvVec2f& a, const cvVec2f& b, const cvVec2f& c);
+
+     
 }

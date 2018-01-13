@@ -12,4 +12,5 @@ public:
     virtual void tick(cvDebugDraw& gdbDraw) override;
 
 private:
+    cvPolygonShape* m_box;
 };

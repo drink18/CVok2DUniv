@@ -1,12 +1,13 @@
 #include "cvPolygonShape.h"
 
 
-cvVec2f cvPolygonShape::getSupport(const cvVec2f& direction) const
+SimplexVertex cvPolygonShape::getSupport(const cvVec2f& direction) const
 {
     float bestDot = direction.dot(m_vertices[0]);
     cvVec2f bestVert = m_vertices[0];
 
-    for(int i = 1; i < m_vertices.size(); ++i)
+    int i = 0;
+    for(i = 1; i < m_vertices.size(); ++i)
     {
         float dot = direction.dot(m_vertices[i]);
         if(dot > bestDot)
@@ -16,7 +17,9 @@ cvVec2f cvPolygonShape::getSupport(const cvVec2f& direction) const
         }
     }
 
-    return bestVert;
+    SimplexVertex sv(bestVert, i, 0);
+
+    return sv;
 }
 
 cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& halfExt, float radius)
