@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <cvok2d/core/cvMath.h>
 #include <cvok2d/shape/cvCircle.h>
 #include <cvok2d/shape/cvPolygonShape.h>
@@ -68,6 +69,8 @@ TEST(TestDistanceTriangle, vertexRegA)
 
     EXPECT_NEAR(0.0, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(1.0, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_A, res.feature);
 }
 
 TEST(TestDistanceTriangle, vertexRegB)
@@ -81,6 +84,8 @@ TEST(TestDistanceTriangle, vertexRegB)
 
     EXPECT_NEAR(-1.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_B, res.feature);
 }
 
 TEST(TestDistanceTriangle, vertexRegC)
@@ -94,6 +99,8 @@ TEST(TestDistanceTriangle, vertexRegC)
 
     EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_C, res.feature);
 }
 
 TEST(TestDistanceTriangle, edgeRegAB)
@@ -107,6 +114,8 @@ TEST(TestDistanceTriangle, edgeRegAB)
 
     EXPECT_NEAR(-0.5f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_AB, res.feature);
 }
 
 TEST(TestDistanceTriangle, edgeRegCA)
@@ -120,6 +129,8 @@ TEST(TestDistanceTriangle, edgeRegCA)
 
     EXPECT_NEAR(0.5f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_CA, res.feature);
 }
 
 TEST(TestDistanceTriangle, edgeRegBC)
@@ -133,6 +144,8 @@ TEST(TestDistanceTriangle, edgeRegBC)
 
     EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_BC, res.feature);
 }
 
 TEST(TestDistanceTriangle, interior)
@@ -146,4 +159,6 @@ TEST(TestDistanceTriangle, interior)
 
     EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Interior, res.featureType);
+    EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Inside_Tri, res.feature);
 }

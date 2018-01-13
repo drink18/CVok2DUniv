@@ -59,16 +59,22 @@ namespace cvDist
         if(uca < 0 && vab < 0 )
         {
             res.pt = a;
+            res.feature = cvPt2TriangleClosestPt::Vtx_A;
+            res.featureType = cvPt2TriangleClosestPt::Vertex;
             return res;
         }
         else if(uab < 0 && vbc < 0)
         {
             res.pt = b;
+            res.feature = cvPt2TriangleClosestPt::Vtx_B;
+            res.featureType = cvPt2TriangleClosestPt::Vertex;
             return res;
         }
         else if(ubc < 0 && vca < 0)
         {
             res.pt = c;
+            res.feature = cvPt2TriangleClosestPt::Vtx_C;
+            res.featureType = cvPt2TriangleClosestPt::Vertex;
             return res;
         }
 
@@ -76,18 +82,27 @@ namespace cvDist
         if(uab > 0 && vab > 0 && wABC <=0) //edge ab
         {
             res.pt = ab.pt;
+            res.feature = cvPt2TriangleClosestPt::Edge_AB;
+            res.featureType = cvPt2TriangleClosestPt::Edge;
             return res;
         }
         else if(ubc > 0 && vbc > 0 && uABC <=0) //edge bc
         {
             res.pt = bc.pt;
+            res.feature = cvPt2TriangleClosestPt::Edge_BC;
+            res.featureType = cvPt2TriangleClosestPt::Edge;
             return res;
         }
         else if(uca > 0 && vca > 0 && vABC <= 0) // edge ca
         {
             res.pt = ca.pt;
+            res.feature = cvPt2TriangleClosestPt::Edge_CA;
+            res.featureType = cvPt2TriangleClosestPt::Edge;
             return res;
         }
+
+        res.feature = cvPt2TriangleClosestPt::Inside_Tri;
+        res.featureType = cvPt2TriangleClosestPt::Interior;
 
         //interior
         res.pt = q;
