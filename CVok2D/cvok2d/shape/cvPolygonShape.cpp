@@ -7,17 +7,19 @@ SimplexVertex cvPolygonShape::getSupport(const cvVec2f& direction) const
     cvVec2f bestVert = m_vertices[0];
 
     int i = 0;
+    int bestIdx = 0;
     for(i = 1; i < m_vertices.size(); ++i)
     {
         float dot = direction.dot(m_vertices[i]);
         if(dot > bestDot)
         {
             bestDot = dot;
+            bestIdx = i;
             bestVert = m_vertices[i];
         }
     }
 
-    SimplexVertex sv(bestVert, i, 0);
+    SimplexVertex sv(bestVert, bestIdx, 0);
 
     return sv;
 }

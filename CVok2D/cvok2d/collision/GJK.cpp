@@ -20,6 +20,15 @@ namespace GJK
             if(verts.size() < 3)
             {
                 verts.push_back(v);
+                if (count() == 3)
+                {
+                    cvVec2f va = v.p - verts[0].p;
+                    cvVec2f v10 = verts[1].p - verts[0].p;
+                    if (va.cross(v10) > 0)
+                    {
+                        std::swap(verts[0], verts[1]);
+                    }
+                }
             }
         }
 
@@ -96,10 +105,18 @@ namespace GJK
             if(simplex.count() == 1) 
             {
                 // build a search vector d
-                cvVec2f d = queryPt - vertices[0];
+                cvVec2f d = queryPt - simplex.verts[0].p;
 
                 //get support point
                 auto support = shape.getSupport(d);
+
+                if (simplex.hasVtx(support))
+                {
+                    GJKResult res;
+                    res.closetPt = support.p;
+                    res.distance = (support.p - queryPt).length();
+                    return res;
+                }
 
                 // just add current support
                 simplex.addVertex(support);
