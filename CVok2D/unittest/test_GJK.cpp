@@ -51,3 +51,19 @@ TEST(TestGJK, BasicCase)
         EXPECT_NEAR(4.24264050f, res.distance, CV_FLOAT_EPS);
     }
 }
+
+TEST(TestGJK, Overlapping)
+{
+    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
+    cvVec2f q(7, 9);
+    auto res = pointToConvex(q, *cvBox);
+    EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+}
+
+TEST(TestGJK, Overlapping_OnInteriorEdge)
+{
+    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
+    cvVec2f q(9, 9);
+    auto res = pointToConvex(q, *cvBox);
+    EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+}

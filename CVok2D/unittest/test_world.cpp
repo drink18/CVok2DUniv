@@ -17,7 +17,7 @@ TEST(world, add_remove_body)
     cvWorld* world = new cvWorld(cInfo);
 
     cvBodyCInfo bodyCInfo;
-    bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05));
+    bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
     cvBodyId bodyId = world->createBody(bodyCInfo, true);
     world->removeBody(bodyId);
@@ -32,7 +32,7 @@ TEST(world, iterate_bodies)
 
 
     cvBodyCInfo bodyCInfo;
-    bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05));
+    bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
     for(int i = 0; i < 100; ++i)
     {

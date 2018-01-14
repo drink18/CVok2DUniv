@@ -10,11 +10,6 @@ include_directories(${CMAKE_SOURCE_DIR}/cvok2d)
 include_directories(${GTEST_DIR}/include)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS_DEBUG /MTd)
-    set(CMAKE_CXX_FLAGS_RELEASE /MT)
-endif()
-
-if(MSVC)
    link_directories(${GTEST_DIR}/libs/win64)
 else()
    link_directories(${GTEST_DIR}/libs/macos)

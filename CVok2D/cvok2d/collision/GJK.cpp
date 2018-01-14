@@ -91,6 +91,19 @@ namespace GJK
         return res;
     }
 
+    cvVec2f _getDFromEdge(const cvVec2f& q, const cvVec2f& a, const cvVec2f& b)
+    {
+        cvVec2f ab = a - b;
+        cvVec3f ab3 = cvVec3f(ab.x, ab.y, 0);
+        cvVec3f z(0, 0, 1);
+        cvVec3f d3 = ab3.cross(z);
+        cvVec2f d(d3.x, d3.y);
+
+        cvVec2f qa = q - a;
+        if (qa.dot(d) < 0) d *= -1;
+        return d;
+    }
+
     GJKResult pointToConvex(const cvVec2f& queryPt, const cvConvexShape& shape)
     {
         auto& vertices = shape.getVertices();
@@ -126,15 +139,7 @@ namespace GJK
             {
                 auto a = simplex.verts[0];
                 auto b = simplex.verts[1];
-                cvVec2f ab = a.p - b.p;
-                cvVec3f ab3 = cvVec3f(ab.x, ab.y, 0);
-                cvVec3f z (0, 0, 1);
-                cvVec3f d3 = ab3.cross(z);
-                cvVec2f d(d3.x, d3.y);
-
-                cvVec2f qa = queryPt - a.p;
-                if(qa.dot(d) < 0) d *= -1;
-
+                cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
                 //get support
                 auto support = shape.getSupport(d);
 
@@ -163,14 +168,35 @@ namespace GJK
                 {
                     if(res.feature == cvPt2TriangleClosestPt::Edge_AB)
                     {
+                        cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
+                        auto support = shape.getSupport(d);
+                        // detecting vertex that we are about to remove, terminate, edge overlap
+                        if(support.index == c.index) 
+                        { 
+                            break;
+                        }
                         simplex.removeVtx(2);
                     }
                     else if(res.feature == cvPt2TriangleClosestPt::Edge_BC)
                     {
+                        cvVec2f d = _getDFromEdge(queryPt, b.p, c.p);
+                        auto support = shape.getSupport(d);
+                        // detecting vertex that we are about to remove, terminate, edge overlap
+                        if(support.index == a.index) 
+                        { 
+                            break;
+                        }
                         simplex.removeVtx(0);
                     }
                     else if(res.feature == cvPt2TriangleClosestPt::Edge_CA)
                     {
+                        cvVec2f d = _getDFromEdge(queryPt, c.p, a.p);
+                        auto support = shape.getSupport(d);
+                        // detecting vertex that we are about to remove, terminate, edge overlap
+                        if(support.index == b.index) 
+                        { 
+                            break;
+                        }
                         simplex.removeVtx(1);
                     }
                 }
@@ -183,10 +209,15 @@ namespace GJK
                     gjkRes.distance = (res.pt - queryPt).length();
                     return gjkRes;
                 }
+                else if (res.featureType == cvDist::cvPt2TriangleClosestPt::Interior)
+                {
+                    // terminate: overlapping
+                    break;
+                }
             }
         }
         GJKResult gjkRes;
-        gjkRes.result = GJKResult::GJK_GOOD;
+        gjkRes.result = GJKResult::GJK_OVERLAP;
         return gjkRes;
     }
 }
