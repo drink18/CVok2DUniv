@@ -16,7 +16,7 @@ TEST(TestDistance, closestPt_Pt2Line)
 
 
     auto res = cvDist::pointDistanceToLine(q, p0, p1);
-    EXPECT_NEAR(0, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.u, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.v, CV_FLOAT_EPS);
@@ -30,7 +30,7 @@ TEST(TestDistance, closestPt_Zone0)
 
 
     auto res = cvDist::pointDistanceToLine(q, p0, p1);
-    EXPECT_NEAR(-1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(-1.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
 }
 
@@ -42,7 +42,7 @@ TEST(TestDistance, closestPt_Zone1)
 
 
     auto res = cvDist::pointDistanceToLine(q, p0, p1);
-    EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(1.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
 }
 
@@ -54,7 +54,7 @@ TEST(TestDistance, closestPt_Zone2)
 
 
     auto res = cvDist::pointDistanceToLine(q, p0, p1);
-    EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(1.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0, res.pt.m_y, CV_FLOAT_EPS);
 }
 
@@ -67,7 +67,7 @@ TEST(TestDistanceTriangle, vertexRegA)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(0.0, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(1.0, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_A, res.feature);
@@ -82,7 +82,7 @@ TEST(TestDistanceTriangle, vertexRegB)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(-1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(-1.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_B, res.feature);
@@ -97,7 +97,7 @@ TEST(TestDistanceTriangle, vertexRegC)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(1.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(1.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vertex, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Vtx_C, res.feature);
@@ -112,7 +112,7 @@ TEST(TestDistanceTriangle, edgeRegAB)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(-0.5f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(-0.5f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_AB, res.feature);
@@ -127,7 +127,7 @@ TEST(TestDistanceTriangle, edgeRegCA)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(0.5f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.5f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_CA, res.feature);
@@ -142,7 +142,7 @@ TEST(TestDistanceTriangle, edgeRegBC)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.0f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Edge_BC, res.feature);
@@ -157,7 +157,7 @@ TEST(TestDistanceTriangle, interior)
 
     auto res = cvDist::pointDistanceToTriangle(q, a, b, c);
 
-    EXPECT_NEAR(0.0f, res.pt.m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.0f, res.pt.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.5f, res.pt.m_y, CV_FLOAT_EPS);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Interior, res.featureType);
     EXPECT_EQ(cvDist::cvPt2TriangleClosestPt::Inside_Tri, res.feature);

@@ -28,7 +28,7 @@ cvVec2f Camera::ConvertScreenToWorld(const cvVec2f& ps)
 {
 	float w = float(m_width);
 	float h = float(m_height);
-	float u = ps.m_x / w;
+	float u = ps.x / w;
 	float v = (h - ps.m_y) / h;
 
 	float ratio = w / h;
@@ -39,7 +39,7 @@ cvVec2f Camera::ConvertScreenToWorld(const cvVec2f& ps)
 	cvVec2f upper; upper.setAdd(m_center, extents);
 
 	cvVec2f pw;
-	pw.m_x = (1.0f - u) * lower.m_x + u * upper.m_x;
+	pw.x = (1.0f - u) * lower.x + u * upper.x;
 	pw.m_y = (1.0f - v) * lower.m_y + v * upper.m_y;
 	return pw;
 }
@@ -56,11 +56,11 @@ cvVec2f Camera::ConvertWorldToScreen(const cvVec2f& pw)
 	cvVec2f lower; lower.setSub(m_center, extents);
 	cvVec2f upper; upper.setAdd(m_center, extents);
 
-	float u = (pw.m_x - lower.m_x) / (upper.m_x - lower.m_x);
+	float u = (pw.x - lower.x) / (upper.x - lower.x);
 	float v = (pw.m_y - lower.m_y) / (upper.m_y - lower.m_y);
 
 	cvVec2f ps;
-	ps.m_x = u * w;
+	ps.x = u * w;
 	ps.m_y = (1.0f - v) * h;
 	return ps;
 }
@@ -76,7 +76,7 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	cvVec2f lower; lower.setSub(m_center, extents);
 	cvVec2f upper; upper.setAdd(m_center, extents);
 
-	m[0] = 2.0f / (upper.m_x - lower.m_x);
+	m[0] = 2.0f / (upper.x - lower.x);
 	m[1] = 0.0f;
 	m[2] = 0.0f;
 	m[3] = 0.0f;
@@ -91,7 +91,7 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	m[10] = 1.0f;
 	m[11] = 0.0f;
 
-	m[12] = -(upper.m_x + lower.m_x) / (upper.m_x - lower.m_x);
+	m[12] = -(upper.x + lower.x) / (upper.x - lower.x);
 	m[13] = -(upper.m_y + lower.m_y) / (upper.m_y - lower.m_y);
 	m[14] = zBias;
 	m[15] = 1.0f;
@@ -490,12 +490,12 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
                 const cvCircle& circle = static_cast<const cvCircle&>(shape);
                 const cvVec2f c = circle.getCenter();;
                 const int subDiv = 16;
-                float x0 = c.m_x;
+                float x0 = c.x;
                 float y0 = circle.getRadius() + c.m_y;
                 const float dA = 2 * CV_PI / subDiv;
                 for(int i = 0; i <= subDiv; i++)
                 {
-                    float x = circle.getRadius() * std::sin(i * dA) + c.m_x;
+                    float x = circle.getRadius() * std::sin(i * dA) + c.x;
                     float y = circle.getRadius() * std::cos(i * dA) + c.m_y;
 
                     AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), color);

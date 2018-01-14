@@ -20,10 +20,10 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 	NodeEndPoint min0, min1;
 	NodeEndPoint max0, max1;
 
-	min0.m_Val = nodeAabb.m_Min.m_x; min0.setIsMin(true);
+	min0.m_Val = nodeAabb.m_Min.x; min0.setIsMin(true);
 	min1.m_Val = nodeAabb.m_Min.m_y; min1.setIsMin(true);
 
-	max0.m_Val = nodeAabb.m_Max.m_x; max0.setIsMin(false);
+	max0.m_Val = nodeAabb.m_Max.x; max0.setIsMin(false);
 	max1.m_Val = nodeAabb.m_Max.m_y; max1.setIsMin(false);
 
 	min0.setBPHandle(handle);
@@ -91,8 +91,8 @@ void cvBroadphaseSAP::updateOneNode(cvBroadphaseHandle handle, const cvAabb& new
 {
 	float min[2];
 	float max[2];
-	min[0] = newAabb.m_Min.m_x; min[1] = newAabb.m_Min.m_y;
-	max[0] = newAabb.m_Max.m_x; max[1] = newAabb.m_Max.m_y;
+	min[0] = newAabb.m_Min.x; min[1] = newAabb.m_Min.m_y;
+	max[0] = newAabb.m_Max.x; max[1] = newAabb.m_Max.m_y;
 	
 	for (int axis = 0; axis < 2; ++axis)
 	{

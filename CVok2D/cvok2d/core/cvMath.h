@@ -15,17 +15,17 @@ inline bool almost_equal(float x, float y)
 class cvVec2f
 {
 public:
-	float m_x;
+	float x;
 	float m_y;
 
 public:
-	cvVec2f(float x, float y) : m_x(x), m_y(y){}
-	cvVec2f() : m_x(0), m_y(0) {}
-	cvVec2f(const cvVec2f& v) : m_x(v.m_x), m_y(v.m_y) {}
-	void set(float x, float y)
+	cvVec2f(float _x, float _y) : x(_x), m_y(_y){}
+	cvVec2f() : x(0), m_y(0) {}
+	cvVec2f(const cvVec2f& v) : x(v.x), m_y(v.m_y) {}
+	void set(float _x, float _y)
 	{
-		m_x = x;
-		m_y = y;
+		x = _x;
+		m_y = _y;
 	}
 
 	inline float length() const;

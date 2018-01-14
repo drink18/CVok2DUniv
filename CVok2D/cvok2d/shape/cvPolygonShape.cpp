@@ -27,19 +27,19 @@ SimplexVertex cvPolygonShape::getSupport(const cvVec2f& direction) const
 cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& halfExt, float radius)
 {
 
-    return createBox(cvVec2f(-halfExt.m_x, -halfExt.m_y), cvVec2f(halfExt.m_x, halfExt.m_y), radius);
+    return createBox(cvVec2f(-halfExt.x, -halfExt.m_y), cvVec2f(halfExt.x, halfExt.m_y), radius);
 }
 
 cvPolygonShape* cvPolygonShape::createBox(const cvVec2f& min, const cvVec2f& max, float radius)
 {
     cvVec2f verts[4];
-    verts[0].m_x = min.m_x;
+    verts[0].x = min.x;
     verts[0].m_y = min.m_y;
-    verts[1].m_x = max.m_x;
+    verts[1].x = max.x;
     verts[1].m_y = min.m_y;
-    verts[2].m_x = max.m_x;
+    verts[2].x = max.x;
     verts[2].m_y = max.m_y;
-    verts[3].m_x = min.m_x;
+    verts[3].x = min.x;
     verts[3].m_y = max.m_y;
 
     return new cvPolygonShape(verts, 4, radius);
@@ -53,9 +53,9 @@ void cvPolygonShape::updateAabb()
     for(int i = 1; i < m_vertices.size(); ++i)
     {
         auto vert = m_vertices[i];
-        min.m_x = std::min(min.m_x, vert.m_x);
+        min.x = std::min(min.x, vert.x);
         min.m_y = std::min(min.m_y, vert.m_y);
-        max.m_x = std::max(max.m_x, vert.m_x);
+        max.x = std::max(max.x, vert.x);
         max.m_y = std::max(max.m_y, vert.m_y);
     }
 }
