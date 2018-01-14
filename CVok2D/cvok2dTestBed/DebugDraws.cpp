@@ -29,7 +29,7 @@ cvVec2f Camera::ConvertScreenToWorld(const cvVec2f& ps)
 	float w = float(m_width);
 	float h = float(m_height);
 	float u = ps.x / w;
-	float v = (h - ps.m_y) / h;
+	float v = (h - ps.y) / h;
 
 	float ratio = w / h;
 	cvVec2f extents(ratio * 25.0f, 25.0f);
@@ -40,7 +40,7 @@ cvVec2f Camera::ConvertScreenToWorld(const cvVec2f& ps)
 
 	cvVec2f pw;
 	pw.x = (1.0f - u) * lower.x + u * upper.x;
-	pw.m_y = (1.0f - v) * lower.m_y + v * upper.m_y;
+	pw.y = (1.0f - v) * lower.y + v * upper.y;
 	return pw;
 }
 
@@ -57,11 +57,11 @@ cvVec2f Camera::ConvertWorldToScreen(const cvVec2f& pw)
 	cvVec2f upper; upper.setAdd(m_center, extents);
 
 	float u = (pw.x - lower.x) / (upper.x - lower.x);
-	float v = (pw.m_y - lower.m_y) / (upper.m_y - lower.m_y);
+	float v = (pw.y - lower.y) / (upper.y - lower.y);
 
 	cvVec2f ps;
 	ps.x = u * w;
-	ps.m_y = (1.0f - v) * h;
+	ps.y = (1.0f - v) * h;
 	return ps;
 }
 
@@ -82,7 +82,7 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	m[3] = 0.0f;
 
 	m[4] = 0.0f;
-	m[5] = 2.0f / (upper.m_y - lower.m_y);
+	m[5] = 2.0f / (upper.y - lower.y);
 	m[6] = 0.0f;
 	m[7] = 0.0f;
 
@@ -92,7 +92,7 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	m[11] = 0.0f;
 
 	m[12] = -(upper.x + lower.x) / (upper.x - lower.x);
-	m[13] = -(upper.m_y + lower.m_y) / (upper.m_y - lower.m_y);
+	m[13] = -(upper.y + lower.y) / (upper.y - lower.y);
 	m[14] = zBias;
 	m[15] = 1.0f;
 }
@@ -491,12 +491,12 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
                 const cvVec2f c = circle.getCenter();;
                 const int subDiv = 16;
                 float x0 = c.x;
-                float y0 = circle.getRadius() + c.m_y;
+                float y0 = circle.getRadius() + c.y;
                 const float dA = 2 * CV_PI / subDiv;
                 for(int i = 0; i <= subDiv; i++)
                 {
                     float x = circle.getRadius() * std::sin(i * dA) + c.x;
-                    float y = circle.getRadius() * std::cos(i * dA) + c.m_y;
+                    float y = circle.getRadius() * std::cos(i * dA) + c.y;
 
                     AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), color);
                     x0 = x;

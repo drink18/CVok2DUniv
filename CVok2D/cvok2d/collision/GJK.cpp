@@ -127,7 +127,7 @@ namespace GJK
                 auto a = simplex.verts[0];
                 auto b = simplex.verts[1];
                 cvVec2f ab = a.p - b.p;
-                cvVec3f ab3 = cvVec3f(ab.x, ab.m_y, 0);
+                cvVec3f ab3 = cvVec3f(ab.x, ab.y, 0);
                 cvVec3f z (0, 0, 1);
                 cvVec3f d3 = ab3.cross(z);
                 cvVec2f d(d3.m_x, d3.m_y);

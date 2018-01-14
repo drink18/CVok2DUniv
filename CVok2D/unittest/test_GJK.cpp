@@ -17,7 +17,7 @@ TEST(TestGJK, BasicCase)
 
         EXPECT_EQ(GJKResult::GJK_GOOD, res.result);
         EXPECT_NEAR(5.0f, res.closetPt.x, CV_FLOAT_EPS);
-        EXPECT_NEAR(5.0f, res.closetPt.m_y, CV_FLOAT_EPS);
+        EXPECT_NEAR(5.0f, res.closetPt.y, CV_FLOAT_EPS);
         EXPECT_NEAR(7.07106781f, res.distance, CV_FLOAT_EPS);
     }
 
@@ -27,7 +27,7 @@ TEST(TestGJK, BasicCase)
 
         EXPECT_EQ(GJKResult::GJK_GOOD, res.result);
         EXPECT_NEAR(5.0f, res.closetPt.x, CV_FLOAT_EPS);
-        EXPECT_NEAR(7.2f, res.closetPt.m_y, CV_FLOAT_EPS);
+        EXPECT_NEAR(7.2f, res.closetPt.y, CV_FLOAT_EPS);
         EXPECT_NEAR(5.0f, res.distance, CV_FLOAT_EPS);
     }
 
@@ -37,7 +37,7 @@ TEST(TestGJK, BasicCase)
 
         EXPECT_EQ(GJKResult::GJK_GOOD, res.result);
         EXPECT_NEAR(15.0f, res.closetPt.x, CV_FLOAT_EPS);
-        EXPECT_NEAR(7.2f, res.closetPt.m_y, CV_FLOAT_EPS);
+        EXPECT_NEAR(7.2f, res.closetPt.y, CV_FLOAT_EPS);
         EXPECT_NEAR(3.0f, res.distance, CV_FLOAT_EPS);
     }
 
@@ -47,7 +47,7 @@ TEST(TestGJK, BasicCase)
 
         EXPECT_EQ(GJKResult::GJK_GOOD, res.result);
         EXPECT_NEAR(15.0f, res.closetPt.x, CV_FLOAT_EPS);
-        EXPECT_NEAR(15.0f, res.closetPt.m_y, CV_FLOAT_EPS);
+        EXPECT_NEAR(15.0f, res.closetPt.y, CV_FLOAT_EPS);
         EXPECT_NEAR(4.24264050f, res.distance, CV_FLOAT_EPS);
     }
 }

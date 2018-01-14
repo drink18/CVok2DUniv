@@ -14,7 +14,7 @@ void cvMat33::setIdentity()
 void cvMat33::setTranslation(const cvVec2f& v)
 {
 	m_cols[0].m_z = v.x;
-	m_cols[1].m_z = v.m_y;
+	m_cols[1].m_z = v.y;
 }
 
 void cvMat33::setRotationDeg(float angleDeg)
@@ -35,10 +35,10 @@ void cvMat33::setRotation(float angle)
 
 void cvMat33::mul(cvVec2f& v) const
 {
-	const float x = m_cols[0].m_x * v.x + m_cols[0].m_y * v.m_y;
-	const float y = m_cols[1].m_x * v.x + m_cols[1].m_y * v.m_y;
+	const float x = m_cols[0].m_x * v.x + m_cols[0].m_y * v.y;
+	const float y = m_cols[1].m_x * v.x + m_cols[1].m_y * v.y;
 	v.x = x;
-	v.m_y = y;
+	v.y = y;
 }
 
 void cvMat33::mul(cvVec3f& v) const
@@ -81,18 +81,18 @@ void cvMat33::transformPoint(cvVec2f& v) const
 {
 	mul(v);
 	v.x += m_cols[0].m_z;
-	v.m_y += m_cols[1].m_z;
+	v.y += m_cols[1].m_z;
 }
 
 void cvMat33::transformVector(const cvVec2f& v, cvVec2f& ov) const 
 {
-	ov.x = v.x; ov.m_y = v.m_y;
+	ov.x = v.x; ov.y = v.y;
 	transformVector(ov);
 }
 
 void cvMat33::transformPoint(const cvVec2f& v, cvVec2f& ov) const
 {
-	ov.x = v.x; ov.m_y = v.m_y;
+	ov.x = v.x; ov.y = v.y;
 	transformPoint(ov);
 }
 

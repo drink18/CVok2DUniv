@@ -4,7 +4,7 @@
 #include "cvMath.h"
 
 float cvVec2f::length() const { return cvSqrt(sqrLength()); }
-float cvVec2f::sqrLength() const { return x * x + m_y * m_y; }
+float cvVec2f::sqrLength() const { return x * x + y * y; }
 
 void cvVec2f::add(const cvVec2f& v)
 {
@@ -24,30 +24,30 @@ void cvVec2f::sub(const cvVec2f& v)
 void cvVec2f::setAdd(const cvVec2f& v1, const cvVec2f& v2)
 {
 	x = v1.x + v2.x;
-	m_y = v1.m_y + v2.m_y;
+	y = v1.y + v2.y;
 }
 
 void cvVec2f::addMul(const cvVec2f& v, float s)
 {
     x += v.x * s;
-    m_y += v.m_y * s;
+    y += v.y * s;
 }
 
 void cvVec2f::setSub(const cvVec2f& v1, const cvVec2f& v2)
 {
 	x = v1.x - v2.x;
-	m_y = v1.m_y - v2.m_y;
+	y = v1.y - v2.y;
 }
 
 void cvVec2f::setScale(float s)
 {
 	x *= s;
-	m_y *= s;
+	y *= s;
 }
 
 float cvVec2f::dot(const cvVec2f& v1) const
 {
-	return x * v1.x + m_y * v1.m_y;
+	return x * v1.x + y * v1.y;
 }
 
 void cvVec2f::normalize()
@@ -55,12 +55,12 @@ void cvVec2f::normalize()
 	float len = length();
 	cvAssert(len > CV_FLOAT_EPS);
 	x /= len;
-	m_y /= len;
+	y /= len;
 }
 
 cvVec2f cvVec2f::getNormalized() const
 {
-	cvVec2f cv(x, m_y);
+	cvVec2f cv(x, y);
 	cv.normalize();
 	return cv;
 }
@@ -74,7 +74,7 @@ void cvVec2f::setProj(const cvVec2f& v)
 	v1.normalize();
 	float d = dot(v1);
 	x = v1.x * d;
-	m_y = v1.m_y * d;
+	y = v1.y * d;
 }
 
 cvVec2f cvVec2f::project(const cvVec2f& v) const
@@ -87,7 +87,7 @@ cvVec2f cvVec2f::project(const cvVec2f& v) const
 // this cross v
 float cvVec2f::cross(const cvVec2f& v) const
 {
-	return x * v.m_y - m_y * v.x;
+	return x * v.y - y * v.x;
 }
 
 float cvVec2f::distance(const cvVec2f& v) const
@@ -100,7 +100,7 @@ cvVec2f	cvVec2f::min2(const cvVec2f& v1, const cvVec2f& v2)
 {
 	cvVec2f v;
 	v.x = std::fmin(v1.x, v2.x);
-	v.m_y = std::fmin(v1.m_y, v2.m_y);
+	v.y = std::fmin(v1.y, v2.y);
 	return v;
 }
 
@@ -108,18 +108,18 @@ cvVec2f cvVec2f::max2(const cvVec2f& v1, const cvVec2f& v2)
 {
 	cvVec2f v;
 	v.x = std::fmax(v1.x, v2.x);
-	v.m_y = std::fmax(v1.m_y, v2.m_y);
+	v.y = std::fmax(v1.y, v2.y);
 	return v;
 }
 
 bool cvVec2f::equal(const cvVec2f& v1, const cvVec2f& v2)
 {
-	return almost_equal(v1.x, v2.x) && almost_equal(v1.m_y, v2.m_y);
+	return almost_equal(v1.x, v2.x) && almost_equal(v1.y, v2.y);
 }
 
 bool cvVec2f::less(const cvVec2f& v1, const cvVec2f& v2)
 {
-	return v1.x < v2.x && v1.m_y < v2.m_y;
+	return v1.x < v2.x && v1.y < v2.y;
 }
 
 bool cvVec2f::lessOrEqual(const cvVec2f& v1, const cvVec2f& v2)
@@ -129,7 +129,7 @@ bool cvVec2f::lessOrEqual(const cvVec2f& v1, const cvVec2f& v2)
 
 bool cvVec2f::greater(const cvVec2f& v1, const cvVec2f& v2)
 {
-	return v1.x > v2.x && v1.m_y > v2.m_y;
+	return v1.x > v2.x && v1.y > v2.y;
 }
 
 bool cvVec2f::greatOrEqual(const cvVec2f& v1, const cvVec2f& v2)

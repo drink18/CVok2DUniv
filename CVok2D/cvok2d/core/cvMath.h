@@ -16,16 +16,16 @@ class cvVec2f
 {
 public:
 	float x;
-	float m_y;
+	float y;
 
 public:
-	cvVec2f(float _x, float _y) : x(_x), m_y(_y){}
-	cvVec2f() : x(0), m_y(0) {}
-	cvVec2f(const cvVec2f& v) : x(v.x), m_y(v.m_y) {}
+	cvVec2f(float _x, float _y) : x(_x), y(_y){}
+	cvVec2f() : x(0), y(0) {}
+	cvVec2f(const cvVec2f& v) : x(v.x), y(v.y) {}
 	void set(float _x, float _y)
 	{
 		x = _x;
-		m_y = _y;
+		y = _y;
 	}
 
 	inline float length() const;
