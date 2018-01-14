@@ -114,11 +114,11 @@ class cvVec3f
 {
 public:
 	cvVec3f() {};
-	cvVec3f(float x, float y, float z) : m_x(x), m_y(y), m_z(z) {}
-	cvVec3f(const cvVec3f& v) : m_x(v.m_x), m_y(v.m_y), m_z(v.m_z) {}
+	cvVec3f(float _x, float _y, float _z) : x(_x), m_y(_y), m_z(_z) {}
+	cvVec3f(const cvVec3f& v) : x(v.x), m_y(v.m_y), m_z(v.m_z) {}
 	void set(const cvVec3f& v)
 	{
-		m_x = v.m_x;
+		x = v.x;
 		m_y = v.m_y;
 		m_z = v.m_z;
 	}
@@ -201,7 +201,7 @@ public:
     inline cvVec3f& operator-=(const cvVec3f& v2);
 
 public:
-	float m_x;
+	float x;
 	float m_y;
 	float m_z;
 };
@@ -223,9 +223,9 @@ public:
 		float m10, float m11, float m12,
 		float m20, float m21, float m22)
 	{
-		m_cols[0].m_x = m00; m_cols[0].m_y = m10; m_cols[0].m_z = m20;
-		m_cols[1].m_x = m01; m_cols[1].m_y = m11; m_cols[1].m_z = m21;
-		m_cols[2].m_x = m02; m_cols[2].m_y = m12; m_cols[2].m_z = m22;
+		m_cols[0].x = m00; m_cols[0].m_y = m10; m_cols[0].m_z = m20;
+		m_cols[1].x = m01; m_cols[1].m_y = m11; m_cols[1].m_z = m21;
+		m_cols[2].x = m02; m_cols[2].m_y = m12; m_cols[2].m_z = m22;
 	}
 
 	inline void setTranslation(const cvVec2f& t);

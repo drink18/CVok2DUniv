@@ -7,15 +7,15 @@ TEST(cvMat33, SetIdentity)
 	m.setIdentity();
 
 
-	EXPECT_NEAR(m.m_cols[0].m_x, 1.0f, CV_FLOAT_EPS);
+	EXPECT_NEAR(m.m_cols[0].x, 1.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[0].m_y, 0.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[0].m_z, 0.0f, CV_FLOAT_EPS);
 
-	EXPECT_NEAR(m.m_cols[1].m_x, 0.0f, CV_FLOAT_EPS);
+	EXPECT_NEAR(m.m_cols[1].x, 0.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[1].m_y, 1.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[1].m_z, 0.0f, CV_FLOAT_EPS);
 
-	EXPECT_NEAR(m.m_cols[2].m_x, 0.0f, CV_FLOAT_EPS);
+	EXPECT_NEAR(m.m_cols[2].x, 0.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[2].m_y, 0.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[2].m_z, 1.0f, CV_FLOAT_EPS);
 }
@@ -26,9 +26,9 @@ TEST(cvMat33, SetRotation)
 	m.setIdentity();
 	m.setRotationDeg(90);
 
-	EXPECT_NEAR(m.m_cols[0].m_x, 0.0f, CV_FLOAT_EPS );
+	EXPECT_NEAR(m.m_cols[0].x, 0.0f, CV_FLOAT_EPS );
 	EXPECT_NEAR(m.m_cols[0].m_y, -1.0f, CV_FLOAT_EPS);
-	EXPECT_NEAR(m.m_cols[1].m_x, 1.0f, CV_FLOAT_EPS);
+	EXPECT_NEAR(m.m_cols[1].x, 1.0f, CV_FLOAT_EPS);
 	EXPECT_NEAR(m.m_cols[1].m_y, 0.0f, CV_FLOAT_EPS);
 }
 
@@ -186,15 +186,15 @@ TEST(cvMat33, OpSelfMul)
 
 void testMatrixIdentity(const cvMat33& m1, const cvMat33& m2)
 {
-    EXPECT_NEAR(m1.m_cols[0].m_x, m2.m_cols[0].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[0].x, m2.m_cols[0].x, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[0].m_y, m2.m_cols[0].m_y, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[0].m_z, m2.m_cols[0].m_z, CV_FLOAT_EPS);
 
-    EXPECT_NEAR(m1.m_cols[1].m_x, m2.m_cols[1].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[1].x, m2.m_cols[1].x, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[1].m_y, m2.m_cols[1].m_y, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[1].m_z, m2.m_cols[1].m_z, CV_FLOAT_EPS);
 
-    EXPECT_NEAR(m1.m_cols[2].m_x, m2.m_cols[2].m_x, CV_FLOAT_EPS);
+    EXPECT_NEAR(m1.m_cols[2].x, m2.m_cols[2].x, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[2].m_y, m2.m_cols[2].m_y, CV_FLOAT_EPS);
     EXPECT_NEAR(m1.m_cols[2].m_z, m2.m_cols[2].m_z, CV_FLOAT_EPS);
 }

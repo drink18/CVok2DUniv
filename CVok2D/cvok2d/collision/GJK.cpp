@@ -130,7 +130,7 @@ namespace GJK
                 cvVec3f ab3 = cvVec3f(ab.x, ab.y, 0);
                 cvVec3f z (0, 0, 1);
                 cvVec3f d3 = ab3.cross(z);
-                cvVec2f d(d3.m_x, d3.m_y);
+                cvVec2f d(d3.x, d3.m_y);
 
                 cvVec2f qa = queryPt - a.p;
                 if(qa.dot(d) < 0) d *= -1;
