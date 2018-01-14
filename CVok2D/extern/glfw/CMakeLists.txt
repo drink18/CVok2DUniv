@@ -48,7 +48,9 @@ if (UNIX AND NOT APPLE)
 endif()
 
 if (MSVC)
-    option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
+    #option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
+    set(CMAKE_CXX_FLAGS_DEBUG /MTd)
+    set(CMAKE_CXX_FLAGS_RELEASE /MT)
 endif()
 
 if (BUILD_SHARED_LIBS)
