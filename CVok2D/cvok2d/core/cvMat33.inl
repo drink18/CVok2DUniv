@@ -28,26 +28,26 @@ void cvMat33::setRotation(float angle)
 	float sinA = sin(angle);
 
 	m_cols[0].x = cosA;
-	m_cols[0].m_y = -sinA;
+	m_cols[0].y = -sinA;
 	m_cols[1].x = sinA;
-	m_cols[1].m_y = cosA;
+	m_cols[1].y = cosA;
 }
 
 void cvMat33::mul(cvVec2f& v) const
 {
-	const float x = m_cols[0].x * v.x + m_cols[0].m_y * v.y;
-	const float y = m_cols[1].x * v.x + m_cols[1].m_y * v.y;
+	const float x = m_cols[0].x * v.x + m_cols[0].y * v.y;
+	const float y = m_cols[1].x * v.x + m_cols[1].y * v.y;
 	v.x = x;
 	v.y = y;
 }
 
 void cvMat33::mul(cvVec3f& v) const
 {
-	const float x = m_cols[0].x * v.x + m_cols[0].m_y * v.m_y + m_cols[0].m_z * v.m_z;
-	const float y = m_cols[1].x * v.x + m_cols[1].m_y * v.m_y + m_cols[1].m_z * v.m_z;
-	const float z = m_cols[2].x * v.x + m_cols[2].m_y * v.m_y + m_cols[2].m_z * v.m_z;
+	const float x = m_cols[0].x * v.x + m_cols[0].y * v.y + m_cols[0].m_z * v.m_z;
+	const float y = m_cols[1].x * v.x + m_cols[1].y * v.y + m_cols[1].m_z * v.m_z;
+	const float z = m_cols[2].x * v.x + m_cols[2].y * v.y + m_cols[2].m_z * v.m_z;
 	v.x = x;
-	v.m_y = y;
+	v.y = y;
 	v.m_z = z;
 }
 
@@ -59,17 +59,17 @@ void cvMat33::setMul(const cvMat33& m)
 
 void cvMat33::mul(const cvMat33& m, cvMat33& om) const
 {
-	om.m_cols[0].x = m_cols[0].x * m.m_cols[0].x + m_cols[1].x * m.m_cols[0].m_y + m_cols[2].x * m.m_cols[0].m_z;
-	om.m_cols[1].x = m_cols[0].x * m.m_cols[1].x + m_cols[1].x * m.m_cols[1].m_y + m_cols[2].x * m.m_cols[1].m_z;
-	om.m_cols[2].x = m_cols[0].x * m.m_cols[2].x + m_cols[1].x * m.m_cols[2].m_y + m_cols[2].x * m.m_cols[2].m_z;
+	om.m_cols[0].x = m_cols[0].x * m.m_cols[0].x + m_cols[1].x * m.m_cols[0].y + m_cols[2].x * m.m_cols[0].m_z;
+	om.m_cols[1].x = m_cols[0].x * m.m_cols[1].x + m_cols[1].x * m.m_cols[1].y + m_cols[2].x * m.m_cols[1].m_z;
+	om.m_cols[2].x = m_cols[0].x * m.m_cols[2].x + m_cols[1].x * m.m_cols[2].y + m_cols[2].x * m.m_cols[2].m_z;
 
-	om.m_cols[0].m_y = m_cols[0].m_y * m.m_cols[0].x + m_cols[1].m_y * m.m_cols[0].m_y + m_cols[2].m_y * m.m_cols[0].m_z;
-	om.m_cols[1].m_y = m_cols[0].m_y * m.m_cols[1].x + m_cols[1].m_y * m.m_cols[1].m_y + m_cols[2].m_y * m.m_cols[1].m_z;
-	om.m_cols[2].m_y = m_cols[0].m_y * m.m_cols[2].x + m_cols[1].m_y * m.m_cols[2].m_y + m_cols[2].m_y * m.m_cols[2].m_z;
+	om.m_cols[0].y = m_cols[0].y * m.m_cols[0].x + m_cols[1].y * m.m_cols[0].y + m_cols[2].y * m.m_cols[0].m_z;
+	om.m_cols[1].y = m_cols[0].y * m.m_cols[1].x + m_cols[1].y * m.m_cols[1].y + m_cols[2].y * m.m_cols[1].m_z;
+	om.m_cols[2].y = m_cols[0].y * m.m_cols[2].x + m_cols[1].y * m.m_cols[2].y + m_cols[2].y * m.m_cols[2].m_z;
 
-	om.m_cols[0].m_z = m_cols[0].m_z * m.m_cols[0].x + m_cols[1].m_z * m.m_cols[0].m_y + m_cols[2].m_z * m.m_cols[0].m_z;
-	om.m_cols[1].m_z = m_cols[0].m_z * m.m_cols[1].x + m_cols[1].m_z * m.m_cols[1].m_y + m_cols[2].m_z * m.m_cols[1].m_z;
-	om.m_cols[2].m_z = m_cols[0].m_z * m.m_cols[2].x + m_cols[1].m_z * m.m_cols[2].m_y + m_cols[2].m_z * m.m_cols[2].m_z;
+	om.m_cols[0].m_z = m_cols[0].m_z * m.m_cols[0].x + m_cols[1].m_z * m.m_cols[0].y + m_cols[2].m_z * m.m_cols[0].m_z;
+	om.m_cols[1].m_z = m_cols[0].m_z * m.m_cols[1].x + m_cols[1].m_z * m.m_cols[1].y + m_cols[2].m_z * m.m_cols[1].m_z;
+	om.m_cols[2].m_z = m_cols[0].m_z * m.m_cols[2].x + m_cols[1].m_z * m.m_cols[2].y + m_cols[2].m_z * m.m_cols[2].m_z;
 }
 
 void cvMat33::transformVector(cvVec2f& v) const
@@ -118,12 +118,12 @@ cvMat33& cvMat33::operator*=(const cvMat33& m)
 
 float cvMat33::getDet() const
 {
-    float det = m_cols[0].x * m_cols[1].m_y * m_cols[2].m_z
-        + m_cols[0].m_y * m_cols[1].m_z * m_cols[2].x
-        + m_cols[0].m_z * m_cols[1].x * m_cols[2].m_y
-        - m_cols[0].m_z * m_cols[1].m_y * m_cols[2].x
-        - m_cols[0].m_y * m_cols[1].x * m_cols[2].m_z
-        - m_cols[0].x * m_cols[1].m_z * m_cols[2].m_y;
+    float det = m_cols[0].x * m_cols[1].y * m_cols[2].m_z
+        + m_cols[0].y * m_cols[1].m_z * m_cols[2].x
+        + m_cols[0].m_z * m_cols[1].x * m_cols[2].y
+        - m_cols[0].m_z * m_cols[1].y * m_cols[2].x
+        - m_cols[0].y * m_cols[1].x * m_cols[2].m_z
+        - m_cols[0].x * m_cols[1].m_z * m_cols[2].y;
     return det;
 }
 
@@ -135,22 +135,22 @@ void cvMat33::getInvert(cvMat33& om) const
         cvAssertMsg(false, "Matrix not invertable");
     else
     {
-        om.m_cols[0].x =  m_cols[1].m_y * m_cols[2].m_z - m_cols[1].m_z * m_cols[2].m_y;
+        om.m_cols[0].x =  m_cols[1].y * m_cols[2].m_z - m_cols[1].m_z * m_cols[2].y;
         om.m_cols[1].x = -m_cols[1].x * m_cols[2].m_z + m_cols[1].m_z * m_cols[2].x;
-        om.m_cols[2].x = m_cols[1].x * m_cols[2].m_y - m_cols[1].m_y * m_cols[2].x;
+        om.m_cols[2].x = m_cols[1].x * m_cols[2].y - m_cols[1].y * m_cols[2].x;
 
-        om.m_cols[0].m_y = -m_cols[0].m_y * m_cols[2].m_z + m_cols[0].m_z * m_cols[2].m_y;
-        om.m_cols[1].m_y = m_cols[0].x * m_cols[2].m_z - m_cols[0].m_z * m_cols[2].x;
-        om.m_cols[2].m_y = -m_cols[0].x * m_cols[2].m_y + m_cols[0].m_y * m_cols[2].x;
+        om.m_cols[0].y = -m_cols[0].y * m_cols[2].m_z + m_cols[0].m_z * m_cols[2].y;
+        om.m_cols[1].y = m_cols[0].x * m_cols[2].m_z - m_cols[0].m_z * m_cols[2].x;
+        om.m_cols[2].y = -m_cols[0].x * m_cols[2].y + m_cols[0].y * m_cols[2].x;
 
-        om.m_cols[0].m_z =  m_cols[0].m_y * m_cols[1].m_z - m_cols[0].m_z * m_cols[1].m_y;
+        om.m_cols[0].m_z =  m_cols[0].y * m_cols[1].m_z - m_cols[0].m_z * m_cols[1].y;
         om.m_cols[1].m_z = -m_cols[0].x * m_cols[1].m_z + m_cols[0].m_z * m_cols[1].x;
-        om.m_cols[2].m_z =  m_cols[0].x * m_cols[1].m_y - m_cols[0].m_y * m_cols[1].x;
+        om.m_cols[2].m_z =  m_cols[0].x * m_cols[1].y - m_cols[0].y * m_cols[1].x;
 
         for(int c = 0; c < 3; c++)
         {
             om.m_cols[c].x /= det;
-            om.m_cols[c].m_y /= det;
+            om.m_cols[c].y /= det;
             om.m_cols[c].m_z /= det;
         }
     }
