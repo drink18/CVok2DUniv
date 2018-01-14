@@ -8,7 +8,7 @@ TEST(cvVec3f, Init)
 
 	EXPECT_NEAR(v1.x, 1.1f, CV_FLOAT_EPS);
 	EXPECT_NEAR(v1.y, -0.2f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.m_z, 1.5, CV_FLOAT_EPS);
+	EXPECT_NEAR(v1.z, 1.5, CV_FLOAT_EPS);
 }
 
 TEST(cvVec3f, Add)
@@ -21,12 +21,12 @@ TEST(cvVec3f, Add)
 
 	EXPECT_NEAR(v1.x, 1.1f, CV_FLOAT_EPS);
 	EXPECT_NEAR(v1.y, 0.5f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.m_z, 23.f, CV_FLOAT_EPS);
+	EXPECT_NEAR(v1.z, 23.f, CV_FLOAT_EPS);
 
 	cvVec3f v4; v4.setAdd(v2, v3);
 	EXPECT_NEAR(v4.x, 0.1f, CV_FLOAT_EPS);
 	EXPECT_NEAR(v4.y, 0.7f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v4.m_z, 5, CV_FLOAT_EPS);
+	EXPECT_NEAR(v4.z, 5, CV_FLOAT_EPS);
 }
 
 TEST(cvVec3f, Proj)
@@ -42,7 +42,7 @@ TEST(cvVec3f, Proj)
         pv = v.project(x);
         EXPECT_NEAR(pv.x, -1.0f, CV_FLOAT_EPS);
         EXPECT_NEAR(pv.y, 0.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.m_z, 0.0f, CV_FLOAT_EPS);
+        EXPECT_NEAR(pv.z, 0.0f, CV_FLOAT_EPS);
     }
 
     {
@@ -50,7 +50,7 @@ TEST(cvVec3f, Proj)
         pv = v.project(y);
         EXPECT_NEAR(pv.x, 0.0f, CV_FLOAT_EPS);
         EXPECT_NEAR(pv.y, 1.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.m_z, 0.0f, CV_FLOAT_EPS);
+        EXPECT_NEAR(pv.z, 0.0f, CV_FLOAT_EPS);
     }
 }
 
@@ -62,5 +62,5 @@ TEST(cvVec3f, Cross)
     cvVec3f v = v1.cross(v2);
     EXPECT_NEAR(v.x, 0, CV_FLOAT_EPS);
     EXPECT_NEAR(v.y, 0, CV_FLOAT_EPS);
-    EXPECT_NEAR(v.m_z, 1, CV_FLOAT_EPS);
+    EXPECT_NEAR(v.z, 1, CV_FLOAT_EPS);
 }

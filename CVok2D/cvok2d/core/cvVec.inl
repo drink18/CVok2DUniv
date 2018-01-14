@@ -213,7 +213,7 @@ inline float cvVec3f::length() const
 
 inline float cvVec3f::sqrLength() const
 {
-    return x * x + y * y + m_z * m_z;
+    return x * x + y * y + z * z;
 }
 
 
@@ -221,7 +221,7 @@ inline void cvVec3f::add(const cvVec3f& v)
 {
     x += v.x;
     y += v.y;
-    m_z += v.m_z;
+    z += v.z;
 }
 
 inline void cvVec3f::setAdd(const cvVec3f& v1, const cvVec3f& v2)
@@ -240,7 +240,7 @@ inline void cvVec3f::sub(const cvVec3f& v)
 {
     x -= v.x;
     y -= v.y;
-    m_z -= v.m_z;
+    z -= v.z;
 }
 
 inline void cvVec3f::setSub(const cvVec3f& v1, const cvVec3f& v2)
@@ -254,7 +254,7 @@ inline void cvVec3f::addMul(const cvVec3f& v, float s)
 {
     x += v.x * s;
     y += v.y * s;
-    m_z += v.m_z * s;
+    z += v.z * s;
 }
 
 
@@ -262,13 +262,13 @@ inline void cvVec3f::setScale(float s)
 {
     x *= s;
     y *= s;
-    m_z *= s;
+    z *= s;
 }
 
 
 inline float cvVec3f::dot(const cvVec3f& v1) const
 {
-    return x * v1.x + y * v1.y + m_z * v1.m_z;
+    return x * v1.x + y * v1.y + z * v1.z;
 }
 
 
@@ -301,7 +301,7 @@ inline void cvVec3f::setProj(const cvVec3f& v)
 	float d = dot(v1);
 	x = v1.x * d;
 	y = v1.y * d;
-	m_z = v1.m_z * d;
+	z = v1.z * d;
 }
 
 inline cvVec3f cvVec3f::project(const cvVec3f& v) const
@@ -315,9 +315,9 @@ inline cvVec3f cvVec3f::project(const cvVec3f& v) const
 inline cvVec3f cvVec3f::cross(const cvVec3f& v) const
 {
     cvVec3f ret;
-    ret.x = y * v.m_z - m_z * v.y;
-    ret.y = m_z * v.x - x * v.m_z;
-    ret.m_z = x * v.y - y * v.x;
+    ret.x = y * v.z - z * v.y;
+    ret.y = z * v.x - x * v.z;
+    ret.z = x * v.y - y * v.x;
     return ret;
 }
 
@@ -335,7 +335,7 @@ inline cvVec3f cvVec3f::min3(const cvVec3f& v1, const cvVec3f& v2)
     cvVec3f t;
     t.x = std::fmin(v1.x, v2.x);
     t.y = std::fmin(v1.y, v2.y);
-    t.m_z = std::fmin(v1.m_z, v2.m_z);
+    t.z = std::fmin(v1.z, v2.z);
     return t;
 }
 
@@ -344,7 +344,7 @@ inline cvVec3f cvVec3f::max3(const cvVec3f& v1, const cvVec3f& v2)
     cvVec3f t;
     t.x = std::fmax(v1.x, v2.x);
     t.y = std::fmax(v1.y, v2.y);
-    t.m_z = std::fmax(v1.m_z, v2.m_z);
+    t.z = std::fmax(v1.z, v2.z);
     return t;
 }
 
@@ -358,7 +358,7 @@ inline bool cvVec3f::equal(const cvVec3f& v1, const cvVec3f& v2)
 // v1 < v2 ?
 inline bool cvVec3f::less(const cvVec3f& v1, const cvVec3f& v2)
 {
-    return !equal(v1, v2) && v1.x < v2.x && v1.y < v2.y && v1.m_z < v2.m_z;
+    return !equal(v1, v2) && v1.x < v2.x && v1.y < v2.y && v1.z < v2.z;
 }
 
 // v1 <= v2 ?
@@ -370,7 +370,7 @@ inline bool cvVec3f::lessOrEqual(const cvVec3f& v1, const cvVec3f& v2)
 // v2 > v1 ?
 inline bool cvVec3f::greater(const cvVec3f& v1, const cvVec3f& v2)
 {
-    return !equal(v1, v2) && v1.x > v2.x && v1.y > v2.y && v1.m_z > v2.m_z;
+    return !equal(v1, v2) && v1.x > v2.x && v1.y > v2.y && v1.z > v2.z;
 }
 
 // v2 >= v1 ?
