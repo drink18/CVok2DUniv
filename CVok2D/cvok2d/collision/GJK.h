@@ -10,6 +10,12 @@ namespace GJK
 
     struct GJKResult 
     {
+        enum Result {
+            GJK_GOOD,
+            GJK_OVERLAP
+        };
+
+        Result result;
         cvVec2f closetPt;
         cvVec2f normal;
         float distance;

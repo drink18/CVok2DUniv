@@ -32,7 +32,7 @@ public:
         vert[0] = m_aabb.m_Min;
         vert[1].set(m_aabb.m_Max.m_x, m_aabb.m_Min.m_y);
         vert[2].set(m_aabb.m_Max.m_x, m_aabb.m_Max.m_y);
-        vert[4].set(m_aabb.m_Min.m_x, m_aabb.m_Max.m_y);
+        vert[3].set(m_aabb.m_Min.m_x, m_aabb.m_Max.m_y);
 
         cvMat33 m;
         trans.toMat33(m);

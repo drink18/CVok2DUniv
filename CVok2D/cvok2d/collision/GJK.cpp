@@ -113,6 +113,7 @@ namespace GJK
                 if (simplex.hasVtx(support))
                 {
                     GJKResult res;
+                    res.result = GJKResult::GJK_GOOD;
                     res.closetPt = support.p;
                     res.distance = (support.p - queryPt).length();
                     return res;
@@ -139,9 +140,10 @@ namespace GJK
 
                 if(simplex.hasVtx(support)) // duplicate vertex
                 {
-                    // termimate
+                    // terminate
                     auto pt2Line = pointDistanceToLine(queryPt, a.p, b.p);
                     GJKResult res;
+                    res.result = GJKResult::GJK_GOOD;
                     res.closetPt = pt2Line.pt;
                     res.distance = (pt2Line.pt - queryPt).length();
                     return res;
@@ -176,6 +178,7 @@ namespace GJK
                 {
                     // terminate
                     GJKResult gjkRes;
+                    gjkRes.result = GJKResult::GJK_GOOD;
                     gjkRes.closetPt = res.pt; 
                     gjkRes.distance = (res.pt - queryPt).length();
                     return gjkRes;
@@ -183,6 +186,7 @@ namespace GJK
             }
         }
         GJKResult gjkRes;
+        gjkRes.result = GJKResult::GJK_GOOD;
         return gjkRes;
     }
 }
