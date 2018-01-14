@@ -67,3 +67,11 @@ TEST(TestGJK, Overlapping_OnInteriorEdge)
     auto res = pointToConvex(q, *cvBox);
     EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
 }
+
+TEST(TestGJK, Overlapping_VertexOverlap)
+{
+    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
+    cvVec2f q(5.0f, 5.0f);
+    auto res = pointToConvex(q, *cvBox);
+    EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+}

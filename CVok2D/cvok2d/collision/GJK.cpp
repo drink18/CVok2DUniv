@@ -120,6 +120,10 @@ namespace GJK
                 // build a search vector d
                 cvVec2f d = queryPt - simplex.verts[0].p;
 
+                // vertex overalpping
+                if (d.length() < CV_FLOAT_EPS)
+                    break;
+
                 //get support point
                 auto support = shape.getSupport(d);
 
