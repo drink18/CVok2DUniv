@@ -224,4 +224,19 @@ namespace GJK
         gjkRes.result = GJKResult::GJK_OVERLAP;
         return gjkRes;
     }
+
+    GJKResult cvPointToConvexShape(const cvPointQueryInput& input)
+    {
+        cvMat33 mat;
+        input.shapeXForm.toMat33(mat);
+        cvMat33 inv;
+        mat.getInvert(inv);
+
+        cvVec2f q0 = inv * input.q;
+        auto res = pointToConvex(q0, *input.shape);
+
+        if(res.result == GJKResult::GJK_GOOD)
+            res.closetPt = mat * res.closetPt;
+        return res;
+    }
 }

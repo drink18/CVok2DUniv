@@ -1,8 +1,10 @@
 #pragma once
 
 #include "TestBase.h"
+#include <simulation/cvBody.h>
+#include <memory>
 
-
+class cvConvexShape;
 class WorldIntegration : public TestBase
 {
 public:
@@ -13,5 +15,6 @@ public:
 
 private:
     cvWorld* m_world = nullptr;
-
+    std::shared_ptr<cvConvexShape> m_shape;
+    cvBodyId m_Id;
 };

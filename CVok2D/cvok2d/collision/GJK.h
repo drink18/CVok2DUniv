@@ -2,13 +2,14 @@
 
 #include <core/cvMath.h>
 #include "cvDistance.h"
+#include <memory>
 
 class cvShape;
 class cvConvexShape;
+
 namespace GJK
 {
-
-    struct GJKResult 
+    struct GJKResult
     {
         enum Result {
             GJK_GOOD,
@@ -29,7 +30,16 @@ namespace GJK
         cvMat33 poseB;
     };
 
+    struct cvPointQueryInput
+    {
+        cvVec2f q;
+        std::shared_ptr<cvConvexShape> shape;
+        cvTransform shapeXForm;
+    };
+
     GJKResult doGJK(const GJKContext& ctx, cvVec2f& pointA, cvVec2f& pointB, cvVec2f& normal, float distance);
 
     GJKResult pointToConvex(const cvVec2f& queryPt, const cvConvexShape& shape);
+
+    GJKResult cvPointToConvexShape(const cvPointQueryInput& input);
 }

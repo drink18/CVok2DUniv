@@ -42,5 +42,4 @@ namespace cvDist
     cvPt2TriangleClosestPt pointDistanceToTriangle(const cvVec2f& q, 
             const cvVec2f& a, const cvVec2f& b, const cvVec2f& c);
 
-     
 }
