@@ -12,6 +12,7 @@
 #include "testcases/TestBase.h"
 #include "testcases/BasicTest.h"
 #include "testcases/TestDistance.h"
+#include "testcases/WorldIntegration.h"
 
 Camera g_camera;
 TestBase* g_currentTest = nullptr;
@@ -72,7 +73,8 @@ int main(int, char**)
 		return 1;
 	}
 
-    g_currentTest = new ClosestPointTest();
+    //g_currentTest = new ClosestPointTest();
+    g_currentTest = new WorldIntegration();
 
 
 	bool show_test_window = true;

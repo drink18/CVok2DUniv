@@ -48,7 +48,7 @@ void cvWorld::integrate(float dt)
         const cvMotion& motion = m_motionManager.getMotion(body.getMotionId());
         cvTransform& xform = body.accessTransform();
 
-        xform.m_Rotation = motion.m_angularVel * dt;
+        xform.m_Rotation += motion.m_angularVel * dt;
         xform.m_Translation += motion.m_linearVel * dt;
     }
 }

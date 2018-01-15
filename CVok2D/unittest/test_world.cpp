@@ -70,4 +70,10 @@ TEST(world, integrate)
     EXPECT_NEAR(0.01f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_NEAR(0.01f, xform.m_Translation.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.02f, xform.m_Translation.y, CV_FLOAT_EPS);
+
+    world->integrate(0.01f);
+    xform = world->getBody(id).getTransform();
+    EXPECT_NEAR(0.02f, xform.m_Rotation, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.02f, xform.m_Translation.x, CV_FLOAT_EPS);
+    EXPECT_NEAR(0.04f, xform.m_Translation.y, CV_FLOAT_EPS);
 }
