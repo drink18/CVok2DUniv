@@ -51,6 +51,24 @@ TEST(cvMat33, RotateVecotr)
 	EXPECT_NEAR(tv.y, -1.0f, CV_FLOAT_EPS);
 }
 
+TEST(cvMat33, RotateVecotr_45Deg)
+{
+	cvMat33 m;
+	m.setIdentity();
+	m.setRotationDeg(45);
+
+	cvVec2f v(1, 0);
+	cvVec2f tv;
+	m.transformVector(v, tv);
+	EXPECT_NEAR(tv.x, 0.7071067811f, CV_FLOAT_EPS);
+	EXPECT_NEAR(tv.y, 0.7071067811f, CV_FLOAT_EPS);
+
+	m.setRotationDeg(-45);
+	m.transformVector(v, tv);
+	EXPECT_NEAR(tv.x, 0.7071067811f, CV_FLOAT_EPS);
+	EXPECT_NEAR(tv.y, -0.7071067811f, CV_FLOAT_EPS);
+}
+
 TEST(cvMat33, TransformPoint)
 {
 	cvMat33 m;
