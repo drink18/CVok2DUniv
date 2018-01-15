@@ -4,6 +4,7 @@
 #include "cvBody.h"
 #include <dyanmic/cvMotion.h>
 #include <simulation/cvBodyManager.h>
+#include <simulation/cvMotionManager.h>
 
 struct cvWorldCInfo
 {
@@ -26,12 +27,25 @@ public:
 
     const cvBodyManager& getBodyManager()const {return m_bodyManager;}
 
+    cvBody& accessBody(cvBodyId id) {return m_bodyManager.accessBody(id);}
+    const cvBody& getBody(cvBodyId id) const {return m_bodyManager.getBody(id);}
+
+    void setBodyVelocity(cvBodyId bodyId, const cvVec2f& linVel, float angVel);
+    void setBodyLinearVelocity(cvBodyId bodyId, const cvVec2f& linVel);
+    void setBodyAngularVelocity(cvBodyId bodyId, float angVel);
+
+    cvVec2f getBodyLinearVelocity(cvBodyId bodyId) const;
+    float getBodyAngluarVelocity(cvBodyId bodyId) const;
+
+    cvMotion& accessBodyMotion(cvBodyId bodyId);
+    const cvMotion& getBodyMotion(cvBodyId bodyId) const;
+
     // Simulation related
-protected:
+public:
     void integrate(float dt);
 private:
 	cvBroadphase* m_broadPhase;
 
     cvBodyManager m_bodyManager;
-    MotionBuffer m_motionBuffer;
+    cvMotionManager m_motionManager;
 };

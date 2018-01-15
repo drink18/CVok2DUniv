@@ -9,6 +9,8 @@
 
 typedef cvHandle<std::uint16_t, 0x7FFF> cvBodyId;
 
+class cvWorld;
+
 struct cvBodyCInfo
 {
 	std::shared_ptr<cvShape> m_shape;
@@ -18,11 +20,15 @@ struct cvBodyCInfo
 
 class cvBody
 {
+    friend class cvWorld;
+
 public:
     cvBody();
 	cvBody(cvBodyCInfo& cinfo);
 
 	const cvTransform& getTransform() const { return m_transform; }
+    cvTransform& accessTransform() {return m_transform;}
+
 	bool isStatic() const;
 	bool isDynamic() const;
 
@@ -32,6 +38,8 @@ public:
     void setBroadphaseHandle(cvBroadphaseHandle handle) {m_broadphaseId = handle;}
     cvBroadphaseHandle getBroadphaseHandle() const {return m_broadphaseId;}
 
+    cvMotionId getMotionId() const {return m_motionId;}
+
 
 private:
 	cvTransform m_transform;
@@ -39,5 +47,6 @@ private:
 	cvVec2f m_mass;
 
     cvBroadphaseHandle m_broadphaseId = cvBroadphaseHandle::invalid();
-    cvMotionId m_motionId = cvMotionId::invalid(); 
+
+    cvMotionId m_motionId = cvMotionId::invalid();
 };

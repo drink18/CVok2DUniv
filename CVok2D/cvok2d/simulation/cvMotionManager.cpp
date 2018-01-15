@@ -14,11 +14,13 @@ cvMotionManager::~cvMotionManager()
 
 cvMotion& cvMotionManager::accessMotion(cvMotionId id)
 {
+    cvAssertMsg(id.isValid(), "invalid motionId");
     return m_motionBuffer.accessAt(id);
 }
 
 const cvMotion& cvMotionManager::getMotion(cvMotionId id) const
 {
+    cvAssertMsg(id.isValid(), "invalid motionId");
     return m_motionBuffer.getAt(id);
 }
 
