@@ -22,7 +22,7 @@ WorldIntegration::WorldIntegration()
     bodyInfo.m_shape = m_shape;
 
     m_Id = m_world->createBody(bodyInfo, true);
-    //m_world->setBodyAngularVelocity(m_Id, 1.0f);
+    m_world->setBodyAngularVelocity(m_Id, 1.0f);
 }
 
 void WorldIntegration::tick(cvDebugDraw& debugDraw)
