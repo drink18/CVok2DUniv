@@ -3,6 +3,24 @@
 #include <simulation/cvWorld.h>
 #include <shape/cvPolygonShape.h>
 
+class WorldTest : public ::testing::Test
+{
+protected:
+    cvWorld* m_world = nullptr;
+
+    virtual void SetUp()
+    {
+        cvWorldCInfo cInfo;
+        m_world = new cvWorld(cInfo);
+    }
+
+    virtual void TearDown()
+    {
+        delete m_world;
+    }
+
+};
+
 TEST(world, worldCreationDestruction)
 {
     cvWorldCInfo cInfo;
@@ -11,36 +29,29 @@ TEST(world, worldCreationDestruction)
     delete world;
 }
 
-TEST(world, add_remove_body)
+TEST_F(WorldTest, add_remove_body)
 {
-    cvWorldCInfo cInfo;
-    cvWorld* world = new cvWorld(cInfo);
 
     cvBodyCInfo bodyCInfo;
     bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
-    cvBodyId bodyId = world->createBody(bodyCInfo, true);
-    world->removeBody(bodyId);
-
-    delete world;
+    cvBodyId bodyId = m_world->createBody(bodyCInfo, true);
+    m_world->removeBody(bodyId);
 }
 
-TEST(world, iterate_bodies)
+TEST_F(WorldTest, iterate_bodies)
 {
-    cvWorldCInfo cInfo;
-    cvWorld* world = new cvWorld(cInfo);
-
 
     cvBodyCInfo bodyCInfo;
     bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
     for(int i = 0; i < 100; ++i)
     {
-        world->createBody(bodyCInfo, true);
+        m_world->createBody(bodyCInfo, true);
     }
 
 
-    auto& bodyManager = world->getBodyManager();
+    auto& bodyManager = m_world->getBodyManager();
     auto bodyIter = bodyManager.getBodyIter();
     while(bodyIter.isValid())
     {
@@ -51,28 +62,24 @@ TEST(world, iterate_bodies)
     }
 }
 
-TEST(world, integrate)
+TEST_F(WorldTest, integrate)
 {
-    cvWorldCInfo cInfo;
-    cvWorld* world = new cvWorld(cInfo);
-
-
     cvBodyCInfo bodyCInfo;
     bodyCInfo.m_shape = std::shared_ptr<cvShape>(
             cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
-    cvBodyId id = world->createBody(bodyCInfo, true);
-    world->setBodyAngularVelocity(id, 1.0f);
-    world->setBodyLinearVelocity(id, cvVec2f(1.0f, 2.0f));
-    world->integrate(0.01f);
-    cvTransform xform = world->getBody(id).getTransform();
+    cvBodyId id = m_world->createBody(bodyCInfo, true);
+    m_world->setBodyAngularVelocity(id, 1.0f);
+    m_world->setBodyLinearVelocity(id, cvVec2f(1.0f, 2.0f));
+    m_world->integrate(0.01f);
+    cvTransform xform = m_world->getBody(id).getTransform();
 
     EXPECT_NEAR(0.01f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_NEAR(0.01f, xform.m_Translation.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.02f, xform.m_Translation.y, CV_FLOAT_EPS);
 
-    world->integrate(0.01f);
-    xform = world->getBody(id).getTransform();
+    m_world->integrate(0.01f);
+    xform = m_world->getBody(id).getTransform();
     EXPECT_NEAR(0.02f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_NEAR(0.02f, xform.m_Translation.x, CV_FLOAT_EPS);
     EXPECT_NEAR(0.04f, xform.m_Translation.y, CV_FLOAT_EPS);
