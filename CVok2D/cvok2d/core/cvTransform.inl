@@ -9,6 +9,6 @@ void cvTransform::setIdentity()
 void cvTransform::toMat33(cvMat33& outMat) const
 {
 	outMat.setIdentity();
-	outMat.setRotationDeg(m_Rotation);
+	outMat.setRotation(m_Rotation);
 	outMat.setTranslation(m_Translation);
 }

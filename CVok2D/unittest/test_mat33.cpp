@@ -139,7 +139,7 @@ TEST(cvMat33, SetMul)
 TEST(cvTransform, toMat33)
 {
 	cvMat33 m;
-	cvTransform xform(cvVec2f(1.0f, 0.0f), 90);
+	cvTransform xform(cvVec2f(1.0f, 0.0f), DEG2RAD(90));
 	xform.toMat33(m);
 
 	cvVec2f v(1.0f, 0.0f);

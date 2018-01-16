@@ -16,8 +16,8 @@ WorldIntegration::WorldIntegration()
     m_shape = shared_ptr<cvPolygonShape> (
             cvPolygonShape::createBox(cvVec2f(2.0f, 2.0f), 0.05f));
     cvBodyCInfo bodyInfo;
-    bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, 5.0f);
-    bodyInfo.m_initTransform.m_Rotation = 0.5f;
+    bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, 0.0f);
+    bodyInfo.m_initTransform.m_Rotation = DEG2RAD(45);
     bodyInfo.m_mass = 1.0f;
     bodyInfo.m_shape = m_shape;
 
