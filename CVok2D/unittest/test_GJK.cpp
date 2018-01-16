@@ -8,9 +8,18 @@
 #include <memory>
 
 using namespace GJK;
-TEST(TestGJK, BasicCase)
+class TestGJKTest : public ::testing::Test
 {
-    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
+public:
+    virtual void SetUp()
+    {
+        cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
+    }
+    unique_ptr<cvPolygonShape> cvBox;
+};
+
+TEST_F(TestGJKTest, BasicCase)
+{
     {
         cvVec2f q(0, 0);
         auto res = pointToConvex(q, *cvBox);
@@ -52,25 +61,22 @@ TEST(TestGJK, BasicCase)
     }
 }
 
-TEST(TestGJK, Overlapping)
+TEST_F(TestGJKTest, Overlapping)
 {
-    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
     cvVec2f q(7, 9);
     auto res = pointToConvex(q, *cvBox);
     EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
 }
 
-TEST(TestGJK, Overlapping_OnInteriorEdge)
+TEST_F(TestGJKTest, Overlapping_OnInteriorEdge)
 {
-    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
     cvVec2f q(9, 9);
     auto res = pointToConvex(q, *cvBox);
     EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
 }
 
-TEST(TestGJK, Overlapping_VertexOverlap)
+TEST_F(TestGJKTest, Overlapping_VertexOverlap)
 {
-    auto cvBox = unique_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(5.0f, 5.0f), cvVec2f(15.0f, 15.0f), .05f));
     cvVec2f q(5.0f, 5.0f);
     auto res = pointToConvex(q, *cvBox);
     EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
