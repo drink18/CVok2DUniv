@@ -77,7 +77,27 @@ TEST_F(TestGJKTest, Overlapping_OnInteriorEdge)
 
 TEST_F(TestGJKTest, Overlapping_VertexOverlap)
 {
-    cvVec2f q(5.0f, 5.0f);
-    auto res = pointToConvex(q, *cvBox);
-    EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+    {
+        cvVec2f q(5.0f, 5.0f);
+        auto res = pointToConvex(q, *cvBox);
+        EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+    }
+
+    {
+        cvVec2f q(15.0f, 5.0f);
+        auto res = pointToConvex(q, *cvBox);
+        EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+    }
+
+    {
+        cvVec2f q(15.0f, 15.0f);
+        auto res = pointToConvex(q, *cvBox);
+        EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+    }
+
+    {
+        cvVec2f q(5.0f, 15.0f);
+        auto res = pointToConvex(q, *cvBox);
+        EXPECT_EQ(GJKResult::GJK_OVERLAP, res.result);
+    }
 }
