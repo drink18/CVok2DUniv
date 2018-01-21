@@ -61,37 +61,6 @@ namespace GJK
         //return p1 - p2;
     //}
 
-    GJKResult doGJK(const GJKContext& ctx, cvVec2f& pointA, cvVec2f& pointB, cvVec2f& normal, float distance)
-    {
-        GJKResult res;
-        /*
-        cvMat33 invA;
-        ctx.poseA.getInvert(invA);
-        cvMat33 invB;
-        ctx.poseB.getInvert(invB);
-
-        cvMat33 a2b = ctx.poseA * invB;
-
-        cvVec2f dir(0, 1);
-        cvVec2f dirB = dir;
-        a2b.transformVector(dirB);
-
-        Simplex simplex;
-
-        cvVec2f a = getPointOnMinkovskiSubEdge(ctx.shapeA, ctx.shapeB, a2b, dir);
-        simplex.addPoint(a);
-
-        cvVec2f b = getPointOnMinkovskiSubEdge(ctx.shapeA, ctx.shapeB, a2b, - dir);
-        simplex.addPoint(b);
-
-        cvVec2f ab = b - a;
-
-        */
-
-
-        return res;
-    }
-
     cvVec2f _getDFromEdge(const cvVec2f& q, const cvVec2f& a, const cvVec2f& b)
     {
         cvVec2f ab = a - b;
@@ -249,6 +218,35 @@ namespace GJK
 
         if(res.result == GJKResult::GJK_GOOD)
             res.closetPt = mat * res.closetPt;
+        return res;
+    }
+
+    cvConvex2ConvexGJKResult cvGJKConvexToConvex(const cvShapeQueryInput& input)
+    {
+        cvMat33 invA; input.poseA.getInvert(invA);
+        cvMat33 invB; input.poseB.getInvert(invB);
+        cvMat33 b2a = input.poseB * invA;
+
+        auto getSupportFn = [&](const cvVec2f& d)
+        {
+            cvVec2f dA; invA.transformVector(d, dA);
+            cvVec2f dB; invB.transformVector(d, dB);
+            auto pA = input.shapeA.getSupport(dA);
+            auto pB = input.shapeB.getSupport(-dB); 
+
+            cvVec2f pBA = b2a * pB.p; // B in A's coord sys
+            pB.p = pBA;
+
+
+            int vtxIdx = pA.index << 16 & pB.index;
+            SimplexVertex v(pA.p + pB.p, vtxIdx, 0.0f);
+            return v;
+        };
+
+        auto ptRes = _pointToConvex(cvVec2f(0,0), getSupportFn);
+        cvConvex2ConvexGJKResult res;
+        res.m_distance = ptRes.distance;
+
         return res;
     }
 }

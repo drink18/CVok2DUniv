@@ -9,6 +9,10 @@ struct SimplexVertex
     int index;
     float u;
 
+    //extended info for shape vs shape
+    cvVec2f sA; //support point on A
+    cvVec2f sB; //support point on B
+
     SimplexVertex(const cvVec2f& v, int i, float _u)
         :p(v), index(i), u(_u) { }
 };

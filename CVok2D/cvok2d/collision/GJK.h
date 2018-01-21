@@ -23,8 +23,13 @@ namespace GJK
         float distance;
     };
 
-    struct GJKContext
+    struct  cvShapeQueryInput
     {
+        cvShapeQueryInput(const cvConvexShape& _shapeA, const cvConvexShape& _shapeB,
+                const cvMat33& _poseA, const cvMat33& _poseB)
+            :shapeA(_shapeA), shapeB(_shapeB), poseA(_poseA), poseB(_poseB)
+        {
+        }
         const cvConvexShape& shapeA;
         const cvConvexShape& shapeB;
         cvMat33 poseA;
@@ -38,9 +43,16 @@ namespace GJK
         cvTransform shapeXForm;
     };
 
-    GJKResult doGJK(const GJKContext& ctx, cvVec2f& pointA, cvVec2f& pointB, cvVec2f& normal, float distance);
+    struct cvConvex2ConvexGJKResult
+    {
+        cvVec2f m_pA;
+        cvVec2f m_pB;
+        float m_distance;
+    };
 
     GJKResult pointToConvex(const cvVec2f& queryPt, const cvConvexShape& shape);
 
     GJKResult cvPointToConvexShape(const cvPointQueryInput& input);
+
+    cvConvex2ConvexGJKResult cvGJKConvexToConvex(const cvShapeQueryInput& input);
 }

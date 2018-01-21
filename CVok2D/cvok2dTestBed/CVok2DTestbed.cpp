@@ -73,8 +73,8 @@ int main(int, char**)
 		return 1;
 	}
 
-    //g_currentTest = new ClosestPointTest();
-    g_currentTest = new WorldIntegration();
+    g_currentTest = new ClosestPointTest();
+    //g_currentTest = new WorldIntegration();
 
 
 	bool show_test_window = true;
