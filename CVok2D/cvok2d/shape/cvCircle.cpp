@@ -7,10 +7,10 @@ void cvCircle::updateAabb()
     m_aabb.m_Max = getCenter() + radiusV;
 }
 
-SimplexVertex cvCircle::getSupport(const cvVec2f& direction) const
+SuportInfo cvCircle::getSupport(const cvVec2f& direction) const
 {
     cvVec2f support = getCenter();
     support.addMul(direction, getRadius());
-    SimplexVertex v(support, 0, 0);
+    SuportInfo v(support, 0);
     return v;
 }

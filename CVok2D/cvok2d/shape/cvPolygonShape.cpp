@@ -1,7 +1,7 @@
 #include "cvPolygonShape.h"
 
 
-SimplexVertex cvPolygonShape::getSupport(const cvVec2f& direction) const
+SuportInfo cvPolygonShape::getSupport(const cvVec2f& direction) const
 {
     float bestDot = direction.dot(m_vertices[0]);
     cvVec2f bestVert = m_vertices[0];
@@ -19,7 +19,7 @@ SimplexVertex cvPolygonShape::getSupport(const cvVec2f& direction) const
         }
     }
 
-    SimplexVertex sv(bestVert, bestIdx, 0);
+    SuportInfo sv(bestVert, bestIdx);
 
     return sv;
 }

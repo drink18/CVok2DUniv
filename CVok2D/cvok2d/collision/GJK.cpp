@@ -9,6 +9,22 @@ namespace GJK
     using namespace std;
     using namespace cvDist;
 
+    struct SimplexVertex
+    {
+        cvVec2f p;
+        // for point to shape, sA is always query point
+        cvVec2f sA;
+        cvVec2f sB;
+
+        // support vertex index
+        int indexA;  //always 0 if point to shape query
+        int indexB; 
+
+        bool operator==(const SimplexVertex& other) const 
+        {
+            return indexA == other.indexA && indexB == other.indexB;
+        }
+    };
 
     struct Simplex
     {
@@ -42,24 +58,14 @@ namespace GJK
         {
             for(auto& v : verts)
             {
-                if(v.index == vtx.index)
+                if(v.indexA == vtx.indexA && v.indexB == vtx.indexB)
                     return true;
             }
             return false;
         }
 
-        int count() const {return verts.size();}
+        size_t count() const {return verts.size();}
     };
-
-    //cvVec2f getPointOnMinkovskiSubEdge(const cvConvexShape& shapeA, const cvConvexShape& shapeB, 
-            //const cvMat33& a2b, const cvVec2f& d)
-    //{
-        //cvVec2f p1 = shapeA.getSupport(d);
-        //cvVec2f dInB = d;
-        //a2b.transformVector(dInB);
-        //cvVec2f p2 = shapeB.getSupport(-dInB);
-        //return p1 - p2;
-    //}
 
     cvVec2f _getDFromEdge(const cvVec2f& q, const cvVec2f& a, const cvVec2f& b)
     {
@@ -74,10 +80,10 @@ namespace GJK
         return d;
     }
 
-    template<typename GET_SUPPORT_FUNC>
-    GJKResult _pointToConvex(const cvVec2f& queryPt, const GET_SUPPORT_FUNC& getSupportFunc)
+    template<typename GET_SIMPLEX_FUNC>
+    GJKResult _pointToConvex(const cvVec2f& queryPt, const GET_SIMPLEX_FUNC& getSimplexFromSupport)
     {
-        auto initSupport = getSupportFunc(cvVec2f(-1.0f, 0));
+        auto initSupport = getSimplexFromSupport(cvVec2f(-1.0f, 0));
         Simplex simplex;
 
         simplex.addVertex(initSupport);
@@ -94,19 +100,19 @@ namespace GJK
                     break;
 
                 //get support point
-                auto support = getSupportFunc(d);
+                auto simP = getSimplexFromSupport(d);
 
-                if (simplex.hasVtx(support))
+                if (simplex.hasVtx(simP))
                 {
                     GJKResult res;
                     res.result = GJKResult::GJK_GOOD;
-                    res.closetPt = support.p;
-                    res.distance = (support.p - queryPt).length();
+                    res.closetPt = simP.p;
+                    res.distance = (simP.p - queryPt).length();
                     return res;
                 }
 
                 // just add current support
-                simplex.addVertex(support);
+                simplex.addVertex(simP);
             }
             else if(simplex.count() == 2)
             {
@@ -120,9 +126,9 @@ namespace GJK
 
                 cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
                 //get support
-                auto support = getSupportFunc(d);
+                auto simP = getSimplexFromSupport(d);
 
-                if(simplex.hasVtx(support)) // duplicate vertex
+                if(simplex.hasVtx(simP)) // duplicate vertex
                 {
                     // terminate
                     auto pt2Line = pointDistanceToLine(queryPt, a.p, b.p);
@@ -133,7 +139,7 @@ namespace GJK
                     return res;
                 }
 
-                simplex.addVertex(support);
+                simplex.addVertex(simP);
             }
             else if(simplex.count() == 3)
             {
@@ -148,9 +154,9 @@ namespace GJK
                     if(res.feature == cvPt2TriangleClosestPt::Edge_AB)
                     {
                         cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
-                        auto support = getSupportFunc(d);
+                        auto simP = getSimplexFromSupport(d);
                         // detecting vertex that we are about to remove, terminate, edge overlap
-                        if(support.index == c.index) 
+                        if(simP == c) 
                         { 
                             break;
                         }
@@ -159,9 +165,9 @@ namespace GJK
                     else if(res.feature == cvPt2TriangleClosestPt::Edge_BC)
                     {
                         cvVec2f d = _getDFromEdge(queryPt, b.p, c.p);
-                        auto support = getSupportFunc(d);
+                        auto simP = getSimplexFromSupport(d);
                         // detecting vertex that we are about to remove, terminate, edge overlap
-                        if(support.index == a.index) 
+                        if(simP == a)
                         { 
                             break;
                         }
@@ -170,9 +176,9 @@ namespace GJK
                     else if(res.feature == cvPt2TriangleClosestPt::Edge_CA)
                     {
                         cvVec2f d = _getDFromEdge(queryPt, c.p, a.p);
-                        auto support = getSupportFunc(d);
+                        auto simP = getSimplexFromSupport(d);
                         // detecting vertex that we are about to remove, terminate, edge overlap
-                        if(support.index == b.index) 
+                        if(simP == b)
                         { 
                             break;
                         }
@@ -202,7 +208,17 @@ namespace GJK
 
     GJKResult pointToConvex(const cvVec2f& queryPt, const cvConvexShape& shape)
     {
-        auto lambda = [&](const cvVec2f& d){return shape.getSupport(d);};
+        auto lambda = [&](const cvVec2f& d)
+        {
+            auto s = shape.getSupport(d); 
+            SimplexVertex sv;
+            sv.indexA = 0;
+            sv.indexB = s.index;
+            sv.p = s.p;
+            sv.sA = queryPt;
+            sv.sB = s.p;
+            return sv;
+        };
         return _pointToConvex(queryPt, lambda);
     }
 
@@ -234,12 +250,17 @@ namespace GJK
             auto pA = input.shapeA.getSupport(dA);
             auto pB = input.shapeB.getSupport(-dB); 
 
-            cvVec2f pBA = b2a * pB.p; // B in A's coord sys
-            pB.p = pBA;
+            pA.p = input.poseA * pA.p;
+            pB.p = input.poseB * pB.p;
 
 
-            int vtxIdx = pA.index << 16 & pB.index;
-            SimplexVertex v(pA.p + pB.p, vtxIdx, 0.0f);
+            SimplexVertex v; 
+            v.p = pA.p + pB.p;
+            v.indexA = pA.index;
+            v.indexB = pB.index;
+            v.sA = pA.p;
+            v.sB = pB.p;
+
             return v;
         };
 
