@@ -162,7 +162,7 @@ namespace GJK
                         auto support = getSupportFunc(d);
                         // detecting vertex that we are about to remove, terminate, edge overlap
                         if(support.index == a.index) 
-                        { 
+                        {
                             break;
                         }
                         simplex.removeVtx(0);
@@ -173,7 +173,7 @@ namespace GJK
                         auto support = getSupportFunc(d);
                         // detecting vertex that we are about to remove, terminate, edge overlap
                         if(support.index == b.index) 
-                        { 
+                        {
                             break;
                         }
                         simplex.removeVtx(1);
@@ -186,6 +186,21 @@ namespace GJK
                     gjkRes.result = GJKResult::GJK_GOOD;
                     gjkRes.closetPt = res.pt; 
                     gjkRes.distance = (res.pt - queryPt).length();
+                    if(res.feature == cvPt2TriangleClosestPt::Vtx_A)
+                    {
+                        simplex.removeVtx(1);
+                        simplex.removeVtx(2);
+                    }
+                    else if(res.feature == cvPt2TriangleClosestPt::Vtx_B)
+                    {
+                        simplex.removeVtx(0);
+                        simplex.removeVtx(1);
+                    }
+                    else if(res.feature == cvPt2TriangleClosestPt::Vtx_C)
+                    {
+                        simplex.removeVtx(0);
+                        simplex.removeVtx(0);
+                    }
                     return gjkRes;
                 }
                 else if (res.featureType == cvDist::cvPt2TriangleClosestPt::Interior)
@@ -246,6 +261,10 @@ namespace GJK
         auto ptRes = _pointToConvex(cvVec2f(0,0), getSupportFn);
         cvConvex2ConvexGJKResult res;
         res.m_distance = ptRes.distance;
+        if(ptRes.result == GJKResult::GJK_GOOD)
+        {
+        
+        }
 
         return res;
     }

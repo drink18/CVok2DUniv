@@ -87,5 +87,6 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
 
         cvShapeQueryInput input(*b1, *b2, m1, m2);
         auto res = cvGJKConvexToConvex(input);
+        gdbDraw.AddLine(res.m_pA, res.m_pB, cvColorf::Green);
     }
 }
