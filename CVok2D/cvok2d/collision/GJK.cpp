@@ -268,7 +268,6 @@ namespace GJK
             pA.p = input.poseA * pA.p;
             pB.p = input.poseB * pB.p;
 
-
             SimplexVertex v; 
             v.p = pA.p - pB.p;
             v.indexA = pA.index;
