@@ -76,8 +76,8 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
         t1.m_Translation.set(0, 0);
 
         cvTransform t2;
-        t2.m_Translation.set(17, 17);
-        t2.m_Rotation = DEG2RAD(45);
+        t2.m_Translation.set(17, 0);//17, 17);
+        t2.m_Rotation = DEG2RAD(0);
 
         gdbDraw.DrawShape(*b1, t1, cvColorf::Red);
         gdbDraw.DrawShape(*b2, t2, cvColorf::Blue);

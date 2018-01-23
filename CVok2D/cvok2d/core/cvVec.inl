@@ -168,7 +168,7 @@ cvVec2f cvVec2f::operator-(const cvVec2f& v2) const
 
 cvVec2f cvVec2f::operator-() const
 {
-    cvVec2f ret;
+    cvVec2f ret = *this;
     ret *= -1;
     return ret;
 }
@@ -195,6 +195,13 @@ cvVec2f& cvVec2f::operator/=(float s)
 {
     cvAssert(std::abs(s) > CV_FLOAT_EPS);
     setScale(1 / s);
+    return *this;
+}
+
+inline cvVec2f& cvVec2f::operator=(const cvVec2f& v)
+{
+    x = v.x;
+    y = v.y;
     return *this;
 }
 

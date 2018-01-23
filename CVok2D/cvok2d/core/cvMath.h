@@ -106,6 +106,8 @@ public:
     // v1 -= v2
     inline cvVec2f& operator-=(const cvVec2f& v2);
 
+    inline cvVec2f& operator=(const cvVec2f& v);
+
     //bool operator==(const cvVec2f& v) const;
 
 };

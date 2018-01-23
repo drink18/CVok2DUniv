@@ -210,3 +210,13 @@ TEST(cvVec2f, OpSelfDiv)
 	EXPECT_NEAR(v1.x, 0.5f, CV_FLOAT_EPS);
 	EXPECT_NEAR(v1.y, 0.0f, CV_FLOAT_EPS);
 }
+
+TEST(cvVec2f, Negate)
+{
+    cvVec2f v(1.0f, 2.0f);
+    cvVec2f v1 = -v;
+
+	EXPECT_NEAR(v1.x, -1.0f , CV_FLOAT_EPS);
+	EXPECT_NEAR(v1.y, -2.0f, CV_FLOAT_EPS);
+
+}

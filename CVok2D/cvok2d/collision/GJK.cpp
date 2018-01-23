@@ -81,10 +81,9 @@ namespace GJK
     }
 
     template<typename GET_SIMPLEX_FUNC>
-    GJKResult _pointToConvex(const cvVec2f& queryPt, const GET_SIMPLEX_FUNC& getSimplexFromSupport)
+    GJKResult _pointToConvex(const cvVec2f& queryPt, const GET_SIMPLEX_FUNC& getSimplexFromSupport, Simplex& simplex)
     {
         auto initSupport = getSimplexFromSupport(cvVec2f(-1.0f, 0));
-        Simplex simplex;
 
         simplex.addVertex(initSupport);
 
@@ -234,7 +233,8 @@ namespace GJK
             sv.sB = s.p;
             return sv;
         };
-        return _pointToConvex(queryPt, lambda);
+        Simplex simplex;
+        return _pointToConvex(queryPt, lambda, simplex);
     }
 
     GJKResult cvPointToConvexShape(const cvPointQueryInput& input)
@@ -270,7 +270,7 @@ namespace GJK
 
 
             SimplexVertex v; 
-            v.p = pA.p + pB.p;
+            v.p = pA.p - pB.p;
             v.indexA = pA.index;
             v.indexB = pB.index;
             v.sA = pA.p;
@@ -279,12 +279,40 @@ namespace GJK
             return v;
         };
 
-        auto ptRes = _pointToConvex(cvVec2f(0,0), getSupportFn);
+        Simplex simplex;
+        auto ptRes = _pointToConvex(cvVec2f(0,0), getSupportFn, simplex);
         cvConvex2ConvexGJKResult res;
         res.m_distance = ptRes.distance;
         if(ptRes.result == GJKResult::GJK_GOOD)
         {
-        
+            switch(simplex.count())
+            {
+                case 0:
+                    cvAssertMsg(false, "GJK successed with null simplex");
+                case 1:
+                    {
+                        res.m_pA = simplex.verts[0].sA;
+                        res.m_pB = simplex.verts[0].sB;
+                    }
+                    break;
+                case 2:
+                    {
+                        auto v0 = simplex.verts[0];
+                        auto v1 = simplex.verts[1];
+                        cvVec2f a = v0.p;
+                        cvVec2f b = v1.p;
+                        cvVec2f l = b - a;
+                        float lambda2 = a.dot(-l) / l.sqrLength();
+                        float lambda1 =  1 - lambda2;
+                        if(lambda1 < 0) lambda2 = 1;
+                        if(lambda2 < 0) lambda1 = 1;
+                        res.m_pA = v0.sA * lambda1 + v1.sA * lambda2;
+                        res.m_pB = v1.sB * lambda1 + v1.sB * lambda2;
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
 
         return res;
