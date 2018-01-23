@@ -3,19 +3,17 @@
 #include <algorithm>
 #include <core/cvAabb.h>
 
-struct SimplexVertex
+struct SuportInfo
 {
     cvVec2f p;
     int index;
-    float u;
 
-    //extended info for shape vs shape
-    cvVec2f sA; //support point on A
-    cvVec2f sB; //support point on B
-
-    SimplexVertex(const cvVec2f& v, int i, float _u)
-        :p(v), index(i), u(_u) { }
+    SuportInfo(const cvVec2f& v, int i)
+        :p(v), index(i){ }
 };
+
+#undef min
+#undef max
 
 class cvShape
 {
