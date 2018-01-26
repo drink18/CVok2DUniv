@@ -48,6 +48,7 @@ namespace GJK
         cvVec2f m_pA;
         cvVec2f m_pB;
         float m_distance;
+        bool m_succeed = false;
     };
 
     GJKResult pointToConvex(const cvVec2f& queryPt, const cvConvexShape& shape);

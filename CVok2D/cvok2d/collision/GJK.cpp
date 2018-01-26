@@ -284,6 +284,7 @@ namespace GJK
         res.m_distance = ptRes.distance;
         if(ptRes.result == GJKResult::GJK_GOOD)
         {
+            res.m_succeed = true;
             switch(simplex.count())
             {
                 case 0:
@@ -306,7 +307,7 @@ namespace GJK
                         if(lambda1 < 0) lambda2 = 1;
                         if(lambda2 < 0) lambda1 = 1;
                         res.m_pA = v0.sA * lambda1 + v1.sA * lambda2;
-                        res.m_pB = v1.sB * lambda1 + v1.sB * lambda2;
+                        res.m_pB = v0.sB * lambda1 + v1.sB * lambda2;
                     }
                     break;
                 default:

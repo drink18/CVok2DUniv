@@ -13,4 +13,6 @@ public:
 
 private:
     cvPolygonShape* m_box;
+    cvPolygonShape* m_b1;
+    cvTransform m_t1;
 };
