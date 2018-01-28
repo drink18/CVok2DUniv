@@ -194,7 +194,7 @@ namespace GJK
                     if(res.feature == cvPt2TriangleClosestPt::Vtx_A)
                     {
                         simplex.removeVtx(1);
-                        simplex.removeVtx(2);
+                        simplex.removeVtx(1);
                     }
                     else if(res.feature == cvPt2TriangleClosestPt::Vtx_B)
                     {
