@@ -9,6 +9,25 @@ class cvConvexShape;
 
 namespace GJK
 {
+    struct SimplexVertex
+    {
+        cvVec2f p;
+        // for point to shape, sA is always query point
+        cvVec2f sA;
+        cvVec2f sB;
+
+        // support vertex index
+        int indexA;  //always 0 if point to shape query
+        int indexB; 
+
+        bool operator==(const SimplexVertex& other) const 
+        {
+            return indexA == other.indexA && indexB == other.indexB;
+        }
+    };
+    struct cvShapeQueryInput;
+
+
     using namespace cvDist;
     struct GJKResult
     {
@@ -56,4 +75,7 @@ namespace GJK
     GJKResult cvPointToConvexShape(const cvPointQueryInput& input);
 
     cvConvex2ConvexGJKResult cvGJKConvexToConvex(const cvShapeQueryInput& input);
+
+    SimplexVertex _getSupportOnMinkowsiDiff(const cvShapeQueryInput& input, const cvVec2f& d);
+
 }

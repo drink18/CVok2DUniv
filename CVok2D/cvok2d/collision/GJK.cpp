@@ -9,23 +9,6 @@ namespace GJK
     using namespace std;
     using namespace cvDist;
 
-    struct SimplexVertex
-    {
-        cvVec2f p;
-        // for point to shape, sA is always query point
-        cvVec2f sA;
-        cvVec2f sB;
-
-        // support vertex index
-        int indexA;  //always 0 if point to shape query
-        int indexB; 
-
-        bool operator==(const SimplexVertex& other) const 
-        {
-            return indexA == other.indexA && indexB == other.indexB;
-        }
-    };
-
     struct Simplex
     {
         std::vector<SimplexVertex> verts;
@@ -126,8 +109,10 @@ namespace GJK
                 cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
                 //get support
                 auto simP = getSimplexFromSupport(d);
+                cvVec2f sp = simP.p;
+                p2LRes = pointDistanceToLine(simP.p, a.p, b.p);
 
-                if(simplex.hasVtx(simP)) // duplicate vertex
+                if(simplex.hasVtx(simP) || (p2LRes.pt - simP.p).sqrLength() < CV_FLOAT_EPS) // duplicate vertex or colinear
                 {
                     // terminate
                     auto pt2Line = pointDistanceToLine(queryPt, a.p, b.p);
@@ -252,30 +237,35 @@ namespace GJK
         return res;
     }
 
-    cvConvex2ConvexGJKResult cvGJKConvexToConvex(const cvShapeQueryInput& input)
+    SimplexVertex _getSupportOnMinkowsiDiff(const cvShapeQueryInput& input, const cvVec2f& d)
     {
         cvMat33 invA; input.poseA.getInvert(invA);
         cvMat33 invB; input.poseB.getInvert(invB);
-        cvMat33 b2a = input.poseB * invA;
+
+        cvVec2f dA; invA.transformVector(d, dA);
+        cvVec2f dB; invB.transformVector(d, dB);
+        auto pA = input.shapeA.getSupport(dA);
+        auto pB = input.shapeB.getSupport(-dB);
+
+        pA.p = input.poseA * pA.p;
+        pB.p = input.poseB * pB.p;
+
+        SimplexVertex v;
+        v.p = pA.p - pB.p;
+        v.indexA = pA.index;
+        v.indexB = pB.index;
+        v.sA = pA.p;
+        v.sB = pB.p;
+
+        return v;
+    }
+
+    cvConvex2ConvexGJKResult cvGJKConvexToConvex(const cvShapeQueryInput& input)
+    {
 
         auto getSupportFn = [&](const cvVec2f& d)
         {
-            cvVec2f dA; invA.transformVector(d, dA);
-            cvVec2f dB; invB.transformVector(d, dB);
-            auto pA = input.shapeA.getSupport(dA);
-            auto pB = input.shapeB.getSupport(-dB); 
-
-            pA.p = input.poseA * pA.p;
-            pB.p = input.poseB * pB.p;
-
-            SimplexVertex v; 
-            v.p = pA.p - pB.p;
-            v.indexA = pA.index;
-            v.indexB = pB.index;
-            v.sA = pA.p;
-            v.sB = pB.p;
-
-            return v;
+            return _getSupportOnMinkowsiDiff(input, d);
         };
 
         Simplex simplex;
