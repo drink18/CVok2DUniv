@@ -25,7 +25,7 @@ WorldIntegration::WorldIntegration()
     m_world->setBodyAngularVelocity(m_Id, 1.0f);
 }
 
-void WorldIntegration::tick(cvDebugDraw& debugDraw)
+void WorldIntegration::tick(cvDebugDraw& debugDraw, float dt)
 {
     m_world->integrate(0.02f);
     debugDraw.DrawWorld(*m_world);
