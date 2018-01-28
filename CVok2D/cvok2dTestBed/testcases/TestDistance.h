@@ -9,10 +9,11 @@ class ClosestPointTest: public TestBase
 public:
     ClosestPointTest();
 
-    virtual void tick(cvDebugDraw& gdbDraw) override;
+    virtual void tick(cvDebugDraw& gdbDraw, float dt) override;
 
 private:
     cvPolygonShape* m_box;
     cvPolygonShape* m_b1;
     cvTransform m_t1;
+    cvTransform m_t2;
 };

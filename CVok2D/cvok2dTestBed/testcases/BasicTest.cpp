@@ -23,7 +23,7 @@ BasicTest::BasicTest()
     m_world->createBody(bInfo, true);
 }
 
-void BasicTest::tick(cvDebugDraw& dbgDraw)
+void BasicTest::tick(cvDebugDraw& dbgDraw, float dt)
 {
     dbgDraw.AddPoint(cvVec2f(0, 0), 3.0f, cvColorf::White);
     //cvTransform trans;

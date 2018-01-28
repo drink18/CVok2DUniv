@@ -126,12 +126,16 @@ int main(int, char**)
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
 
+    float lastTime = glfwGetTime();
+    float dt ;
     // main loop
     while (!glfwWindowShouldClose(window))
     {
+        dt = glfwGetTime() - lastTime;
+        lastTime = glfwGetTime();
 
         if (g_currentTest)
-            g_currentTest->tick(*pdbgDraw);
+            g_currentTest->tick(*pdbgDraw, dt);
 
         glfwPollEvents();
 

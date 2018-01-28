@@ -9,5 +9,5 @@ class TestBase
 public:
     TestBase ();
 
-    virtual void tick(cvDebugDraw& dbgDraw);
+    virtual void tick(cvDebugDraw& dbgDraw, float dt);
 };

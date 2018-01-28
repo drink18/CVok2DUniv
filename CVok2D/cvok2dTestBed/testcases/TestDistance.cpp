@@ -11,18 +11,18 @@ ClosestPointTest::ClosestPointTest()
     m_box = cvPolygonShape::createBox(cvVec2f(5, 5), cvVec2f(15, 15), 0.05f);
 }
 
-void ClosestPointTest::tick(cvDebugDraw& gdbDraw)
+void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
 {
     {
         m_b1 = cvPolygonShape::createBox(cvVec2f(5, 5), 0.05f);
         auto b2 = cvPolygonShape::createBox(cvVec2f(7.5, 7.5), 0.05f);
         cvTransform& t1 = m_t1;
         t1.m_Translation.set(0, 0);
-        t1.m_Rotation += 0.01f;
+        t1.m_Rotation += DEG2RAD(45) * dt;
 
-        cvTransform t2;
-        t2.m_Translation.set(17, 0);//17, 17);
-        t2.m_Rotation = DEG2RAD(0);
+        cvTransform &t2 = m_t2;
+        t2.m_Translation.set(19, 0);//17, 17);
+        t2.m_Rotation -= DEG2RAD(45) * dt;
 
         gdbDraw.DrawShape(*m_b1, t1, cvColorf::Red);
         gdbDraw.DrawShape(*b2, t2, cvColorf::Blue);

@@ -9,7 +9,7 @@ class BasicTest : public TestBase
 public:
     BasicTest();
 
-    virtual void tick(cvDebugDraw& gdbDraw) override;
+    virtual void tick(cvDebugDraw& gdbDraw, float dt) override;
 
 private:
     cvPolygonShape* m_box = nullptr;

@@ -9,7 +9,7 @@ TestBase::TestBase()
 {
 }
 
-void TestBase::tick(cvDebugDraw& gdbDraw)
+void TestBase::tick(cvDebugDraw& gdbDraw, float dt)
 {
 
 }
