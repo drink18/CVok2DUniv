@@ -458,3 +458,9 @@ inline cvVec3f cvVec3f::operator-() const
     return ret;
 }
 
+inline bool cvVec3f::operator==(const cvVec3f& v) const
+{
+    return std::abs(v.x - x) < CV_FLOAT_EPS && std::abs(v.y - y) < CV_FLOAT_EPS
+        && std::abs(v.z - z) < CV_FLOAT_EPS;
+}
+

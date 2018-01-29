@@ -75,12 +75,10 @@ TEST_F(WorldTest, integrate)
     cvTransform xform = m_world->getBody(id).getTransform();
 
     EXPECT_NEAR(0.01f, xform.m_Rotation, CV_FLOAT_EPS);
-    EXPECT_NEAR(0.01f, xform.m_Translation.x, CV_FLOAT_EPS);
-    EXPECT_NEAR(0.02f, xform.m_Translation.y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0.01f, 0.02f), xform.m_Translation);
 
     m_world->integrate(0.01f);
     xform = m_world->getBody(id).getTransform();
     EXPECT_NEAR(0.02f, xform.m_Rotation, CV_FLOAT_EPS);
-    EXPECT_NEAR(0.02f, xform.m_Translation.x, CV_FLOAT_EPS);
-    EXPECT_NEAR(0.04f, xform.m_Translation.y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0.02f, 0.04f), xform.m_Translation);
 }

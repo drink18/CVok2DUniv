@@ -7,15 +7,11 @@ TEST(cvAabb, Init)
 	cvAabb a1;
 	cvAabb a2(cvVec2f(0, 0), cvVec2f(2, 1));
 	
-	EXPECT_NEAR(a1.m_Min.x, FLT_MAX, CV_FLOAT_EPS);
-	EXPECT_NEAR(a1.m_Min.y, FLT_MAX, CV_FLOAT_EPS);
-	EXPECT_NEAR(a1.m_Max.x, FLT_MIN, CV_FLOAT_EPS);
-	EXPECT_NEAR(a1.m_Max.y, FLT_MIN, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(FLT_MAX, FLT_MAX), a1.m_Min);
+    EXPECT_EQ(cvVec2f(FLT_MIN, FLT_MIN), a1.m_Max);
 
-	EXPECT_NEAR(a2.m_Min.x, 0, CV_FLOAT_EPS);
-	EXPECT_NEAR(a2.m_Min.y, 0, CV_FLOAT_EPS);
-	EXPECT_NEAR(a2.m_Max.x, 2, CV_FLOAT_EPS);
-	EXPECT_NEAR(a2.m_Max.y, 1, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0, 0), a2.m_Min);
+    EXPECT_EQ(cvVec2f(2, 1), a2.m_Max);
 }
 
 TEST(cvAabb, include)
@@ -25,17 +21,12 @@ TEST(cvAabb, include)
 	cvAabb b1(cvVec2f(-1, -1), cvVec2f(0, 0));
 
 	a.include(b);
-	EXPECT_NEAR(a.m_Min.x, 0, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Min.y, 0, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Max.x, 1, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Max.y, 1, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0, 0), a.m_Min);
+    EXPECT_EQ(cvVec2f(1, 1), a.m_Max);
 
 	a.include(b1);
-	EXPECT_NEAR(a.m_Min.x, -1, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Min.y, -1, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Max.x, 1, CV_FLOAT_EPS);
-	EXPECT_NEAR(a.m_Max.y, 1, CV_FLOAT_EPS);
-
+    EXPECT_EQ(cvVec2f(-1, -1), a.m_Min);
+    EXPECT_EQ(cvVec2f(1, 1), a.m_Max);
 }
 
 TEST(cvAabb, contains)

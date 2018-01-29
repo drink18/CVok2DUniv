@@ -132,7 +132,7 @@ TEST(cvVec2f, OpSub)
     cvVec2f v2(0, 0.5f);
 
     cvVec2f v12 = v2 - v1;
-    EXPECT_EQ(v12, cvVec2f(-1.1, 0.5f));
+    EXPECT_EQ(v12, cvVec2f(-1.1f, 0.5f));
 }
 
 TEST(cvVec2f, OpMul)

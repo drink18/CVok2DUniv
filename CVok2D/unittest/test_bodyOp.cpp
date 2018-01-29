@@ -17,8 +17,7 @@ TEST(world, SetVel)
     world->setBodyVelocity(bodyId, cvVec2f(1, 2), 3);
 
     cvVec2f linVelBack = world->getBodyLinearVelocity(bodyId);
-    EXPECT_NEAR(1, linVelBack.x, CV_FLOAT_EPS);
-    EXPECT_NEAR(2, linVelBack.y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(1.0f, 2.0f), linVelBack);
 
     float angVelBack = world->getBodyAngluarVelocity(bodyId);
     EXPECT_NEAR(3.0f, angVelBack, CV_FLOAT_EPS);
@@ -38,14 +37,12 @@ TEST(world, SetVelSep)
     cvBodyId bodyId = world->createBody(bodyCInfo, true);
     cvVec2f linVelBack = world->getBodyLinearVelocity(bodyId);
     float angVelBack = world->getBodyAngluarVelocity(bodyId);
-    EXPECT_NEAR(0, linVelBack.x, CV_FLOAT_EPS);
-    EXPECT_NEAR(0, linVelBack.y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0.0f, 0.0f), linVelBack);
     EXPECT_NEAR(0, angVelBack, CV_FLOAT_EPS);
 
     world->setBodyLinearVelocity(bodyId, cvVec2f(1, 2));
     linVelBack = world->getBodyLinearVelocity(bodyId);
-    EXPECT_NEAR(1, linVelBack.x, CV_FLOAT_EPS);
-    EXPECT_NEAR(2, linVelBack.y, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(1.0f, 2.0f), linVelBack);
 
     world->setBodyAngularVelocity(bodyId, 3.0f);
     angVelBack = world->getBodyAngluarVelocity(bodyId);

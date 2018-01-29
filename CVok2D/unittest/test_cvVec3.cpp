@@ -4,63 +4,51 @@
 
 TEST(cvVec3f, Init)
 {
-	cvVec3f v1(1.1f, -0.2f, 1.5);
+    cvVec3f v1(1.1f, -0.2f, 1.5);
 
-	EXPECT_NEAR(v1.x, 1.1f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.y, -0.2f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.z, 1.5, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec3f(1.1f, -0.2f, 1.5f), v1);
 }
 
 TEST(cvVec3f, Add)
 {
-	cvVec3f v1(1.1f, 0, 21);
-	cvVec3f v2(0, 0.5f, 2);
-	cvVec3f v3(0.1f, 0.2f, 3);
+    cvVec3f v1(1.1f, 0, 21);
+    cvVec3f v2(0, 0.5f, 2);
+    cvVec3f v3(0.1f, 0.2f, 3);
 
-	v1.add(v2);
+    v1.add(v2);
 
-	EXPECT_NEAR(v1.x, 1.1f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.y, 0.5f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v1.z, 23.f, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec3f(1.1f, 0.5f, 23.f), v1);
 
-	cvVec3f v4; v4.setAdd(v2, v3);
-	EXPECT_NEAR(v4.x, 0.1f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v4.y, 0.7f, CV_FLOAT_EPS);
-	EXPECT_NEAR(v4.z, 5, CV_FLOAT_EPS);
+    cvVec3f v4; v4.setAdd(v2, v3);
+    EXPECT_EQ(cvVec3f(0.1f, 0.7f, 5.0f), v4);
 }
 
 TEST(cvVec3f, Proj)
 {
-	cvVec3f x(1, 0, 0);
-	cvVec3f y(0, 1, 0);
-	cvVec3f z(0, 0, 1);
+    cvVec3f x(1, 0, 0);
+    cvVec3f y(0, 1, 0);
+    cvVec3f z(0, 0, 1);
 
     cvVec3f v(-1, 1, 1);
 
     {
         cvVec3f pv;
         pv = v.project(x);
-        EXPECT_NEAR(pv.x, -1.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.y, 0.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.z, 0.0f, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec3f(-1.0f, 0.0f, 0.0f), pv);
     }
 
     {
         cvVec3f pv;
         pv = v.project(y);
-        EXPECT_NEAR(pv.x, 0.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.y, 1.0f, CV_FLOAT_EPS);
-        EXPECT_NEAR(pv.z, 0.0f, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec3f(0.0f, 1.0f, 0.0f), pv);
     }
 }
 
 TEST(cvVec3f, Cross)
 {
-	cvVec3f v1(1, 0, 0);
-	cvVec3f v2(0, 1, 0);
+    cvVec3f v1(1, 0, 0);
+    cvVec3f v2(0, 1, 0);
 
     cvVec3f v = v1.cross(v2);
-    EXPECT_NEAR(v.x, 0, CV_FLOAT_EPS);
-    EXPECT_NEAR(v.y, 0, CV_FLOAT_EPS);
-    EXPECT_NEAR(v.z, 1, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec3f(0.0f, 0.0f, 1.0f), v);
 }

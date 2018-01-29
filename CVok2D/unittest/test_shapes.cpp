@@ -16,13 +16,11 @@ TEST(cvCircle, getSupport)
 
     auto s = circle.getSupport(cvVec2f(1.0f, 0.0));
     cvVec2f support = s.p;
-    EXPECT_NEAR(support.x, 2.0f, CV_FLOAT_EPS);
-    EXPECT_NEAR(support.y, 0.0f, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(2.0f, 0.0f), support);
 
     s = circle.getSupport(cvVec2f(0.0f, 1.0f));
     support = s.p;
-    EXPECT_NEAR(support.x, 0.0f, CV_FLOAT_EPS);
-    EXPECT_NEAR(support.y, 2.0f, CV_FLOAT_EPS);
+    EXPECT_EQ(cvVec2f(0.0f, 2.0f), support);
 }
 
 
