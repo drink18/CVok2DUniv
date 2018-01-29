@@ -3,6 +3,7 @@
 #include <cmath>
 #include "cvCore.h"
 #include "cvMathDefs.h"
+#include <ostream>
 
 #define cvSqrt sqrtf
 
@@ -108,8 +109,7 @@ public:
 
     inline cvVec2f& operator=(const cvVec2f& v);
 
-    //bool operator==(const cvVec2f& v) const;
-
+    inline bool operator==(const cvVec2f& v) const;
 };
 
 class cvVec3f
@@ -202,6 +202,8 @@ public:
     // v1 -= v2
     inline cvVec3f& operator-=(const cvVec3f& v2);
 
+    inline bool operator==(const cvVec3f& v2) const;
+
 public:
 	float x;
 	float y;
@@ -286,6 +288,15 @@ public:
 	float m_Rotation;
 };
 
+inline void PrintTo(const cvVec2f& v, ::std::ostream* os)
+{
+    *os << "(" << v.x << ", " << v.y << ")";
+}
+
+inline void PrintTo(const cvVec3f& v, ::std::ostream* os)
+{
+    *os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+}
 
 #include "cvVec.inl"
 #include "cvMat33.inl"

@@ -205,12 +205,10 @@ inline cvVec2f& cvVec2f::operator=(const cvVec2f& v)
     return *this;
 }
 
-/*
 bool cvVec2f::operator==(const cvVec2f& v) const
 {
-    return abs(v.m_x - m_x) < CV_FLOAT_EPS && abs(v.m_y - m_y) < CV_FLOAT_EPS;
+    return abs(v.x - x) < CV_FLOAT_EPS && abs(v.y - y) < CV_FLOAT_EPS;
 }
-*/
 
 inline float cvVec3f::length() const
 {
@@ -459,3 +457,4 @@ inline cvVec3f cvVec3f::operator-() const
     ret.setNegate();
     return ret;
 }
+
