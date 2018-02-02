@@ -40,12 +40,12 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 	newNode.m_MaxIdx[1] = (int32_t)m_EndPoints[1].size();
 	m_EndPoints[1].push_back(max1);
 
-
-	for (int axis = 0; axis < 2; ++axis)
-	{
-		moveEndPoint(axis, newNode.m_MinIdx[axis], -1);
-		moveEndPoint(axis, newNode.m_MaxIdx[axis], -1);
-	}
+    int axis = 0;
+    moveEndPoint(axis, newNode.m_MinIdx[axis], min0.m_Val, -1);
+    moveEndPoint(axis, newNode.m_MaxIdx[axis], max0.m_Val, -1);
+    axis = 1;
+    moveEndPoint(axis, newNode.m_MinIdx[axis], min1.m_Val, -1);
+    moveEndPoint(axis, newNode.m_MaxIdx[axis], max1.m_Val, -1);
 
 	return handle;
 }
@@ -106,19 +106,20 @@ void cvBroadphaseSAP::updateNodeOnOneAxis(int nodeIdx, float min, float max, int
 	std::vector<NodeEndPoint>& endPointsOneAxis = m_EndPoints[axis];
 	NodeEndPoint& oldMinPt = endPointsOneAxis[dirtyNode.m_MinIdx[axis]];
 	NodeEndPoint& oldMaxPt = endPointsOneAxis[dirtyNode.m_MaxIdx[axis]];
-	oldMinPt.m_Val = min;
-	oldMaxPt.m_Val = max;
 	enum eDir{Left = -1, Right = 1};
 
 	// determine move direction
 	eDir dirMin = min < oldMinPt.m_Val ? Left : Right;
 	eDir dirMax= max < oldMaxPt.m_Val ? Left : Right;
-	
-	moveEndPoint(axis, dirtyNode.m_MinIdx[axis], dirMin);
-	moveEndPoint(axis, dirtyNode.m_MinIdx[axis], dirMax);
+
+	moveEndPoint(axis, dirtyNode.m_MinIdx[axis], min, dirMin);
+    endPointsOneAxis[dirtyNode.m_MinIdx[axis]].m_Val = min;
+
+	moveEndPoint(axis, dirtyNode.m_MaxIdx[axis], max, dirMax);
+    endPointsOneAxis[dirtyNode.m_MaxIdx[axis]].m_Val = max;
 }
 
-void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
+void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, float newVal, int direction)
 {
 	std::vector<NodeEndPoint>& endPoints = m_EndPoints[axis];
 	NodeEndPoint ep = endPoints[endPtIdx];
@@ -127,8 +128,8 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
 	{
 		int nextPt = i + direction;
 		NodeEndPoint& nextEp = endPoints[nextPt];
-		if ((direction == -1 && nextEp.m_Val > ep.m_Val)
-			|| (direction == 1 && nextEp.m_Val < ep.m_Val))
+		if ((direction == -1 && nextEp.m_Val > newVal)
+			|| (direction == 1 && nextEp.m_Val < newVal))
 		{
 			if (direction == 1)
 			{
@@ -180,7 +181,7 @@ void cvBroadphaseSAP::swapEndPoints(int epIdx1, int epIdx2, int axis)
 	BPNode& node1 = m_Nodes.accessAt(ep1.getBPHandle().getVal());
 	const bool isMin1 = ep1.getIsMin();
 	int& nextEpIdx1 = isMin1 ? node1.m_MinIdx[axis] : node1.m_MaxIdx[axis];
-	nextEpIdx1 = epIdx1;
+	nextEpIdx1 = epIdx2;
 
 	// swap ep
 	tmpNode = ep2;

@@ -37,7 +37,7 @@ protected:
 private:
 	void updateNodeOnOneAxis(int nodeIdx, float min, float max, int axis);
 	void swapEndPoints(int epIdx1, int epIdx2, int axis);
-	void moveEndPoint(int axis, int endPtIdx, int direction);
+	void moveEndPoint(int axis, int endPtIdx, float newVal, int direction);
 private:
 	std::vector<cvBroadphase::NodeEndPoint>  m_EndPoints[2];
 	cvFreeList<BPNode, cvBroadphaseHandle> m_Nodes;
