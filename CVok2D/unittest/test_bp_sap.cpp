@@ -101,21 +101,21 @@ TEST(cvBroadphase, updateBody_MoveExpand)
 {
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
-	cvAabb aabb1(cvVec2f(-2.0f, -2.0f), cvVec2f(-1.0f, -1.0f));
+	cvAabb aabb1(cvVec2f(-2.0f, -1.0f), cvVec2f(-1.0f, 1.0f));
 	auto handle1 = broadPhase.addNode(aabb1);
 
-	cvAabb aabb2(cvVec2f(1.0f, 1.0f), cvVec2f(2, 2));
+	cvAabb aabb2(cvVec2f(1.0f, -1.0f), cvVec2f(2, 1));
     cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
 
 
-	cvAabb aabb3(cvVec2f(-0.9f, -0.9f), cvVec2f(0.9f, 0.9f));
+	cvAabb aabb3(cvVec2f(-0.9f, -1.0f), cvVec2f(0.9f, 1.0f));
     cvBroadphaseHandle handle3 = broadPhase.addNode(aabb3);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
 	EXPECT_EQ(pairs.size(), 0);
 
-    broadPhase.updateOneNode(handle3, cvAabb(cvVec2f(-1.5f, -1.5f), cvVec2f(1.5f, 1.5f)));
+    broadPhase.updateOneNode(handle3, cvAabb(cvVec2f(-1.5f, -1.0f), cvVec2f(1.5f, 1.0f)));
 
 	broadPhase.getAllPairs(pairs);
 	EXPECT_EQ(pairs.size(), 2);

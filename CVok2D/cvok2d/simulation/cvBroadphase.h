@@ -40,6 +40,7 @@ public:
 		int32_t m_NodeHandleAndMinFlag;
 
 		enum { BPHANDLE_MASK = 0x7FFFFFFF };
+        bool m_dirty = false;
 
 		NodeEndPoint_T()
 			: m_NodeHandleAndMinFlag(cvBroadphaseHandle::invalid())
@@ -72,8 +73,9 @@ public:
 	public:
 		BPPair() : m_h1(cvBroadphaseHandle::invalid()), m_h2(cvBroadphaseHandle::invalid()) {}
 		BPPair(cvBroadphaseHandle h1, cvBroadphaseHandle h2)
-			:m_h1(h1), m_h2(h2)
 		{
+			m_h1 = h1.getVal() >= h2.getVal() ? h2 : h1;
+			m_h2 = h1.getVal() < h2.getVal() ? h2 : h1;
 		}
 
 		bool operator==(const BPPair& other) const
