@@ -56,3 +56,23 @@ TEST(cvBroadphase, removeBody)
 	broadPhase.getAllPairs(pairs);
 	EXPECT_EQ(pairs.size(), 0);
 }
+
+TEST(cvBroadphase, updateBody)
+{
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+	cvAabb aabb1(cvVec2f(0, 0), cvVec2f(1, 1));
+	auto handle1 = broadPhase.addNode(aabb1);
+
+	cvAabb aabb2(cvVec2f(1.5f, 1.5f), cvVec2f(3, 3));
+    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+
+	std::vector<cvBroadphase::BPPair> pairs;
+	broadPhase.getAllPairs(pairs);
+	EXPECT_EQ(pairs.size(), 0);
+
+    broadPhase.updateOneNode(handle1, cvAabb(cvVec2f(2.0f, 2.0f), cvVec2f(3.0f, 3.f)));
+
+	broadPhase.getAllPairs(pairs);
+	EXPECT_EQ(pairs.size(), 1);
+}
