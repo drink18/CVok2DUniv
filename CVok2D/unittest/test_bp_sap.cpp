@@ -240,3 +240,21 @@ TEST(cvBroadphase, add_degenerated_node )
 	cvAabb aabb2(cvVec2f(0, 0), cvVec2f(0, 1));
 	ASSERT_DEATH({broadPhase.addNode(aabb2);}, ".*he.x > CV_FLOAT_EPS && he.y > CV_FLOAT_EPS.*");
 }
+
+/*
+TEST(cvBroadphase,  add_exact_boundingVolume)
+{
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+	std::vector<cvBroadphase::BPPair> pairs;
+
+	cvAabb aabb1(cvVec2f(1, -1), cvVec2f(2, 1));
+    broadPhase.addNode(aabb1);
+
+	cvAabb aabb2(cvVec2f(1, -1), cvVec2f(2, 1));
+    broadPhase.addNode(aabb2);
+
+    broadPhase.getAllPairs(pairs);
+    EXPECT_EQ(1, pairs.size());
+}
+*/
