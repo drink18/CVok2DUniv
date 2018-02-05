@@ -40,12 +40,15 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 	newNode.m_MaxIdx[1] = (int32_t)m_EndPoints[1].size();
 	m_EndPoints[1].push_back(max1);
 
-    int axis = 0;
-    moveEndPoint(axis, newNode.m_MinIdx[axis],  -1);
-    moveEndPoint(axis, newNode.m_MaxIdx[axis],  -1);
-    axis = 1;
-    moveEndPoint(axis, newNode.m_MinIdx[axis],  -1);
-    moveEndPoint(axis, newNode.m_MaxIdx[axis],  -1);
+
+    for(int axis = 0; axis < 2; axis++)
+    {
+        int minIdx = newNode.m_MinIdx[axis];
+        int maxIdx = newNode.m_MaxIdx[axis];
+
+        moveEndPoint(axis, minIdx, -1);
+        moveEndPoint(axis, maxIdx, -1);
+    }
 
 	return handle;
 }
@@ -69,9 +72,10 @@ void cvBroadphaseSAP::removeNode(cvBroadphaseHandle handle)
 
 			cvBroadphaseHandle h1 = ep.getBPHandle();
 			BPNode& n1 = m_Nodes.accessAt(h1);
-			
+
 			// update endpoint indices in bp node
-			if (ep.getIsMin())
+			if (
+                    ep.getIsMin())
 			{
 				n1.m_MinIdx[axis] -= idx < maxIdx ? 1 : 2;
 			}
@@ -109,9 +113,7 @@ void cvBroadphaseSAP::updateNodeOnOneAxis(int nodeIdx, float min, float max, int
 	std::vector<NodeEndPoint>& endPointsOneAxis = m_EndPoints[axis];
 	NodeEndPoint& oldMinPt = endPointsOneAxis[dirtyNode.m_MinIdx[axis]];
 	NodeEndPoint& oldMaxPt = endPointsOneAxis[dirtyNode.m_MaxIdx[axis]];
-    oldMinPt.m_dirty = true;
-    oldMaxPt.m_dirty = true;
-    
+
 	enum eDir{Left = -1, Right = 1};
 
 	// determine move direction
@@ -121,13 +123,13 @@ void cvBroadphaseSAP::updateNodeOnOneAxis(int nodeIdx, float min, float max, int
 	endPointsOneAxis[dirtyNode.m_MinIdx[axis]].m_Val = min;
     endPointsOneAxis[dirtyNode.m_MaxIdx[axis]].m_Val = max;
 
-	moveEndPoint(axis, dirtyNode.m_MinIdx[axis], dirMin);
-	moveEndPoint(axis, dirtyNode.m_MaxIdx[axis], dirMax);
-	endPointsOneAxis[dirtyNode.m_MinIdx[axis]].m_dirty = false;
-	endPointsOneAxis[dirtyNode.m_MaxIdx[axis]].m_dirty = false;
+    int minIdx = dirtyNode.m_MinIdx[axis];
+    int maxIdx = dirtyNode.m_MaxIdx[axis];
+	moveEndPoint(axis, minIdx, dirMin);
+	moveEndPoint(axis, maxIdx, dirMax);
 }
 
-void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx,  int direction)
+void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
 {
 	std::vector<NodeEndPoint>& endPoints = m_EndPoints[axis];
 	int endIdx = direction == -1 ? 0 : (int)endPoints.size() - 1;
@@ -136,12 +138,6 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx,  int direction)
 		NodeEndPoint& ep = endPoints[i];
 		int nextPt = i + direction;
 		NodeEndPoint& nextEp = endPoints[nextPt];
-        if(nextEp.m_dirty)
-        {
-            //swap
-            swapEndPoints(i, nextPt, axis);
-            continue;
-        }
 
 		if (((direction == -1 && nextEp.m_Val > ep.m_Val)
 			|| (direction == 1 && nextEp.m_Val < ep.m_Val)
@@ -174,26 +170,22 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx,  int direction)
 				}
             }
             //swap
-            swapEndPoints(i, nextPt, axis);
+            swapEndPoints(i, nextPt, ep, nextEp, m_Nodes.accessAt(ep.getBPHandle()), 
+                   m_Nodes.accessAt(nextEp.getBPHandle()), axis);
 		}
 	}
 }
 
-void cvBroadphaseSAP::swapEndPoints(int epIdx1, int epIdx2, int axis)
+void cvBroadphaseSAP::swapEndPoints(int epIdx1, int epIdx2, NodeEndPoint& ep1, NodeEndPoint& ep2, 
+        BPNode& node1, BPNode& node2, int axis)
 {
-	std::vector<NodeEndPoint>& endPoints = m_EndPoints[axis];
-	NodeEndPoint& ep1 = endPoints[epIdx1];
-	NodeEndPoint& ep2 = endPoints[epIdx2];
-
 	NodeEndPoint tmpNode;
 
 	// update ep index in owner of ep1
-	BPNode& node2 = m_Nodes.accessAt(ep2.getBPHandle().getVal());
 	const bool isMin2 = ep2.getIsMin();
 	int& nextEpIdx2 = isMin2 ? node2.m_MinIdx[axis] : node2.m_MaxIdx[axis];
 	nextEpIdx2 = epIdx1;
 
-	BPNode& node1 = m_Nodes.accessAt(ep1.getBPHandle().getVal());
 	const bool isMin1 = ep1.getIsMin();
 	int& nextEpIdx1 = isMin1 ? node1.m_MinIdx[axis] : node1.m_MaxIdx[axis];
 	nextEpIdx1 = epIdx2;

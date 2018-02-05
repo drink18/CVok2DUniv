@@ -4,9 +4,7 @@
 
 class cvBroadphaseSAP : public cvBroadphase
 {
-	typedef cvBroadphase::NodeEndPoint NodeEndPoint;
-	typedef cvBroadphase::BPPair BPPair;
-
+public:
 	struct BPNode
 	{
 		int m_MinIdx[2];
@@ -17,6 +15,12 @@ class cvBroadphaseSAP : public cvBroadphase
 		BPNode()
 		{}
 	};
+
+	typedef cvBroadphase::NodeEndPoint NodeEndPoint;
+	typedef cvBroadphase::BPPair BPPair;
+    typedef std::vector<cvBroadphase::NodeEndPoint> NodeEPList;
+    typedef cvFreeList<BPNode, cvBroadphaseHandle> NodeList;
+    typedef std::unordered_map<BPPair, BPPair,BPPair::compBPPair > BPPairMap;
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
@@ -25,6 +29,10 @@ public:
 	virtual void removeNode(cvBroadphaseHandle handle) override;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) override;
     virtual void addBody(cvBody& body) override;
+
+	static void swapEndPoints(int epIdx1, int epIdx2, NodeEndPoint& ep1, NodeEndPoint& ep2, BPNode& n1, BPNode& n2, int axis);
+    const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
+
 protected:
     virtual void removeBody(cvBody& body) override;
 
@@ -35,10 +43,9 @@ protected:
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 private:
 	void updateNodeOnOneAxis(int nodeIdx, float min, float max, int axis);
-	void swapEndPoints(int epIdx1, int epIdx2, int axis);
 	void moveEndPoint(int axis, int endPtIdx, int direction);
 private:
-	std::vector<cvBroadphase::NodeEndPoint>  m_EndPoints[2];
-	cvFreeList<BPNode, cvBroadphaseHandle> m_Nodes;
-	std::unordered_map<BPPair, BPPair,BPPair::compBPPair > m_Pairs;
+	NodeEPList  m_EndPoints[2];
+	NodeList m_Nodes;
+	BPPairMap m_Pairs;
 };

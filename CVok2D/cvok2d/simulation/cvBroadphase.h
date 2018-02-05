@@ -40,7 +40,6 @@ public:
 		int32_t m_NodeHandleAndMinFlag;
 
 		enum { BPHANDLE_MASK = 0x7FFFFFFF };
-        bool m_dirty = false;
 
 		NodeEndPoint_T()
 			: m_NodeHandleAndMinFlag(cvBroadphaseHandle::invalid())
