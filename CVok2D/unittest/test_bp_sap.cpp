@@ -227,3 +227,16 @@ TEST(cvBroadphase, addOverlappingNode_OnLeft_testEP)
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());
 }
+
+TEST(cvBroadphase, add_degenerated_node )
+{
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+	std::vector<cvBroadphase::BPPair> pairs;
+
+	cvAabb aabb1(cvVec2f(1, 0), cvVec2f(2, 0));
+	ASSERT_DEATH({broadPhase.addNode(aabb1);}, ".*he.x > CV_FLOAT_EPS && he.y > CV_FLOAT_EPS.*");
+
+	cvAabb aabb2(cvVec2f(0, 0), cvVec2f(0, 1));
+	ASSERT_DEATH({broadPhase.addNode(aabb2);}, ".*he.x > CV_FLOAT_EPS && he.y > CV_FLOAT_EPS.*");
+}

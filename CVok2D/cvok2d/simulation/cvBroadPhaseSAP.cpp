@@ -14,6 +14,9 @@ cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 
 cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 {
+    cvVec2f he = nodeAabb.m_Max - nodeAabb.m_Min;
+    cvAssertMsg(he.x > CV_FLOAT_EPS && he.y > CV_FLOAT_EPS, "degenerated aabb");
+
 	cvBroadphaseHandle handle = m_Nodes.alloc();
 	BPNode& newNode = m_Nodes.accessAt(handle);
 	newNode.m_aabb = nodeAabb;
