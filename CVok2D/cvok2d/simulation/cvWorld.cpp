@@ -3,7 +3,12 @@
 
 cvWorld::cvWorld(cvWorldCInfo&  cinfo)
 {
-    m_broadPhase = new cvBroadphaseSAP(cvBroadphaseCInfo());
+    m_broadPhase = cinfo.m_broadPhase;
+    if(!m_broadPhase)
+    {
+        cvBroadphaseCInfo binfo;
+        m_broadPhase = new cvBroadphaseSAP(binfo);
+    }
 }
 
 cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
@@ -16,6 +21,7 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
 	body.m_mass.x = cInfo.m_mass;
     cvMotion motion;
     body.m_motionId = m_motionManager.addMotion(motion);
+    body.m_id = id;
 
     if(addBody)
     {
@@ -96,4 +102,10 @@ const cvMotion& cvWorld::getBodyMotion(cvBodyId bodyId) const
     const cvBody& body = m_bodyManager.getBody(bodyId);
     cvMotionId motionId = body.getMotionId();
     return m_motionManager.getMotion(motionId);
+}
+
+
+void cvWorld::simulate(const cvSimInfo& info)
+{
+    //update dirty aabb nodes
 }

@@ -9,7 +9,13 @@
 struct cvWorldCInfo
 {
     std::shared_ptr<cvShape> m_shape;
+    cvBroadphase* m_broadPhase = nullptr;
     cvTransform m_initTrans;
+};
+
+struct cvSimInfo
+{
+    float deltaTime;
 };
 
 class cvWorld
@@ -42,9 +48,10 @@ public:
 
     // Simulation related
 public:
+    void simulate(const cvSimInfo& info);
     void integrate(float dt);
 private:
-	cvBroadphase* m_broadPhase;
+	cvBroadphase* m_broadPhase = nullptr;
 
     cvBodyManager m_bodyManager;
     cvMotionManager m_motionManager;

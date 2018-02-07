@@ -1,6 +1,8 @@
 #pragma once
 
+#include <unordered_set>
 #include "cvBroadphase.h"
+#include <simulation/cvBody.h>
 
 class cvBroadphaseSAP : public cvBroadphase
 {
@@ -11,6 +13,7 @@ public:
 		int m_MaxIdx[2];
 		cvAabb m_aabb;
 		int64_t m_userData = 0;
+        cvBodyId m_bodyId;
 
 		BPNode()
 		{}
@@ -24,17 +27,23 @@ public:
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
+    virtual void updateDirtyNodes(cvWorld& world) override;
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override;
 	virtual void removeNode(cvBroadphaseHandle handle) override;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) override;
-    virtual void addBody(cvBody& body) override;
 
 	static void swapEndPoints(int epIdx1, int epIdx2, NodeEndPoint& ep1, NodeEndPoint& ep2, BPNode& n1, BPNode& n2, int axis);
-    const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
 
-protected:
+    virtual void addBody(cvBody& body) override;
     virtual void removeBody(cvBody& body) override;
+    virtual void markBodyDirty(const cvBody& body) override;
+
+public:
+    const std::unordered_set<cvBroadphaseHandle>& getDirtyNodes() const {return m_DirtyNodes;}
+    const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
+    const NodeList& getNodeList() const {return m_Nodes;}
+protected:
 
 	bool addPair(NodeEndPoint& ep1, NodeEndPoint& ep2);
 	bool removePair(NodeEndPoint& ep1, NodeEndPoint& ep2);
@@ -48,4 +57,6 @@ private:
 	NodeEPList  m_EndPoints[2];
 	NodeList m_Nodes;
 	BPPairMap m_Pairs;
+
+    std::unordered_set<cvBroadphaseHandle> m_DirtyNodes;
 };

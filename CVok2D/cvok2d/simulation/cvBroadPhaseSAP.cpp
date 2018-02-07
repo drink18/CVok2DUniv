@@ -1,6 +1,7 @@
 #include "cvok2d.h"
 #include "cvBroadPhaseSAP.h"
 #include <simulation/cvBody.h>
+#include <simulation/cvWorld.h>
 
 cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 	:cvBroadphase(cinfo)
@@ -248,11 +249,34 @@ void cvBroadphaseSAP::addBody(cvBody& body)
 {
     cvAabb aabb;
     body.getAabb(aabb);
-    body.setBroadphaseHandle(addNode(aabb));
+    cvBroadphaseHandle bpHandle = addNode(aabb);
+    body.setBroadphaseHandle(bpHandle);
+    m_Nodes.accessAt(bpHandle).m_bodyId = body.getBodyId();
 }
 
 void cvBroadphaseSAP::removeBody(cvBody& body)
 {
     removeNode(body.getBroadphaseHandle());
     body.setBroadphaseHandle(cvBroadphaseHandle::invalid());
+}
+
+void cvBroadphaseSAP::markBodyDirty(const cvBody& body)
+{
+    auto bphandle = body.getBroadphaseHandle();
+    cvAssertMsg(bphandle.isValid(), "Marking a invalid bp node dirty");
+    m_DirtyNodes.insert(bphandle);
+}
+
+void cvBroadphaseSAP::updateDirtyNodes(cvWorld& world)
+{
+    for(auto& handle : m_DirtyNodes)
+    {
+        const BPNode& node = m_Nodes.getAt(handle);
+        const cvBody& body = world.getBody(node.m_bodyId);
+        cvAabb aabb;
+        body.getAabb(aabb);
+        updateOneNode(handle, aabb);
+    }
+
+    m_DirtyNodes.clear();
 }

@@ -40,8 +40,11 @@ public:
 
     cvMotionId getMotionId() const {return m_motionId;}
 
+    cvBodyId getBodyId() const {return m_id;}
+
 
 private:
+    cvBodyId m_id;
 	cvTransform m_transform;
 	std::shared_ptr<cvShape> m_shape;
 	cvVec2f m_mass;
@@ -50,3 +53,8 @@ private:
 
     cvMotionId m_motionId = cvMotionId::invalid();
 };
+
+inline void PrintTo(const cvBodyId& id, ::std::ostream* os)
+{
+    *os << id.getVal();
+}

@@ -241,7 +241,6 @@ TEST(cvBroadphase, add_degenerated_node )
 	ASSERT_DEATH({broadPhase.addNode(aabb2);}, ".*he.x > CV_FLOAT_EPS && he.y > CV_FLOAT_EPS.*");
 }
 
-/*
 TEST(cvBroadphase,  add_exact_boundingVolume)
 {
 	cvBroadphaseCInfo cInfo;
@@ -257,4 +256,4 @@ TEST(cvBroadphase,  add_exact_boundingVolume)
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());
 }
-*/
+

@@ -11,6 +11,7 @@
 
 class cvAabb;
 class cvBody;
+class cvWorld;
 
 typedef  cvHandle<int32_t, (int32_t)0x7fffffff> cvBroadphaseHandle;
 namespace std
@@ -26,7 +27,6 @@ namespace std
 
 struct cvBroadphaseCInfo
 {
-public:
 	cvBroadphaseCInfo();
 };
 
@@ -61,7 +61,7 @@ public:
 	{
 		cvBroadphaseHandle m_h1;
 		cvBroadphaseHandle m_h2;
-		
+
 		int64_t getSortKey() const {
 			int64_t key;
 			key = m_h1.getVal() > m_h2.getVal() ? 
@@ -95,6 +95,7 @@ public:
 	cvBroadphase(const cvBroadphaseCInfo& cinfo);
 
 public:
+    virtual void updateDirtyNodes(cvWorld& world) = 0;
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) = 0;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) = 0;
 	virtual void removeNode(cvBroadphaseHandle handle) = 0;
@@ -102,6 +103,7 @@ public:
 
     virtual void addBody(cvBody& body) = 0;
     virtual void removeBody(cvBody& body) = 0;
+    virtual void markBodyDirty(const cvBody& body) = 0;
 
 protected:
 

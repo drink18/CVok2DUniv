@@ -36,6 +36,12 @@ TEST_F(WorldTest, add_remove_body)
     bodyCInfo.m_shape = std::shared_ptr<cvShape>(cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
 
     cvBodyId bodyId = m_world->createBody(bodyCInfo, true);
+    cvBody& body = m_world->accessBody(bodyId);
+
+    EXPECT_TRUE(bodyId.isValid());
+    EXPECT_TRUE(body.getBodyId().isValid());
+    EXPECT_EQ(bodyId, body.getBodyId());
+
     m_world->removeBody(bodyId);
 }
 
