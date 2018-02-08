@@ -105,8 +105,6 @@ public:
     virtual void removeBody(cvBody& body) = 0;
     virtual void markBodyDirty(const cvBody& body) = 0;
 
-protected:
-
 	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
 };

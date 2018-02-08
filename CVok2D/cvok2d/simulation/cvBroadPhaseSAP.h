@@ -33,23 +33,22 @@ public:
 	virtual void removeNode(cvBroadphaseHandle handle) override;
 	virtual void getAllPairs(std::vector<BPPair>& pairs) override;
 
-	static void swapEndPoints(int epIdx1, int epIdx2, NodeEndPoint& ep1, NodeEndPoint& ep2, BPNode& n1, BPNode& n2, int axis);
-
     virtual void addBody(cvBody& body) override;
     virtual void removeBody(cvBody& body) override;
     virtual void markBodyDirty(const cvBody& body) override;
+
+	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
+	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 
 public:
     const std::unordered_set<cvBroadphaseHandle>& getDirtyNodes() const {return m_DirtyNodes;}
     const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
     const NodeList& getNodeList() const {return m_Nodes;}
-protected:
 
 	bool addPair(NodeEndPoint& ep1, NodeEndPoint& ep2);
 	bool removePair(NodeEndPoint& ep1, NodeEndPoint& ep2);
 
-	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
-	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
+	static void swapEndPoints(int epIdx1, int epIdx2, NodeEndPoint& ep1, NodeEndPoint& ep2, BPNode& n1, BPNode& n2, int axis);
 private:
 	void updateNodeOnOneAxis(int nodeIdx, float min, float max, int axis);
 	void moveEndPoint(int axis, int endPtIdx, int direction);
