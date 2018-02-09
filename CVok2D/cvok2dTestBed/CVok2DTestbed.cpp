@@ -2,6 +2,8 @@
 //
 
 #include <cstdio>
+#include <iostream>
+#include <memory>
 
 #include <GL/gl3w.h>
 #include <imgui.h>
@@ -14,9 +16,12 @@
 #include "testcases/TestDistance.h"
 #include "testcases/WorldIntegration.h"
 
+using namespace std;
+
 Camera g_camera;
-TestBase* g_currentTest = nullptr;
+unique_ptr<TestBase> g_currentTest = nullptr;
 cvDebugDraw* g_dbgDraw = nullptr;
+int g_currentDemoIdx = 0;
 
 cvDebugDraw* GetDebugDraw() { return g_dbgDraw; }
 
@@ -25,6 +30,7 @@ static cvVec2f curPos;
 static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 
+
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error %d: %s\n", error, description);
@@ -32,10 +38,18 @@ static void error_callback(int error, const char* description)
 
 static void RenderUI()
 {
+    vector<const char*> testNames;
+    for(auto& ti : GetRegisteredTests())
+    {
+        testNames.push_back(ti.m_name);
+    }
+
+    int oldDemoIdx = g_currentDemoIdx;
     ImVec4 clear_color = ImColor(114, 144, 154);
     ImGui_ImplGlfwGL3_NewFrame();
     // 1. show a simple window
     {
+        ImGui::ListBox("Tests", &g_currentDemoIdx, &testNames[0], testNames.size());
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
         static float f = 0.0f;
         ImGui::Text("Hellow world!");
@@ -44,6 +58,11 @@ static void RenderUI()
         ImGui::PopStyleColor();
     }
     ImGui::Render();
+
+    if(g_currentDemoIdx != oldDemoIdx)
+    {
+        g_currentTest.reset(GetRegisteredTests()[g_currentDemoIdx].m_testFn());
+    }
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -86,6 +105,7 @@ int main(int, char**)
     if (glfwInit() == 0)
         return 1;
 
+
 #if defined(__APPLE__)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
@@ -118,9 +138,7 @@ int main(int, char**)
         return 1;
     }
 
-    g_currentTest = new ClosestPointTest();
-    //g_currentTest = new WorldIntegration();
-
+    g_currentTest.reset(GetRegisteredTests()[g_currentDemoIdx].m_testFn());
 
     bool show_test_window = true;
     bool show_another_window = false;

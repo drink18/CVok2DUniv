@@ -41,3 +41,5 @@ void WorldIntegration::tick(cvDebugDraw& debugDraw, float dt)
     if(res.result == GJK::GJKResult::GJK_GOOD)
         debugDraw.AddLine(res.closetPt, q, cvColorf::Yellow);
 }
+
+REGISTER_TEST("WorldIntergration", [](){return new WorldIntegration();});

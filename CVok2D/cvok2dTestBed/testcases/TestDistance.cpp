@@ -36,3 +36,5 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
         gdbDraw.AddLine(res.m_pA, res.m_pB, cvColorf::Green);
     }
 }
+
+REGISTER_TEST("TestDistance", [](){return new ClosestPointTest();});

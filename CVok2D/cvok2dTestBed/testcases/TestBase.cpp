@@ -5,6 +5,8 @@
 #include "DebugDraw.h"
 
 
+std::vector<TestInfo>* g_RegisteredTests;
+
 TestBase::TestBase()
 {
 }

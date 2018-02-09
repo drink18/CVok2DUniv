@@ -16,3 +16,4 @@ private:
     cvCircle* m_circle = nullptr;
     cvWorld* m_world = nullptr;
 };
+

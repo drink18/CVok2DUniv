@@ -35,3 +35,10 @@ void BasicTest::tick(cvDebugDraw& dbgDraw, float dt)
 
     dbgDraw.DrawWorld(*m_world);
 }
+
+TestBase* s_CreateBasicTest()
+{
+    return new BasicTest();
+}
+
+REGISTER_TEST("BasicTest", [](){return s_CreateBasicTest();});
