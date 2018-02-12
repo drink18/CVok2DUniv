@@ -10,6 +10,7 @@ public:
     {
         m_vertices.push_back(center);
         m_radius = radius;
+        updateAabb();
     }
 
     virtual ShapeType getShapeType() const override

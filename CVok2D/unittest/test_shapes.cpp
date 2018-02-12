@@ -10,6 +10,16 @@ TEST(cvCircle, Init)
     EXPECT_EQ(circle.getShapeType(), cvShape::eCircle);
 }
 
+TEST(cvCircle,  GetCorrectAABB)
+{
+    cvCircle circle(cvVec2f(0.5f, 0.5f), 2.0f);
+
+    EXPECT_EQ(circle.getShapeType(), cvShape::eCircle);
+    const cvAabb& aabb = circle.getAabb();
+    EXPECT_EQ(cvVec2f(-1.5f, -1.5f), aabb.m_Min);
+    EXPECT_EQ(cvVec2f(2.5f, 2.5f), aabb.m_Max);
+}
+
 TEST(cvCircle, getSupport)
 {
     cvCircle circle(cvVec2f(0, 0), 2.0f);
