@@ -59,6 +59,8 @@ TEST_F(TestWorldAndBP, updateDirtyBP)
     m_bp->markBodyDirty(m_world->accessBody(m_bodyId));
     EXPECT_EQ(1, m_bp->getDirtyNodes().size());
 
-    m_bp->updateDirtyNodes(*m_world);
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> deletedPairs;
+    m_bp->updateDirtyNodes(*m_world, newPairs, deletedPairs);
     EXPECT_EQ(0, m_bp->getDirtyNodes().size());
 }

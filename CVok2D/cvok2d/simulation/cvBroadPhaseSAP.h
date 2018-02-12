@@ -27,7 +27,7 @@ public:
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
-    virtual void updateDirtyNodes(cvWorld& world) override;
+    virtual void updateDirtyNodes(cvWorld& world, std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs) override;
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override;
 	virtual void removeNode(cvBroadphaseHandle handle) override;

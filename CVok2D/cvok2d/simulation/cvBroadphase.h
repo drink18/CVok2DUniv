@@ -93,9 +93,13 @@ public:
 
 public:
 	cvBroadphase(const cvBroadphaseCInfo& cinfo);
+    ~cvBroadphase() {}
+
+protected:
+    cvBroadphase() {}
 
 public:
-    virtual void updateDirtyNodes(cvWorld& world) = 0;
+    virtual void updateDirtyNodes(cvWorld& world, std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs) = 0;
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) = 0;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) = 0;
 	virtual void removeNode(cvBroadphaseHandle handle) = 0;

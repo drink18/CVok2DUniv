@@ -267,7 +267,7 @@ void cvBroadphaseSAP::markBodyDirty(const cvBody& body)
     m_DirtyNodes.insert(bphandle);
 }
 
-void cvBroadphaseSAP::updateDirtyNodes(cvWorld& world)
+void cvBroadphaseSAP::updateDirtyNodes(cvWorld& world, std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs)
 {
     for(auto& handle : m_DirtyNodes)
     {
