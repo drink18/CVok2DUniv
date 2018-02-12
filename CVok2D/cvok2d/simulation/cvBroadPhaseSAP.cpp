@@ -213,7 +213,7 @@ bool cvBroadphaseSAP::addPair(const cvBroadphaseHandle& handle1, const cvBroadph
 	if (node1.m_aabb.overlaps(node2.m_aabb))
 	{
 		BPPair pair(handle1, handle2);
-		m_Pairs[pair] = pair;
+		m_Pairs.insert(pair);
 		return true;
 	}
 	return false;
@@ -241,7 +241,7 @@ void cvBroadphaseSAP::getAllPairs(std::vector<BPPair>& pairs)
 	pairs.clear();
 	for (auto& end : m_Pairs)
 	{
-		pairs.push_back(end.first);
+		pairs.push_back(end);
 	}
 }
 
