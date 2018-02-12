@@ -58,4 +58,7 @@ void cvPolygonShape::updateAabb()
         max.x = std::max(max.x, vert.x);
         max.y = std::max(max.y, vert.y);
     }
+
+    m_aabb.m_Min = min;
+    m_aabb.m_Max = max;
 }

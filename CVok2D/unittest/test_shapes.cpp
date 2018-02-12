@@ -33,4 +33,11 @@ TEST(cvCircle, getSupport)
     EXPECT_EQ(cvVec2f(0.0f, 2.0f), support);
 }
 
+TEST(cvPolygonShape,  GetCorrectAABB)
+{
+    auto box = cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.01f);
+
+    cvAabb aabb = box->getAabb();
+    EXPECT_EQ(cvVec2f(-0.5f, -0.5f), aabb.m_Min);
+}
 

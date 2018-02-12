@@ -69,3 +69,31 @@ TEST(world, SetBodyTransform)
     cvTransform ut = world->getBodyTransform(bodyId);
     EXPECT_EQ(cvVec2f(1, 2), ut.m_Translation);
 }
+
+TEST(world, BodyAABB_and_update)
+{
+    cvWorldCInfo cInfo;
+    cvWorld* world = new cvWorld(cInfo);
+
+    cvBodyCInfo bodyCInfo;
+    bodyCInfo.m_shape = std::shared_ptr<cvShape>(
+            cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
+
+    cvBodyId bodyId = world->createBody(bodyCInfo, true);
+    const cvBody& body = world->getBody(bodyId);
+
+    cvAabb aabb;
+    body.getAabb(aabb);
+
+    EXPECT_EQ(cvVec2f(-0.5f, -0.5f), aabb.m_Min);
+    EXPECT_EQ(cvVec2f(0.5f, 0.5f), aabb.m_Max);
+
+    cvTransform t;
+    t.m_Translation = cvVec2f(1, 1);
+
+    world->setBodyTransform(bodyId, t);
+
+    body.getAabb(aabb);
+    EXPECT_EQ(cvVec2f(0.5f, 0.5f), aabb.m_Min);
+    EXPECT_EQ(cvVec2f(1.5f, 1.5f), aabb.m_Max);
+}
