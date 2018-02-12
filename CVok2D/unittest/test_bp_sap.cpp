@@ -5,6 +5,18 @@
 #include <cvok2d/simulation/cvBody.h>
 #include <vector>
 
+using namespace std;
+
+cvBroadphaseHandle add_node_helper(cvAabb aabb, cvBroadphase* bp)
+{
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> removedPairs;
+
+	auto handle = bp->addNode(aabb);
+    bp->updateDirtyNodes(newPairs, removedPairs);
+    return handle;
+}
+
 class TestBroadphaseSAP: public ::testing::Test
 {
 public:
@@ -54,13 +66,13 @@ TEST(cvBroadphase, addBody)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(0, 0), cvVec2f(1, 1));
-	broadPhase.addNode(aabb1);
-	
+    add_node_helper(aabb1, &broadPhase);
+
 	cvAabb aabb2(cvVec2f(0.5f, 0.5f), cvVec2f(1, 1));
-	broadPhase.addNode(aabb2);
+    add_node_helper(aabb2, &broadPhase);
 
 	cvAabb aabb3(cvVec2f(-2.5f, -2.5f), cvVec2f(-1.0f, -1.0f));
-	broadPhase.addNode(aabb3);
+    add_node_helper(aabb3, &broadPhase);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -72,13 +84,14 @@ TEST(cvBroadphase, removeBody)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(0, 0), cvVec2f(1, 1));
-	broadPhase.addNode(aabb1);
-	
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
+
 	cvAabb aabb2(cvVec2f(0.5f, 0.5f), cvVec2f(1, 1));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
 
 	cvAabb aabb3(cvVec2f(-2.5f, -2.5f), cvVec2f(-1.0f, -1.0f));
-	cvBroadphaseHandle handle3 = broadPhase.addNode(aabb3);
+    auto handle3 = add_node_helper(aabb3, &broadPhase);
+
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -99,10 +112,10 @@ TEST(cvBroadphase, updateBody_MoveRight)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(0, 0), cvVec2f(1, 1));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1.5f, 1.5f), cvVec2f(3, 3));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -119,10 +132,10 @@ TEST(cvBroadphase, updateBody_MoveLeft)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(2.0f, 2.0f), cvVec2f(3.0f, 3.0f));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1.5f, 1.5f), cvVec2f(3, 3));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -139,14 +152,14 @@ TEST(cvBroadphase, updateBody_MoveExpand)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(-2.0f, -1.0f), cvVec2f(-1.0f, 1.0f));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1.0f, -1.0f), cvVec2f(2, 1));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
 
 
 	cvAabb aabb3(cvVec2f(-0.9f, -1.0f), cvVec2f(0.9f, 1.0f));
-    cvBroadphaseHandle handle3 = broadPhase.addNode(aabb3);
+    auto handle3 = add_node_helper(aabb3, &broadPhase);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -160,24 +173,64 @@ TEST(cvBroadphase, updateBody_MoveExpand)
 
 TEST(cvBroadphase, addNode_testEP)
 {
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> removedPairs;
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 
 	cvAabb aabb1(cvVec2f(1, 1), cvVec2f(2, 2));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
     const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
-    EXPECT_EQ(2, epList.size());
-    EXPECT_EQ(1, epList[0].m_Val);
-    EXPECT_EQ(2, epList[1].m_Val);
 
 	cvAabb aabb2(cvVec2f(3, 3), cvVec2f(4, 4));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
+
+    broadPhase.updateDirtyNodes(newPairs, removedPairs);
+
     EXPECT_EQ(4, epList.size());
     EXPECT_EQ(1, epList[0].m_Val);
     EXPECT_EQ(2, epList[1].m_Val);
     EXPECT_EQ(3, epList[2].m_Val);
     EXPECT_EQ(4, epList[3].m_Val);
+}
+
+TEST(cvBroadphase, remove_node)
+{
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> removedPairs;
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+
+	cvAabb aabb1(cvVec2f(1, 1), cvVec2f(2, 2));
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
+
+	cvAabb aabb2(cvVec2f(3, 3), cvVec2f(4, 4));
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
+
+    const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
+    EXPECT_EQ(4, epList.size());
+    EXPECT_EQ(1, epList[0].m_Val);
+    EXPECT_EQ(2, epList[1].m_Val);
+    EXPECT_EQ(3, epList[2].m_Val);
+    EXPECT_EQ(4, epList[3].m_Val);
+
+    auto& node1 = broadPhase.getNodeList().getAt(handle1);
+    auto& node2 = broadPhase.getNodeList().getAt(handle2);
+
+    EXPECT_EQ(0, node1.m_MinIdx[0]);
+    EXPECT_EQ(0, node1.m_MinIdx[1]);
+    EXPECT_EQ(1, node1.m_MaxIdx[0]);
+    EXPECT_EQ(1, node1.m_MaxIdx[1]);
+
+    EXPECT_EQ(2, node2.m_MinIdx[0]);
+    EXPECT_EQ(2, node2.m_MinIdx[1]);
+
+    broadPhase.removeNode(handle1);
+
+    EXPECT_EQ(0, node2.m_MinIdx[0]);
+    EXPECT_EQ(0, node2.m_MinIdx[1]);
+
 }
 
 TEST(cvBroadphase, addOverlappingNode_OnRight_testEP)
@@ -186,7 +239,7 @@ TEST(cvBroadphase, addOverlappingNode_OnRight_testEP)
 	cvBroadphaseSAP broadPhase(cInfo);
 
 	cvAabb aabb1(cvVec2f(1, 1), cvVec2f(2, 2));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
     const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
     EXPECT_EQ(2, epList.size());
@@ -194,7 +247,8 @@ TEST(cvBroadphase, addOverlappingNode_OnRight_testEP)
     EXPECT_EQ(2, epList[1].m_Val);
 
 	cvAabb aabb2(cvVec2f(1.5f, 1.5f), cvVec2f(4, 4));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
+
     EXPECT_EQ(4, epList.size());
     EXPECT_EQ(1, epList[0].m_Val);
     EXPECT_EQ(1.5f, epList[1].m_Val);
@@ -209,7 +263,7 @@ TEST(cvBroadphase, addOverlappingNode_OnLeft_testEP)
 	std::vector<cvBroadphase::BPPair> pairs;
 
 	cvAabb aabb1(cvVec2f(1, 0), cvVec2f(2, 1));
-	auto handle1 = broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
     const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
     EXPECT_EQ(2, epList.size());
@@ -217,7 +271,8 @@ TEST(cvBroadphase, addOverlappingNode_OnLeft_testEP)
     EXPECT_EQ(2, epList[1].m_Val);
 
 	cvAabb aabb2(cvVec2f(0, 0), cvVec2f(1.5f, 1));
-    cvBroadphaseHandle handle2 = broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
+
     EXPECT_EQ(4, epList.size());
     EXPECT_EQ(0, epList[0].m_Val);
     EXPECT_EQ(1, epList[1].m_Val);
@@ -248,10 +303,10 @@ TEST(cvBroadphase,  add_exact_boundingVolume)
 	std::vector<cvBroadphase::BPPair> pairs;
 
 	cvAabb aabb1(cvVec2f(1, -1), cvVec2f(2, 1));
-    broadPhase.addNode(aabb1);
+    auto handle1 = add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1, -1), cvVec2f(2, 1));
-    broadPhase.addNode(aabb2);
+    auto handle2 = add_node_helper(aabb2, &broadPhase);
 
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());

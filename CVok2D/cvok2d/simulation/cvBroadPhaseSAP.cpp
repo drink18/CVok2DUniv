@@ -24,11 +24,11 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 	NodeEndPoint min0, min1;
 	NodeEndPoint max0, max1;
 
-	min0.m_Val = nodeAabb.m_Min.x; min0.setIsMin(true);
-	min1.m_Val = nodeAabb.m_Min.y; min1.setIsMin(true);
+	min0.m_Val = FLT_MAX; min0.setIsMin(true);
+	min1.m_Val = FLT_MAX; min1.setIsMin(true);
 
-	max0.m_Val = nodeAabb.m_Max.x; max0.setIsMin(false);
-	max1.m_Val = nodeAabb.m_Max.y; max1.setIsMin(false);
+	max0.m_Val = FLT_MAX; max0.setIsMin(false);
+	max1.m_Val = FLT_MAX; max1.setIsMin(false);
 
 	min0.setBPHandle(handle);
 	min1.setBPHandle(handle);
@@ -44,15 +44,7 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 	newNode.m_MaxIdx[1] = (int32_t)m_EndPoints[1].size();
 	m_EndPoints[1].push_back(max1);
 
-
-    for(int axis = 0; axis < 2; axis++)
-    {
-        int minIdx = newNode.m_MinIdx[axis];
-        int maxIdx = newNode.m_MaxIdx[axis];
-
-        moveEndPoint(axis, minIdx, -1);
-        moveEndPoint(axis, maxIdx, -1);
-    }
+    m_DirtyNodes[handle] = nodeAabb;
 
 	return handle;
 }
@@ -264,18 +256,17 @@ void cvBroadphaseSAP::markBodyDirty(const cvBody& body)
 {
     auto bphandle = body.getBroadphaseHandle();
     cvAssertMsg(bphandle.isValid(), "Marking a invalid bp node dirty");
-    m_DirtyNodes.insert(bphandle);
+    cvAabb aabb;
+    body.getAabb(aabb);
+    m_DirtyNodes[bphandle] = aabb;
 }
 
-void cvBroadphaseSAP::updateDirtyNodes(cvWorld& world, std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs)
+void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs)
 {
-    for(auto& handle : m_DirtyNodes)
+    for(auto& dn: m_DirtyNodes)
     {
-        const BPNode& node = m_Nodes.getAt(handle);
-        const cvBody& body = world.getBody(node.m_bodyId);
-        cvAabb aabb;
-        body.getAabb(aabb);
-        updateOneNode(handle, aabb);
+        const BPNode& node = m_Nodes.getAt(dn.first);
+        updateOneNode(dn.first, dn.second);
     }
 
     m_DirtyNodes.clear();

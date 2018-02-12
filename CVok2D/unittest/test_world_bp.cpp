@@ -59,8 +59,14 @@ TEST_F(TestWorldAndBP, updateDirtyBP)
     m_bp->markBodyDirty(m_world->accessBody(m_bodyId));
     EXPECT_EQ(1, m_bp->getDirtyNodes().size());
 
+    cvBodyCInfo info;
+    info.m_shape = make_shared<cvCircle>(cvVec2f(0.5f, 0.5f), 1.0f);
+    m_world->createBody(info, true);
+
     vector<cvBroadphase::BPPair> newPairs;
     vector<cvBroadphase::BPPair> deletedPairs;
-    m_bp->updateDirtyNodes(*m_world, newPairs, deletedPairs);
+    m_bp->updateDirtyNodes(newPairs, deletedPairs);
+
     EXPECT_EQ(0, m_bp->getDirtyNodes().size());
+    //EXPECT_EQ(1, newPairs.size());
 }

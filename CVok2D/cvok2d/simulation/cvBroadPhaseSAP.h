@@ -27,7 +27,7 @@ public:
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
-    virtual void updateDirtyNodes(cvWorld& world, std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs) override;
+    virtual void updateDirtyNodes(std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs) override;
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override;
 	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override;
 	virtual void removeNode(cvBroadphaseHandle handle) override;
@@ -41,7 +41,7 @@ public:
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 
 public:
-    const std::unordered_set<cvBroadphaseHandle>& getDirtyNodes() const {return m_DirtyNodes;}
+    const std::unordered_map<cvBroadphaseHandle, cvAabb>& getDirtyNodes() const {return m_DirtyNodes;}
     const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
     const NodeList& getNodeList() const {return m_Nodes;}
 
@@ -57,5 +57,5 @@ private:
 	NodeList m_Nodes;
 	BPPairMap m_Pairs;
 
-    std::unordered_set<cvBroadphaseHandle> m_DirtyNodes;
+    std::unordered_map<cvBroadphaseHandle, cvAabb> m_DirtyNodes;
 };
