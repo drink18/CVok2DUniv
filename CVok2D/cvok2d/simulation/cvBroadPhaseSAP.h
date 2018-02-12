@@ -23,7 +23,7 @@ public:
 	typedef cvBroadphase::BPPair BPPair;
     typedef std::vector<cvBroadphase::NodeEndPoint> NodeEPList;
     typedef cvFreeList<BPNode, cvBroadphaseHandle> NodeList;
-    typedef std::unordered_set<BPPair, BPPair::compBPPair > BPPairMap;
+    typedef std::unordered_set<BPPair, BPPair::compBPPair > BPPairSet;
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
@@ -55,7 +55,9 @@ private:
 private:
 	NodeEPList  m_EndPoints[2];
 	NodeList m_Nodes;
-	BPPairMap m_Pairs;
+	BPPairSet m_Pairs;
+	BPPairSet m_newPairs;
+	BPPairSet m_removedPairs;
 
     std::unordered_map<cvBroadphaseHandle, cvAabb> m_DirtyNodes;
 };

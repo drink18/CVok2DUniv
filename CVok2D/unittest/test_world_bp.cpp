@@ -54,7 +54,7 @@ TEST_F(TestWorldAndBP, markBodyDirty)
     EXPECT_EQ(1, m_bp->getDirtyNodes().size());
 }
 
-TEST_F(TestWorldAndBP, updateDirtyBP)
+TEST_F(TestWorldAndBP, updateDirtyBP_newPairs)
 {
     m_bp->markBodyDirty(m_world->accessBody(m_bodyId));
     EXPECT_EQ(1, m_bp->getDirtyNodes().size());
@@ -68,5 +68,28 @@ TEST_F(TestWorldAndBP, updateDirtyBP)
     m_bp->updateDirtyNodes(newPairs, deletedPairs);
 
     EXPECT_EQ(0, m_bp->getDirtyNodes().size());
-    //EXPECT_EQ(1, newPairs.size());
+    EXPECT_EQ(1, newPairs.size());
+}
+
+TEST_F(TestWorldAndBP, updateDirtyBP_removedPairs)
+{
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> deletedPairs;
+
+    m_bp->markBodyDirty(m_world->accessBody(m_bodyId));
+    EXPECT_EQ(1, m_bp->getDirtyNodes().size());
+
+    cvBodyCInfo info;
+    info.m_shape = make_shared<cvCircle>(cvVec2f(0.5f, 0.5f), 1.0f);
+    auto id = m_world->createBody(info, true);
+
+    m_bp->updateDirtyNodes(newPairs, deletedPairs);
+
+    cvTransform t;
+    t.m_Translation = cvVec2f(5, 5);
+    m_world->setBodyTransform(id, t);
+
+    m_bp->updateDirtyNodes(newPairs, deletedPairs);
+    EXPECT_EQ(0, m_bp->getDirtyNodes().size());
+    EXPECT_EQ(1, deletedPairs.size());
 }

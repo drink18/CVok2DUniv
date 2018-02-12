@@ -48,3 +48,24 @@ TEST(world, SetVelSep)
     angVelBack = world->getBodyAngluarVelocity(bodyId);
     EXPECT_NEAR(3.0f, angVelBack, CV_FLOAT_EPS);
 }
+
+TEST(world, SetBodyTransform)
+{
+    cvWorldCInfo cInfo;
+    cvWorld* world = new cvWorld(cInfo);
+
+    cvBodyCInfo bodyCInfo;
+    bodyCInfo.m_shape = std::shared_ptr<cvShape>(
+            cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
+
+    cvBodyId bodyId = world->createBody(bodyCInfo, true);
+
+    cvTransform t;
+    t.m_Translation.x = 1;
+    t.m_Translation.y = 2;
+
+    world->setBodyTransform(bodyId, t);
+
+    cvTransform ut = world->getBodyTransform(bodyId);
+    EXPECT_EQ(cvVec2f(1, 2), ut.m_Translation);
+}

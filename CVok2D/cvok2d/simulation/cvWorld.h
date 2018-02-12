@@ -36,6 +36,9 @@ public:
     cvBody& accessBody(cvBodyId id) {return m_bodyManager.accessBody(id);}
     const cvBody& getBody(cvBodyId id) const {return m_bodyManager.getBody(id);}
 
+    void setBodyTransform(cvBodyId id, const cvTransform& newTrans);
+    cvTransform getBodyTransform(cvBodyId id) const;
+
     void setBodyVelocity(cvBodyId bodyId, const cvVec2f& linVel, float angVel);
     void setBodyLinearVelocity(cvBodyId bodyId, const cvVec2f& linVel);
     void setBodyAngularVelocity(cvBodyId bodyId, float angVel);

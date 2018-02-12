@@ -90,6 +90,23 @@ float cvWorld::getBodyAngluarVelocity(cvBodyId bodyId) const
     return motion.m_angularVel;
 }
 
+void cvWorld::setBodyTransform(cvBodyId id, const cvTransform& newTrans)
+{
+    cvBody& body = m_bodyManager.accessBody(id);
+    body.m_transform = newTrans;
+
+    if(body.getBroadphaseHandle().isValid())
+    {
+        m_broadPhase->markBodyDirty(body);
+    }
+}
+
+cvTransform cvWorld::getBodyTransform(cvBodyId id) const
+{
+    auto& body = m_bodyManager.getBody(id);
+    return body.m_transform;
+}
+
 cvMotion& cvWorld::accessBodyMotion(cvBodyId bodyId)
 {
     cvBody& body = m_bodyManager.accessBody(bodyId);
