@@ -135,36 +135,43 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
 		int nextPt = i + direction;
 		NodeEndPoint& nextEp = endPoints[nextPt];
 
+
+
 		if (((direction == -1 && nextEp.m_Val > ep.m_Val)
 			|| (direction == 1 && nextEp.m_Val < ep.m_Val)
             ) )
 		{
-			if (direction == 1)
-			{
-				if (nextEp.getIsMin() && ep.getIsMax())
-				{
-					// add new pair (nextEp, ep)
-					addPair(nextEp, ep);
-				}
-				if (ep.getIsMin() && nextEp.getIsMax())
-				{
-					// remove pair (nextEp, ep)
-					removePair(nextEp, ep);
-				}
-			}
-			else
-			{
-				if (ep.getIsMin() && nextEp.getIsMax())
-				{
-					// add new pair (nextExp, ep)
-					addPair(nextEp, ep);
-				}
-				if (ep.getIsMax() && nextEp.getIsMin())
-				{
-					// remove pair (nextEp, ep)
-					removePair(nextEp, ep);
-				}
+            // newly added pairs has FLT_MAX as aabb min and max, skip those
+            if(nextEp.m_Val != FLT_MAX && ep.m_Val != FLT_MAX)
+            {
+                if (direction == 1)
+                {
+                    if (nextEp.getIsMin() && ep.getIsMax())
+                    {
+                        // add new pair (nextEp, ep)
+                        addPair(nextEp, ep);
+                    }
+                    if (ep.getIsMin() && nextEp.getIsMax())
+                    {
+                        // remove pair (nextEp, ep)
+                        removePair(nextEp, ep);
+                    }
+                }
+                else
+                {
+                    if (ep.getIsMin() && nextEp.getIsMax())
+                    {
+                        // add new pair (nextExp, ep)
+                        addPair(nextEp, ep);
+                    }
+                    if (ep.getIsMax() && nextEp.getIsMin())
+                    {
+                        // remove pair (nextEp, ep)
+                        removePair(nextEp, ep);
+                    }
+                }
             }
+
             //swap
             swapEndPoints(i, nextPt, ep, nextEp, m_Nodes.accessAt(ep.getBPHandle()), 
                    m_Nodes.accessAt(nextEp.getBPHandle()), axis);
@@ -223,7 +230,7 @@ bool cvBroadphaseSAP::removePair(const cvBroadphaseHandle& handle1, const cvBroa
 	if (m_Pairs.find(pair) != m_Pairs.end())
 	{
 		m_Pairs.erase(pair);
-        m_removedPairs.erase(pair);
+        m_removedPairs.insert(pair);
 		return true;
 	}
 	return false;
@@ -266,6 +273,9 @@ void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vecto
 {
     m_removedPairs.clear();
     m_newPairs.clear();
+
+    newPairs.clear();
+    removedPairs.clear();
 
     for(auto& dn: m_DirtyNodes)
     {

@@ -195,6 +195,32 @@ TEST(cvBroadphase, addNode_testEP)
     EXPECT_EQ(4, epList[3].m_Val);
 }
 
+TEST(cvBroadphase, batch_adding)
+{
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> removedPairs;
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+
+	cvAabb aabb1(cvVec2f(1, 1), cvVec2f(2, 2));
+    //auto handle1 = add_node_helper(aabb1, &broadPhase);
+    auto handle1 = broadPhase.addNode(aabb1);
+
+    const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
+
+	cvAabb aabb2(cvVec2f(3, 3), cvVec2f(4, 4));
+    //auto handle2 = add_node_helper(aabb2, &broadPhase);
+    auto handle2 = broadPhase.addNode(aabb2);
+
+    broadPhase.updateDirtyNodes(newPairs, removedPairs);
+
+    EXPECT_EQ(4, epList.size());
+    EXPECT_EQ(1, epList[0].m_Val);
+    EXPECT_EQ(2, epList[1].m_Val);
+    EXPECT_EQ(3, epList[2].m_Val);
+    EXPECT_EQ(4, epList[3].m_Val);
+}
+
 TEST(cvBroadphase, remove_node)
 {
     vector<cvBroadphase::BPPair> newPairs;
@@ -230,7 +256,6 @@ TEST(cvBroadphase, remove_node)
 
     EXPECT_EQ(0, node2.m_MinIdx[0]);
     EXPECT_EQ(0, node2.m_MinIdx[1]);
-
 }
 
 TEST(cvBroadphase, addOverlappingNode_OnRight_testEP)
@@ -311,4 +336,5 @@ TEST(cvBroadphase,  add_exact_boundingVolume)
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());
 }
+
 

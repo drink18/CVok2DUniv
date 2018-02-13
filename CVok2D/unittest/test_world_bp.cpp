@@ -91,5 +91,6 @@ TEST_F(TestWorldAndBP, updateDirtyBP_removedPairs)
 
     m_bp->updateDirtyNodes(newPairs, deletedPairs);
     EXPECT_EQ(0, m_bp->getDirtyNodes().size());
+    EXPECT_EQ(0, newPairs.size());
     EXPECT_EQ(1, deletedPairs.size());
 }
