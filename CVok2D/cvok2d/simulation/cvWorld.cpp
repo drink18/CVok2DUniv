@@ -1,6 +1,8 @@
 #include "cvWorld.h"
 #include <simulation/cvBroadPhaseSAP.h>
 
+using namespace std;
+
 cvWorld::cvWorld(cvWorldCInfo&  cinfo)
 {
     m_broadPhase = cinfo.m_broadPhase;
@@ -125,4 +127,8 @@ const cvMotion& cvWorld::getBodyMotion(cvBodyId bodyId) const
 void cvWorld::simulate(const cvSimInfo& info)
 {
     //update dirty aabb nodes
+    vector<cvBroadphase::BPPair> newPairs;
+    vector<cvBroadphase::BPPair> removedPairs;
+    m_broadPhase->updateDirtyNodes(newPairs, removedPairs);
+
 }

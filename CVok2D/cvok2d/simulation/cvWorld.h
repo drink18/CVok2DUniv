@@ -53,6 +53,7 @@ public:
 public:
     void simulate(const cvSimInfo& info);
     void integrate(float dt);
+
 private:
 	cvBroadphase* m_broadPhase = nullptr;
 
