@@ -7,13 +7,14 @@
 
 #include <core/cvHandle.h>
 #include <core/collection/cvFreeList.h>
+#include <simulation/cvBody.h>
 #include <core/cvAabb.h>
+#include <simulation/cvHandleDefs.h>
 
 class cvAabb;
 class cvBody;
 class cvWorld;
 
-typedef  cvHandle<int32_t, (int32_t)0x7fffffff> cvBroadphaseHandle;
 namespace std
 {
     template<> struct hash<cvBroadphaseHandle>
@@ -33,6 +34,13 @@ struct cvBroadphaseCInfo
 class cvBroadphase
 {
 public:
+	struct BPNodeBase
+    {
+		cvAabb m_aabb;
+		int64_t m_userData = 0;
+        cvBodyId m_bodyId;
+    };
+
 	template<typename T>
 	struct NodeEndPoint_T
 	{
@@ -111,4 +119,5 @@ public:
 
 	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
+    virtual const BPNodeBase* getBPNode(cvBroadphaseHandle handle1) const  = 0;
 };

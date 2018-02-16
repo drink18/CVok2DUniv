@@ -7,13 +7,10 @@
 class cvBroadphaseSAP : public cvBroadphase
 {
 public:
-	struct BPNode
+	struct BPNode : public BPNodeBase
 	{
 		int m_MinIdx[2];
 		int m_MaxIdx[2];
-		cvAabb m_aabb;
-		int64_t m_userData = 0;
-        cvBodyId m_bodyId;
 
 		BPNode()
 		{}
@@ -39,6 +36,10 @@ public:
 
 	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override;
+    virtual const BPNodeBase* getBPNode(cvBroadphaseHandle handle) const override
+    {
+        return &m_Nodes.getAt(handle);
+    }
 
 public:
     const std::unordered_map<cvBroadphaseHandle, cvAabb>& getDirtyNodes() const {return m_DirtyNodes;}

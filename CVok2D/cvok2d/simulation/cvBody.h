@@ -4,10 +4,11 @@
 #include <core/cvHandle.h>
 #include <core/cvMath.h>
 #include <shape/cvShape.h>
+
+#include <simulation/cvHandleDefs.h>
 #include <dyanmic/cvMotion.h>
 #include <simulation/cvBroadphase.h>
 
-typedef cvHandle<std::uint16_t, 0x7FFF> cvBodyId;
 
 class cvWorld;
 
