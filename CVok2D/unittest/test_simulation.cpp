@@ -24,7 +24,14 @@ public:
     virtual void updateDirtyNodes(std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs)  override
     {
         BPPair pair(handle1, handle2);
-        newPairs.push_back(pair);
+        if(m_adding)
+        {
+            newPairs.push_back(pair);
+        }
+        else
+        {
+            removedPairs.push_back(pair);
+        }
     }
 
 	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override
@@ -63,6 +70,8 @@ public:
         return &m_node2;
     }
 
+    bool m_adding = true; // when false, updateDirtyNode will mark fake pair as removed
+
     cvBroadphaseHandle handle1;
     cvBroadphaseHandle handle2;
     BPNodeBase m_node1;
@@ -93,7 +102,7 @@ public:
     unique_ptr<cvSimulationControlSimple> m_sc;
     cvSimulationContext* m_ctx;
 
-    cvBroadphase* m_bp = nullptr;
+    FakeBP* m_bp = nullptr;
     cvWorld* m_world = nullptr;
     cvBodyId m_bodyId;
 };
@@ -104,4 +113,13 @@ TEST_F(TestSimControl, generateColAgent)
     m_sc->updateBP();
 
     EXPECT_EQ(1, m_ctx->m_colAgents.size());
+}
+
+TEST_F(TestSimControl, removeColAgent)
+{
+    m_sc->updateBP();
+    m_bp->m_adding = false;
+    m_sc->updateBP();
+
+    EXPECT_EQ(0, m_ctx->m_colAgents.size());
 }
