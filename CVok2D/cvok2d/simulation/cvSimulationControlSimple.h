@@ -8,7 +8,7 @@ class cvSimulationControlSimple : public cvISimulationControl
 {
 public:
     cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx)
-        :m_bp(bp)
+        :m_bp(bp), m_simContext(simCtx)
     {
     }
 

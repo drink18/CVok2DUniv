@@ -10,6 +10,64 @@
 #include <cvok2d/simulation/cvSimulationControlSimple.h>
 
 #include <memory>
+#include <vector>
+
+class FakeBP :public cvBroadphase
+{
+public:
+    FakeBP(cvBroadphaseCInfo cinfo) :handle1(0), handle2(1)
+    {
+        m_node1.m_bodyId = cvBodyId(0);
+        m_node2.m_bodyId = cvBodyId(0);
+    }
+
+    virtual void updateDirtyNodes(std::vector<BPPair>& newPairs, std::vector<BPPair>& removedPairs)  override
+    {
+        BPPair pair(handle1, handle2);
+        newPairs.push_back(pair);
+    }
+
+	virtual void updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb) override
+    {
+    }
+
+	virtual cvBroadphaseHandle addNode(const cvAabb& nodeAabb) override
+    {
+        return handle1;
+    }
+
+	virtual void removeNode(cvBroadphaseHandle handle) override { }
+
+	virtual void getAllPairs(std::vector<BPPair>& pairs) override { }
+
+    virtual void addBody(cvBody& body) override { }
+
+    virtual void removeBody(cvBody& body) override { }
+
+    virtual void markBodyDirty(const cvBody& body) override { }
+
+
+	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override
+    {
+        return true;
+    }
+
+	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) override
+    {
+        return true;
+    }
+
+    virtual const BPNodeBase* getBPNode(cvBroadphaseHandle handle) const  override
+    {
+        if(handle == handle1) return &m_node1;
+        return &m_node2;
+    }
+
+    cvBroadphaseHandle handle1;
+    cvBroadphaseHandle handle2;
+    BPNodeBase m_node1;
+    BPNodeBase m_node2;
+};
 
 using namespace std;
 class TestSimControl : public ::testing::Test
@@ -18,7 +76,7 @@ public:
     virtual void SetUp() override
     {
         cvBroadphaseCInfo bpInfo;
-        m_bp = new cvBroadphaseSAP(bpInfo);
+        m_bp = new FakeBP(bpInfo);
 
         cvWorldCInfo wldInfo;
         wldInfo.m_broadPhase = m_bp;
@@ -35,7 +93,7 @@ public:
     unique_ptr<cvSimulationControlSimple> m_sc;
     cvSimulationContext* m_ctx;
 
-    cvBroadphaseSAP* m_bp = nullptr;
+    cvBroadphase* m_bp = nullptr;
     cvWorld* m_world = nullptr;
     cvBodyId m_bodyId;
 };
