@@ -157,7 +157,7 @@ int main(int, char**)
 
         glfwPollEvents();
 
-        glfwGetWindowSize(window, &g_camera.m_width, &g_camera.m_height);
+        glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
         glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 
