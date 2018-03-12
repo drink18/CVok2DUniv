@@ -15,7 +15,8 @@ BasicTest::BasicTest()
     cvBodyCInfo bInfo;
     bInfo.m_shape.reset(m_box);
     bInfo.m_initTransform.setIdentity();
-    bInfo.m_initTransform.m_Rotation = DEG2RAD(20);
+    bInfo.m_initTransform.m_Translation = cvVec2f(0, 0);
+    //bInfo.m_initTransform.m_Rotation = DEG2RAD(20);
     m_world->createBody(bInfo, true);
 
     bInfo.m_shape.reset(m_circle);

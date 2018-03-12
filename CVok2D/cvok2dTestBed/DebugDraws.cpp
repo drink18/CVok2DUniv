@@ -32,7 +32,7 @@ cvVec2f Camera::ConvertScreenToWorld(const cvVec2f& ps)
 	float v = (h - ps.y) / h;
 
 	float ratio = w / h;
-	cvVec2f extents(ratio * 25.0f, 25.0f);
+	cvVec2f extents(ratio * m_extent, m_extent);
 	extents.setScale(m_zoom);
 
 	cvVec2f lower; lower.setSub(m_center, extents);
@@ -50,7 +50,7 @@ cvVec2f Camera::ConvertWorldToScreen(const cvVec2f& pw)
 	float w = float(m_width);
 	float h = float(m_height);
 	float ratio = w / h;
-	cvVec2f extents(ratio * 25.0f, 25.0f);
+	cvVec2f extents(ratio * m_extent, m_extent);
 	extents.setScale(m_zoom);
 
 	cvVec2f lower; lower.setSub(m_center, extents);
@@ -70,7 +70,7 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	float w = float(m_width);
 	float h = float(m_height);
 	float ratio = w / h;
-	cvVec2f extents(ratio * 25.0f, 25.0f);
+    cvVec2f extents(ratio * m_extent, m_extent);
 	extents.setScale(m_zoom);
 
 	cvVec2f lower; lower.setSub(m_center, extents);
@@ -91,8 +91,8 @@ void Camera::BuildProjectionMatrix(float* m, float zBias)
 	m[10] = 1.0f;
 	m[11] = 0.0f;
 
-	m[12] = -(upper.x + lower.x) / (upper.x - lower.x);
-	m[13] = -(upper.y + lower.y) / (upper.y - lower.y);
+	m[12] = - (upper.x + lower.x) / (upper.x - lower.x);
+	m[13] = - (upper.y + lower.y) / (upper.y - lower.y);
 	m[14] = zBias;
 	m[15] = 1.0f;
 }
