@@ -8,9 +8,7 @@
 
 struct cvWorldCInfo
 {
-    std::shared_ptr<cvShape> m_shape;
     cvBroadphase* m_broadPhase = nullptr;
-    cvTransform m_initTrans;
 };
 
 struct cvSimInfo

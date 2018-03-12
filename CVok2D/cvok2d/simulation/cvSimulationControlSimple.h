@@ -4,11 +4,13 @@
 
 #include "cvSimulationContext.h"
 
+class cvWorld;
+
 class cvSimulationControlSimple : public cvISimulationControl
 {
 public:
-    cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx)
-        :m_bp(bp), m_simContext(simCtx)
+    cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx, cvWorld* world)
+        :m_bp(bp), m_simContext(simCtx), m_world(world)
     {
     }
 
@@ -24,4 +26,5 @@ public:
     std::shared_ptr<cvSimulationContext> m_simContext;
 private:
     cvBroadphase* m_bp;
+    cvWorld* m_world;
 };

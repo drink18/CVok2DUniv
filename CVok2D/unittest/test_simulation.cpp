@@ -97,7 +97,7 @@ public:
 
         m_ctx = new cvSimulationContext();
 
-        m_sc.reset(new cvSimulationControlSimple(m_bp, m_ctx));
+        m_sc.reset(new cvSimulationControlSimple(m_bp, m_ctx, m_world));
     }
     unique_ptr<cvSimulationControlSimple> m_sc;
     cvSimulationContext* m_ctx;
