@@ -1,7 +1,7 @@
 #include "TestBase.h"
 
 #include <cvok2d.h>
-#include <simulation/cvWorld.h>
+#include <world/cvWorld.h>
 #include "DebugDraw.h"
 
 

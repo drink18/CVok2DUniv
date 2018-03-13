@@ -13,8 +13,8 @@
 #include <shape/cvShape.h>
 #include <shape/cvPolygonShape.h>
 #include <shape/cvCircle.h>
-#include <simulation/cvBody.h>
-#include <simulation/cvWorld.h>
+#include <world/cvBody.h>
+#include <world/cvWorld.h>
 
 
 #include <GL/gl3w.h>

@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
-#include <simulation/cvWorld.h>
-#include <shape/cvPolygonShape.h>
 #include <core/cvMath.h>
+#include <shape/cvPolygonShape.h>
+#include <world/cvWorld.h>
 
 TEST(world, SetVel)
 {

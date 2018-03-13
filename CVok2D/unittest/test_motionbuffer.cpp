@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include <simulation/cvMotionManager.h>
+#include <world/cvMotionManager.h>
 
 TEST(cvMotionManager, creation)
 {

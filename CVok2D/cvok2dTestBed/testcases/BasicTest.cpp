@@ -2,7 +2,7 @@
 #include <DebugDraw.h>
 #include <shape/cvPolygonShape.h>
 #include <shape/cvCircle.h>
-#include <simulation/cvWorld.h>
+#include <world/cvWorld.h>
 
 BasicTest::BasicTest()
 {

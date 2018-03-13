@@ -5,11 +5,11 @@
 #include <map>
 #include <unordered_map>
 
-#include <core/cvHandle.h>
 #include <core/collection/cvFreeList.h>
-#include <simulation/cvBody.h>
 #include <core/cvAabb.h>
-#include <simulation/cvHandleDefs.h>
+#include <core/cvHandle.h>
+#include <world/cvBody.h>
+#include <world/cvHandleDefs.h>
 
 class cvAabb;
 class cvBody;

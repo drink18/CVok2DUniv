@@ -1,7 +1,7 @@
 #pragma  once
 
 #include <core/cvMath.h>
-#include <simulation/cvBody.h>
+#include <world/cvBody.h>
 
 struct cvContact
 {

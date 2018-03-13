@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include <simulation/cvWorld.h>
+#include <world/cvWorld.h>
 #include <shape/cvPolygonShape.h>
 
 class WorldTest : public ::testing::Test

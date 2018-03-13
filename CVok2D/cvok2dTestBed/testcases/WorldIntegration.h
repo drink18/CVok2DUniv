@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TestBase.h"
-#include <simulation/cvBody.h>
+#include <world/cvBody.h>
 #include <memory>
 
 class cvConvexShape;

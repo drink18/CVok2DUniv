@@ -2,7 +2,7 @@
 
 #include <shape/cvShape.h>
 #include <shape/cvPolygonShape.h>
-#include <simulation/cvWorld.h>
+#include <world/cvWorld.h>
 #include <collision/GJK.h>
 #include <DebugDraw.h>
 

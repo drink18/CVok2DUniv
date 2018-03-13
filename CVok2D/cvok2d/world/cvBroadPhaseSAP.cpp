@@ -1,7 +1,7 @@
 #include "cvok2d.h"
 #include "cvBroadPhaseSAP.h"
-#include <simulation/cvBody.h>
-#include <simulation/cvWorld.h>
+#include <world/cvBody.h>
+#include <world/cvWorld.h>
 
 cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 	:cvBroadphase(cinfo)

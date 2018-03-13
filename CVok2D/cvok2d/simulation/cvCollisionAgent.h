@@ -1,5 +1,6 @@
 #pragma once
-#include "cvBody.h"
+
+#include <world/cvBody.h>
 #include <collision/cvContact.h>
 #include <vector>
 

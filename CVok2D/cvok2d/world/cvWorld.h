@@ -3,8 +3,9 @@
 #include <core/collection/cvFreeList.h>
 #include "cvBody.h"
 #include <dyanmic/cvMotion.h>
-#include <simulation/cvBodyManager.h>
-#include <simulation/cvMotionManager.h>
+
+#include <world/cvBodyManager.h>
+#include <world/cvMotionManager.h>
 
 struct cvWorldCInfo
 {

@@ -5,9 +5,9 @@
 #include <core/cvMath.h>
 #include <shape/cvShape.h>
 
-#include <simulation/cvHandleDefs.h>
+#include <world/cvHandleDefs.h>
+#include <world/cvBroadphase.h>
 #include <dyanmic/cvMotion.h>
-#include <simulation/cvBroadphase.h>
 
 
 class cvWorld;

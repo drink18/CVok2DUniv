@@ -4,7 +4,7 @@
 #include <unordered_set>
 
 #include <core/collection/cvFreeList.h>
-#include <simulation/cvBody.h>
+#include <world/cvBody.h>
 
 
 namespace std

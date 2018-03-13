@@ -1,5 +1,5 @@
 #include "cvSimulationControlSimple.h"
-#include "cvWorld.h"
+#include <world/cvWorld.h>
 #include <vector>
 
 using namespace std;
@@ -65,6 +65,11 @@ void cvSimulationControlSimple::updateBP()
 
 void cvSimulationControlSimple::narrowPhase()
 {
+    auto& npPairs = m_simContext->m_NpPairs;
+    for(auto& p : npPairs)
+    {
+        
+    }
 }
 
 void cvSimulationControlSimple::postCollide()

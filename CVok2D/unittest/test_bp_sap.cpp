@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 #include <cvok2d/cvok2d.h>
-#include <cvok2d/simulation/cvBroadphase.h>
-#include <cvok2d/simulation/cvBroadPhaseSAP.h>
-#include <cvok2d/simulation/cvBody.h>
+#include <cvok2d/world/cvBroadphase.h>
+#include <cvok2d/world/cvBroadPhaseSAP.h>
+#include <cvok2d/world/cvBody.h>
 #include <vector>
 
 using namespace std;

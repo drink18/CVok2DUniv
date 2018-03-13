@@ -1,8 +1,9 @@
 #include "gmock/gmock.h"
-#include <simulation/cvBroadphase.h>
+
 
 #include <memory>
-#include <simulation/cvWorld.h>
+#include <world/cvBroadphase.h>
+#include <world/cvWorld.h>
 
 class cvBroadphaseMock : public cvBroadphase
 {

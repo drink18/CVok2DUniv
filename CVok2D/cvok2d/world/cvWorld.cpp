@@ -1,5 +1,5 @@
 #include "cvWorld.h"
-#include <simulation/cvBroadPhaseSAP.h>
+#include <world/cvBroadPhaseSAP.h>
 
 using namespace std;
 

@@ -2,7 +2,7 @@
 
 #include <unordered_set>
 #include "cvBroadphase.h"
-#include <simulation/cvBody.h>
+#include <world/cvBody.h>
 
 class cvBroadphaseSAP : public cvBroadphase
 {

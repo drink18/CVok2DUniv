@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
 #include <gmock/gmock.h>
 #include <cvok2d/cvok2d.h>
-#include <cvok2d/simulation/cvBroadphase.h>
-#include <cvok2d/simulation/cvBroadPhaseSAP.h>
-#include <cvok2d/simulation/cvBody.h>
-#include <cvok2d/simulation/cvWorld.h>
+#include <cvok2d/world/cvBroadphase.h>
+#include <cvok2d/world/cvBroadPhaseSAP.h>
+#include <cvok2d/world/cvBody.h>
+#include <cvok2d/world/cvWorld.h>
 #include <cvok2d/shape/cvCircle.h>
 
 #include <vector>
