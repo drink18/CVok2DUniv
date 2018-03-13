@@ -6,8 +6,8 @@
 class cvShape;
 class cvManifoldPt;
 
-using cvCollisionFn = void(*)(const cvShape* shapeA, const cvShape* shapeB,
-        cvMat33& matA, cvMat33& matB, cvManifoldPt& pt);
+using cvCollisionFn = void(*)(const cvShape& shapeA, const cvShape& shapeB,
+        const cvMat33& matA, const cvMat33& matB, cvManifoldPt& pt);
 
 extern cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count];
 

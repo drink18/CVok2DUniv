@@ -1,6 +1,5 @@
 #include "gmock/gmock.h"
 
-
 #include <memory>
 #include <world/cvBroadphase.h>
 #include <world/cvWorld.h>

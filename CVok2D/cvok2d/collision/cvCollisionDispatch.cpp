@@ -1,23 +1,31 @@
 #include "cvCollisionDispatch.h"
 #include "cvManifold.h"
 
+#include <collision/GJK.h>
+#include <shape/cvShape.h>
+#include <shape/cvPolygonShape.h>
+
 
 cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count];
 
-void _colCirclevsCircle(const cvShape* shapeA, const cvShape* shapeB, cvMat33& matA,
-        cvMat33& matB, cvManifoldPt& pt)
-{
-    
-}
-
-void _colCirclevsPoly(const cvShape* shapeA, const cvShape* shapeB, cvMat33& matA,
-        cvMat33& matB, cvManifoldPt& pt)
+void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
+        const cvMat33& matB, cvManifoldPt& pt)
 {
 }
 
-void _colPolyvsPoly(const cvShape* shapeA, const cvShape* shapeB, cvMat33& matA,
-        cvMat33& matb, cvManifoldPt& pt)
+void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
+        const cvMat33& matB, cvManifoldPt& pt)
 {
+}
+
+void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
+        const cvMat33& matB, cvManifoldPt& pt)
+{
+    using namespace GJK;
+    auto& polyA = static_cast<const cvPolygonShape&>(shapeA);
+    auto& polyB = static_cast<const cvPolygonShape&>(shapeB);
+    cvShapeQueryInput input(polyA, polyB, matA, matB);
+    auto res = cvGJKConvexToConvex(input);
 }
 
 
