@@ -1,4 +1,5 @@
 #include "cvSimulationControlSimple.h"
+#include <collision/cvCollisionDispatch.h>
 #include <world/cvWorld.h>
 #include <vector>
 
@@ -66,9 +67,16 @@ void cvSimulationControlSimple::updateBP()
 void cvSimulationControlSimple::narrowPhase()
 {
     auto& npPairs = m_simContext->m_NpPairs;
+    m_simContext->m_Manifolds.clear();
     for(auto& p : npPairs)
     {
-        
+        int numPt = 0;
+        auto* shapeA = p.m_shapeA;
+        auto* shapeB = p.m_shapeB;
+        auto fn = g_collisionFunction[shapeA->getShapeType()][shapeB->getShapeType()];
+        // check if manifold for pair<shapeA, shapeB> exists, then add / update points
+        //fn(*shapeA, *shapeB, p.m_transA, p.m_transB, m_simContext->m_Manifolds);
+
     }
 }
 

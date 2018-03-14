@@ -43,5 +43,11 @@ TEST_F(NPTest, testNPPair)
 {
     m_sc->updateBP();
     EXPECT_EQ(1, m_ctx->m_NpPairs.size());
+}
 
+TEST_F(NPTest, testManifoldPointGen)
+{
+
+    m_sc->updateBP();
+    m_sc->narrowPhase();
 }
