@@ -224,16 +224,15 @@ namespace GJK
 
     GJKResult cvPointToConvexShape(const cvPointQueryInput& input)
     {
-        cvMat33 mat;
-        input.shapeXForm.toMat33(mat);
+        cvMat33 mat = input.shapeXForm;
         cvMat33 inv;
         mat.getInvert(inv);
 
         cvVec2f q0 = inv * input.q;
-        auto res = pointToConvex(q0, *input.shape);
+        auto res = pointToConvex(q0, input.shape);
 
         if(res.result == GJKResult::GJK_GOOD)
-            res.closetPt = mat * res.closetPt;
+            res.closetPt = input.shapeXForm * res.closetPt;
         return res;
     }
 

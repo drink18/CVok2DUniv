@@ -58,8 +58,11 @@ namespace GJK
     struct cvPointQueryInput
     {
         cvVec2f q;
-        std::shared_ptr<cvConvexShape> shape;
-        cvTransform shapeXForm;
+        const cvConvexShape& shape;
+        cvMat33 shapeXForm;
+
+        cvPointQueryInput(cvVec2f pt, const cvConvexShape& cvx, const cvMat33& xform)
+            : q(pt), shape(cvx), shapeXForm(xform) {}
     };
 
     struct cvConvex2ConvexGJKResult

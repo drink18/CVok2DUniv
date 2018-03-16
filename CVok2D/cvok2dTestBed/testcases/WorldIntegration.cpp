@@ -33,9 +33,9 @@ void WorldIntegration::tick(cvDebugDraw& debugDraw, float dt)
     const cvBody& body = m_world->getBody(m_Id);
 
     cvVec2f q(0, 0);
-    GJK::cvPointQueryInput input;
-    input.shape = m_shape;
-    input.shapeXForm = body.getTransform();
+    cvMat33 mat;
+    body.getTransform().toMat33(mat);
+    GJK::cvPointQueryInput input(q, *m_shape, mat);
 
     auto res = GJK::cvPointToConvexShape(input);
     if(res.result == GJK::GJKResult::GJK_GOOD)

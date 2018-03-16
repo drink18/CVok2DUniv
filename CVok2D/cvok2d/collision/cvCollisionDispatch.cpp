@@ -45,6 +45,27 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
 void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
         const cvMat33& matB, cvManifold& manifold)
 {
+    using namespace GJK;
+    auto& circleA = static_cast<const cvCircle&>(shapeA);
+    auto& polyB = static_cast<const cvConvexShape&>(shapeB);
+    cvVec2f c = circleA.getCenter();
+    float r = circleA.getRadius();
+
+    manifold.m_numPt = 1;
+    cvManifoldPoint& pt = manifold.m_points[0];
+
+    cvPointQueryInput input(matA * circleA.getCenter(), polyB, matB);
+    GJKResult res = cvPointToConvexShape(input);
+    if(res.result == GJKResult::GJK_GOOD)
+    {
+        pt.m_normal = res.normal;
+        pt.m_point = res.closetPt;
+        pt.m_distance = res.distance - r;
+    }
+    else
+    {
+        //need EPA or SAT
+    }
 }
 
 void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
