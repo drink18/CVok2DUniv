@@ -30,6 +30,7 @@ class NPTest : public ::testing::Test
 
         info.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.0f);
         info.m_initTransform.m_Translation = cvVec2f(0.7f, 0);
+        info.m_initTransform.m_Rotation = 10;
         m_world->createBody(info, true);
     }
 
@@ -47,7 +48,9 @@ TEST_F(NPTest, testNPPair)
 
 TEST_F(NPTest, testManifoldPointGen)
 {
-
     m_sc->updateBP();
     m_sc->narrowPhase();
+
+    EXPECT_EQ(1, m_ctx->m_Manifolds.size());
+    EXPECT_EQ(1, m_ctx->m_Manifolds[0].m_numPt);
 }

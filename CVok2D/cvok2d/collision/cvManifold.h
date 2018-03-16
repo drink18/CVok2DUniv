@@ -21,6 +21,7 @@ public:
 struct cvManifoldPoint
 {
     cvVec2f m_point;
+    cvVec2f m_normal;
     float m_distance;
 };
 

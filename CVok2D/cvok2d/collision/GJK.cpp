@@ -298,11 +298,14 @@ namespace GJK
                         if(lambda2 < 0) lambda1 = 1;
                         res.m_pA = v0.sA * lambda1 + v1.sA * lambda2;
                         res.m_pB = v0.sB * lambda1 + v1.sB * lambda2;
+
                     }
                     break;
                 default:
                     break;
             }
+            res.m_seperation = res.m_pB - res.m_pA;
+            res.m_seperation.normalize();
         }
 
         return res;

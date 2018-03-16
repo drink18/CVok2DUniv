@@ -66,6 +66,7 @@ namespace GJK
     {
         cvVec2f m_pA;
         cvVec2f m_pB;
+        cvVec2f m_seperation;
         float m_distance;
         bool m_succeed = false;
     };

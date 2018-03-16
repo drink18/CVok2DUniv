@@ -42,7 +42,9 @@ void cvSimulationControlSimple::updateBP()
 
     vector<cvBroadphase::BPPair> allPairs;
     vector<cvNPPair>& npPairs = m_simContext->m_NpPairs;
+    vector<cvManifold>& manifolds = m_simContext->m_Manifolds;
     npPairs.clear();
+    manifolds.clear();
     m_bp->getAllPairs(allPairs);
     for(auto& p : allPairs)
     {
@@ -61,22 +63,28 @@ void cvSimulationControlSimple::updateBP()
         m_world->getBodyTransform(np.m_bodyB).toMat33(np.m_transB);
         np.m_shapeA = bodyA.getShape().get();
         np.m_shapeB = bodyB.getShape().get();
+
+        manifolds.resize(manifolds.size() + 1);
+        cvManifold& manifold = manifolds.back();
+        manifold.m_bodyB = np.m_bodyA;
+        manifold.m_bodyB = np.m_bodyB;
+        manifold.m_numPt = 0;
     }
 }
 
 void cvSimulationControlSimple::narrowPhase()
 {
     auto& npPairs = m_simContext->m_NpPairs;
-    m_simContext->m_Manifolds.clear();
-    for(auto& p : npPairs)
+    auto& manifolds = m_simContext->m_Manifolds;
+    for(int i = 0; i < npPairs.size(); ++i)
     {
+        auto& p = npPairs[i];
         int numPt = 0;
         auto* shapeA = p.m_shapeA;
         auto* shapeB = p.m_shapeB;
         auto fn = g_collisionFunction[shapeA->getShapeType()][shapeB->getShapeType()];
-        // check if manifold for pair<shapeA, shapeB> exists, then add / update points
-        //fn(*shapeA, *shapeB, p.m_transA, p.m_transB, m_simContext->m_Manifolds);
 
+        fn(*shapeA, *shapeB, p.m_transA, p.m_transB, manifolds[i]);
     }
 }
 
