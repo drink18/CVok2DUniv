@@ -23,16 +23,15 @@ void cvSimulationControlSimple::updateBP()
         ag->m_bodyIds[1] = node1->m_bodyId;
 
         m_simContext->m_colAgents.push_back(std::move(ag));
-
     }
 
-    for(size_t i = delPairs.size() - 1; i >=0; --i)
+    for(int i = delPairs.size() - 1; i >=0; --i)
     {
         auto& p = delPairs[i];
         auto node0 = m_bp->getBPNode(p.m_h1);
         auto node1 = m_bp->getBPNode(p.m_h2);
         auto& agents = m_simContext->m_colAgents;
-        for(size_t j = agents.size() - 1; j >= 0; --j)
+        for(int j = agents.size() - 1; j >= 0; --j)
         {
             auto& agent = agents[j];
             if(node0->m_bodyId == agent->m_bodyIds[0] && node1->m_bodyId == agent->m_bodyIds[1])
