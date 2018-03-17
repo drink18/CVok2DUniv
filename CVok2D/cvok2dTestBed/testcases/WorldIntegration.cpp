@@ -27,7 +27,9 @@ WorldIntegration::WorldIntegration()
 
 void WorldIntegration::tick(cvDebugDraw& debugDraw, float dt)
 {
-    m_world->integrate(0.02f);
+    cvSimInfo simInfo;
+    simInfo.deltaTime = dt;
+    m_world->simulate(simInfo);
     debugDraw.DrawWorld(*m_world);
 
     const cvBody& body = m_world->getBody(m_Id);

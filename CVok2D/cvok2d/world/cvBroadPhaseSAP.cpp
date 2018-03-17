@@ -252,8 +252,7 @@ void cvBroadphaseSAP::addBody(cvBody& body)
     cvAabb aabb;
     body.getAabb(aabb);
     cvVec2f exp = cvVec2f(m_AABBExpansion, m_AABBExpansion);
-    aabb.m_Max += exp;
-    aabb.m_Min -= exp;
+    aabb.expand(exp);
 
     cvBroadphaseHandle bpHandle = addNode(aabb);
     body.setBroadphaseHandle(bpHandle);
@@ -272,6 +271,8 @@ void cvBroadphaseSAP::markBodyDirty(const cvBody& body)
     cvAssertMsg(bphandle.isValid(), "Marking a invalid bp node dirty");
     cvAabb aabb;
     body.getAabb(aabb);
+    cvVec2f exp = cvVec2f(m_AABBExpansion, m_AABBExpansion);
+    aabb.expand(exp);
     m_DirtyNodes[bphandle] = aabb;
 }
 
@@ -305,4 +306,9 @@ void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vecto
         removedPairs.push_back(n);
 
     m_DirtyNodes.clear();
+}
+
+void cvBroadphaseSAP::getBpAABB(cvBroadphaseHandle handle, cvAabb& outAabb) const
+{
+    outAabb = m_Nodes.getAt(handle).m_aabb;
 }

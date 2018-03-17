@@ -121,6 +121,7 @@ public:
 	virtual bool addPair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
 	virtual bool removePair(const cvBroadphaseHandle& handle1, const cvBroadphaseHandle& handle2) = 0;
     virtual const BPNodeBase* getBPNode(cvBroadphaseHandle handle1) const  = 0;
+    virtual void getBpAABB(cvBroadphaseHandle handle, cvAabb& outAabb) const = 0;
 
 protected:
     float m_AABBExpansion;

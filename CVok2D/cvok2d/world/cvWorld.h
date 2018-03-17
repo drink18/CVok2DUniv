@@ -6,6 +6,7 @@
 
 #include <world/cvBodyManager.h>
 #include <world/cvMotionManager.h>
+#include <core/cvAabb.h>
 
 struct cvWorldCInfo
 {
@@ -50,6 +51,7 @@ public:
     const cvMotion& getBodyMotion(cvBodyId bodyId) const;
 
     const cvBroadphase& getBroadphase() const { return *m_broadPhase; }
+    void getBodyBPAabb(cvBodyId bodyId, cvAabb& outAabb) const;
 
     // Simulation related
 public:
@@ -57,6 +59,7 @@ public:
     void integrate(float dt);
 
 private:
+    cvWorldCInfo m_cInfo;
 	cvBroadphase* m_broadPhase = nullptr;
 
     cvBodyManager m_bodyManager;

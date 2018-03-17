@@ -4,6 +4,7 @@
 using namespace std;
 
 cvWorld::cvWorld(cvWorldCInfo&  cinfo)
+    :m_cInfo(cinfo)
 {
     m_broadPhase = cinfo.m_broadPhase;
     if(!m_broadPhase)
@@ -14,7 +15,7 @@ cvWorld::cvWorld(cvWorldCInfo&  cinfo)
     }
 }
 
-cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
+cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool add)
 {
     cvBodyId id = m_bodyManager.allocate(cInfo);
 
@@ -26,9 +27,9 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
     body.m_motionId = m_motionManager.addMotion(motion);
     body.m_id = id;
 
-    if(addBody)
+    if(add)
     {
-        m_broadPhase->addBody(m_bodyManager.accessBody(id));
+        addBody(id);
     }
 
     return id;
@@ -37,15 +38,12 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool addBody)
 void cvWorld::addBody(cvBodyId bodyId)
 {
     cvBody& body = m_bodyManager.accessBody(bodyId);
-    cvAabb aabb;
-    body.getAabb(aabb);
     m_broadPhase->addBody(body);
 }
 
 void cvWorld::removeBody(cvBodyId bodyId)
 {
     cvBody& body = m_bodyManager.accessBody(bodyId);
-    cvAabb aabb;
     m_broadPhase->removeBody(body);
 }
 
@@ -127,9 +125,26 @@ const cvMotion& cvWorld::getBodyMotion(cvBodyId bodyId) const
 
 void cvWorld::simulate(const cvSimInfo& info)
 {
+    // for now mark all bodies dirty
+    auto iter = m_bodyManager.getBodyIter();
+    while(iter.isValid())
+    {
+        auto& body = getBody(*iter);
+        m_broadPhase->markBodyDirty(body);
+        iter++;
+    }
+
     //update dirty aabb nodes
     vector<cvBroadphase::BPPair> newPairs;
     vector<cvBroadphase::BPPair> removedPairs;
     m_broadPhase->updateDirtyNodes(newPairs, removedPairs);
 
+    integrate(info.deltaTime);
+}
+
+void cvWorld::getBodyBPAabb(cvBodyId bodyId, cvAabb& outAabb) const
+{
+   const cvBody& body = getBody(bodyId);
+   cvAssert(body.getBroadphaseHandle().isValid());
+   m_broadPhase->getBpAABB(body.getBroadphaseHandle(), outAabb);
 }

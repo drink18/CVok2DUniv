@@ -41,6 +41,8 @@ public:
         return &m_Nodes.getAt(handle);
     }
 
+    virtual void getBpAABB(cvBroadphaseHandle handle, cvAabb& outAabb) const override;
+
 public:
     const std::unordered_map<cvBroadphaseHandle, cvAabb>& getDirtyNodes() const {return m_DirtyNodes;}
     const NodeEPList& getEpList(int axis) const {return m_EndPoints[axis];}
@@ -59,6 +61,7 @@ private:
 	BPPairSet m_Pairs;
 	BPPairSet m_newPairs;
 	BPPairSet m_removedPairs;
+
 
     std::unordered_map<cvBroadphaseHandle, cvAabb> m_DirtyNodes;
 };

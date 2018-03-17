@@ -70,6 +70,9 @@ public:
         return &m_node2;
     }
 
+    virtual void getBpAABB(const cvBroadphaseHandle handle, cvAabb& outAabb) const override
+    {}
+
     bool m_adding = true; // when false, updateDirtyNode will mark fake pair as removed
 
     cvBroadphaseHandle handle1;
