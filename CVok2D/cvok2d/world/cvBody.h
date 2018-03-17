@@ -43,7 +43,6 @@ public:
 
     cvBodyId getBodyId() const {return m_id;}
 
-
 private:
     cvBodyId m_id;
 	cvTransform m_transform;

@@ -9,6 +9,7 @@ cvWorld::cvWorld(cvWorldCInfo&  cinfo)
     if(!m_broadPhase)
     {
         cvBroadphaseCInfo binfo;
+        binfo.m_AABBExpansion = cinfo.m_bpAABBExpesnion;
         m_broadPhase = new cvBroadphaseSAP(binfo);
     }
 }

@@ -460,6 +460,19 @@ void cvDebugDraw::AddLine(const cvVec2f& p1, const cvVec2f& p2, const cvColorf& 
 	m_lineRender->Vertex(p1, p2, color, color);
 }
 
+void cvDebugDraw::DrawAabb(const cvAabb& aabb, const cvColorf& color)
+{
+    cvVec2f v0 = aabb.m_Min;
+    cvVec2f v2 = aabb.m_Max;
+    cvVec2f v1; v1.set(v0.x, v2.y);
+    cvVec2f v3; v3.set(v2.x, v0.y);
+
+    AddLine(v0, v1, color);
+    AddLine(v1, v2, color);
+    AddLine(v2, v3, color);
+    AddLine(v3, v0, color);
+ }
+
 void cvDebugDraw::Flush()
 {
 	m_pointRender->Flush();

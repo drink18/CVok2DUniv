@@ -96,7 +96,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     g_camera.m_zoom += yoffset;
-    g_camera.m_zoom = std::max(g_camera.m_zoom, 0.5f);
+    g_camera.m_zoom = std::max(g_camera.m_zoom, 0.25f);
 }
 
 int main(int, char**)

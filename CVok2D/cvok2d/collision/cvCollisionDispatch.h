@@ -3,8 +3,8 @@
 #include <core/cvMath.h>
 #include <shape/cvShape.h>
 
-class cvManifold;
-class cvManifoldPoint;
+struct cvManifold;
+struct cvManifoldPoint;
 class cvShape;
 
 using cvCollisionFn = void(*)(const cvShape& shapeA, const cvShape& shapeB,

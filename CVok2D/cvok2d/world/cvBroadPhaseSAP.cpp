@@ -11,6 +11,8 @@ cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 	{
 		m_EndPoints[i].reserve(initMaxNode * 2);
 	}
+
+    m_AABBExpansion = cinfo.m_AABBExpansion;
 }
 
 cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
@@ -249,6 +251,10 @@ void cvBroadphaseSAP::addBody(cvBody& body)
 {
     cvAabb aabb;
     body.getAabb(aabb);
+    cvVec2f exp = cvVec2f(m_AABBExpansion, m_AABBExpansion);
+    aabb.m_Max += exp;
+    aabb.m_Min -= exp;
+
     cvBroadphaseHandle bpHandle = addNode(aabb);
     body.setBroadphaseHandle(bpHandle);
     m_Nodes.accessAt(bpHandle).m_bodyId = body.getBodyId();

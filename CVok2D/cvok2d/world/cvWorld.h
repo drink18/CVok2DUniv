@@ -10,6 +10,7 @@
 struct cvWorldCInfo
 {
     cvBroadphase* m_broadPhase = nullptr;
+    float m_bpAABBExpesnion = 0.05f;
 };
 
 struct cvSimInfo
@@ -47,6 +48,8 @@ public:
 
     cvMotion& accessBodyMotion(cvBodyId bodyId);
     const cvMotion& getBodyMotion(cvBodyId bodyId) const;
+
+    const cvBroadphase& getBroadphase() const { return *m_broadPhase; }
 
     // Simulation related
 public:
