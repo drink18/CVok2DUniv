@@ -24,3 +24,11 @@ bool cvAabb::overlaps(const cvAabb& other) const
 		&& cvVec2f::greater(other.m_Max, m_Min);
 }
 
+void cvAabb::expand(const cvVec2f& expansion)
+{
+    cvAssert(expansion.x >= 0);
+    cvAssert(expansion.y >= 0);
+
+    m_Min -= expansion;
+    m_Max += expansion;
+}

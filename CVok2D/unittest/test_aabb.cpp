@@ -52,3 +52,13 @@ TEST(cvAabb, overlaps)
 	EXPECT_TRUE(a1.overlaps(a3));
 	EXPECT_TRUE(a1.overlaps(a4));
 }
+
+TEST(cvAabb, expansd)
+{
+	cvAabb a1(cvVec2f(0, 0), cvVec2f(2, 3));
+    cvVec2f exp(1, 2);
+
+    a1.expand(exp);
+    EXPECT_EQ(cvVec2f(-1, -2), a1.m_Min);
+    EXPECT_EQ(cvVec2f(3, 5), a1.m_Max);
+}

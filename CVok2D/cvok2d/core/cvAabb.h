@@ -11,6 +11,7 @@ public:
 	inline void include(const cvAabb& other);
 	inline bool contains(const cvAabb& other) const;
 	inline bool overlaps(const cvAabb& other) const;
+    inline void expand(const cvVec2f& expansion);
 public:
 	cvVec2f m_Min;
 	cvVec2f m_Max;
