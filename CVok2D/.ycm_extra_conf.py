@@ -36,14 +36,13 @@ import ycm_core
 flags = [
     '-x',
     'c++',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/cvok2d',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/cvok2dTestBed',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/cvok2dTestBed/gl3w',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/cvok2dTestBed/imgui',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/extern/glfw/include',
-    '-I/Users/wei.wu/github/CVok2DUniv/CVok2D/extern/gtest/include',
-    '-I/usr/X11/include',
+    '-ICVok2D',
+    '-ICVok2D/cvok2d',
+    '-ICVok2D/cvok2d/core',
+    '-ICVok2D/cvok2d/dynamic',
+    '-ICVok2D/cvok2d/shape',
+    '-ICVok2D/cvok2d/simulation',
+    '-ICVok2D/cvok2dTestBed',
     '-std=c++11',
 ]
 
