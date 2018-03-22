@@ -1,4 +1,5 @@
 #include "TestCollisionDispatch.h"
+#include <cvok2dInit.h>
 #include <world/cvWorld.h>
 #include <world/cvBroadPhaseSAP.h>
 #include <shape/cvCircle.h>
@@ -6,6 +7,7 @@
 
 TestCollisionDispatch::TestCollisionDispatch()
 {
+    cv2DInit();
     cvWorldCInfo info;
 	info.m_bpAABBExpesnion = 0.5f;
     m_world.reset(new cvWorld(info));
