@@ -113,16 +113,16 @@ public:
 
 TEST_F(TestSimControl, generateColAgent)
 {
-    m_sc->updateBP();
+    m_sc->updateBP(*m_ctx);
 
     EXPECT_EQ(1, m_ctx->m_colAgents.size());
 }
 
 TEST_F(TestSimControl, removeColAgent)
 {
-    m_sc->updateBP();
+    m_sc->updateBP(*m_ctx);
     m_bp->m_adding = false;
-    m_sc->updateBP();
+    m_sc->updateBP(*m_ctx);
 
     EXPECT_EQ(0, m_ctx->m_colAgents.size());
 }

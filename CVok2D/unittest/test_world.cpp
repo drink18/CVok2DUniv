@@ -2,6 +2,7 @@
 
 #include <world/cvWorld.h>
 #include <shape/cvPolygonShape.h>
+#include <simulation/cvSimulationControlSimple.h>
 
 class WorldTest : public ::testing::Test
 {
@@ -12,12 +13,15 @@ protected:
     {
         cvWorldCInfo cInfo;
         m_world = new cvWorld(cInfo);
+        m_simCtrl = static_cast<cvSimulationControlSimple*>(&m_world->getSimControl());
     }
 
     virtual void TearDown()
     {
         delete m_world;
     }
+
+    cvSimulationControlSimple* m_simCtrl;
 
 };
 
@@ -77,13 +81,13 @@ TEST_F(WorldTest, integrate)
     cvBodyId id = m_world->createBody(bodyCInfo, true);
     m_world->setBodyAngularVelocity(id, 1.0f);
     m_world->setBodyLinearVelocity(id, cvVec2f(1.0f, 2.0f));
-    m_world->integrate(0.01f);
+    m_simCtrl->integrate(0.01f);
     cvTransform xform = m_world->getBody(id).getTransform();
 
     EXPECT_NEAR(0.01f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_EQ(cvVec2f(0.01f, 0.02f), xform.m_Translation);
 
-    m_world->integrate(0.01f);
+    m_simCtrl->integrate(0.01f);
     xform = m_world->getBody(id).getTransform();
     EXPECT_NEAR(0.02f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_EQ(cvVec2f(0.02f, 0.04f), xform.m_Translation);

@@ -1,5 +1,6 @@
 #include "cvWorld.h"
 #include <world/cvBroadPhaseSAP.h>
+#include <simulation/cvSimulationControlSimple.h>
 
 using namespace std;
 
@@ -13,6 +14,14 @@ cvWorld::cvWorld(cvWorldCInfo&  cinfo)
         binfo.m_AABBExpansion = cinfo.m_bpAABBExpesnion;
         m_broadPhase = new cvBroadphaseSAP(binfo);
     }
+
+	m_simControl = new cvSimulationControlSimple(m_broadPhase, &m_simCtx, this);
+}
+
+cvWorld::~cvWorld()
+{
+    delete  m_broadPhase;
+    delete m_simControl;
 }
 
 cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool add)
@@ -45,19 +54,6 @@ void cvWorld::removeBody(cvBodyId bodyId)
 {
     cvBody& body = m_bodyManager.accessBody(bodyId);
     m_broadPhase->removeBody(body);
-}
-
-void cvWorld::integrate(float dt)
-{
-    for(auto iter = m_bodyManager.getBodyIter();iter.isValid(); ++iter)
-    {
-        cvBody& body = m_bodyManager.accessBody(*iter);
-        const cvMotion& motion = m_motionManager.getMotion(body.getMotionId());
-        cvTransform& xform = body.accessTransform();
-
-        xform.m_Rotation += motion.m_angularVel * dt;
-        xform.m_Translation += motion.m_linearVel * dt;
-    }
 }
 
 void cvWorld::setBodyVelocity(cvBodyId bodyId, const cvVec2f& linVel, float angVel)
@@ -125,21 +121,10 @@ const cvMotion& cvWorld::getBodyMotion(cvBodyId bodyId) const
 
 void cvWorld::simulate(const cvSimInfo& info)
 {
-    // for now mark all bodies dirty
-    auto iter = m_bodyManager.getBodyIter();
-    while(iter.isValid())
-    {
-        auto& body = getBody(*iter);
-        m_broadPhase->markBodyDirty(body);
-        iter++;
-    }
+    cvStepInfo si;
+    si.m_dt = info.deltaTime;
+    m_simControl->simulate(si, m_simCtx);
 
-    //update dirty aabb nodes
-    vector<cvBroadphase::BPPair> newPairs;
-    vector<cvBroadphase::BPPair> removedPairs;
-    m_broadPhase->updateDirtyNodes(newPairs, removedPairs);
-
-    integrate(info.deltaTime);
 }
 
 void cvWorld::getBodyBPAabb(cvBodyId bodyId, cvAabb& outAabb) const

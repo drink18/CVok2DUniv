@@ -102,7 +102,7 @@ public:
 
 public:
 	cvBroadphase(const cvBroadphaseCInfo& cinfo);
-    ~cvBroadphase() {}
+    virtual ~cvBroadphase() {}
 
 protected:
     cvBroadphase() {}

@@ -7,6 +7,9 @@
 #include <world/cvBodyManager.h>
 #include <world/cvMotionManager.h>
 #include <core/cvAabb.h>
+#include <simulation/cvSimulationContext.h>
+
+class cvISimulationControl;
 
 struct cvWorldCInfo
 {
@@ -25,6 +28,7 @@ public:
     typedef cvFreeList<cvMotion, cvMotionId> MotionBuffer;
 public:
 	cvWorld(cvWorldCInfo&  cinfo);
+    ~cvWorld();
 
     cvBodyId createBody(const cvBodyCInfo& cInfo, bool addBody);
     void addBody(cvBodyId bodyId);
@@ -33,6 +37,7 @@ public:
     cvMotionId createMotion();
 
     const cvBodyManager& getBodyManager()const {return m_bodyManager;}
+    cvBodyManager& accessBodyManager() {return m_bodyManager;}
 
     cvBody& accessBody(cvBodyId id) {return m_bodyManager.accessBody(id);}
     const cvBody& getBody(cvBodyId id) const {return m_bodyManager.getBody(id);}
@@ -53,10 +58,14 @@ public:
     const cvBroadphase& getBroadphase() const { return *m_broadPhase; }
     void getBodyBPAabb(cvBodyId bodyId, cvAabb& outAabb) const;
 
+	cvMotionManager& accessMotionManager() {return m_motionManager;}
+	const cvMotionManager& getMotionManager() const {return m_motionManager;}
+
+    cvISimulationControl& getSimControl() {return *m_simControl;}
+
     // Simulation related
 public:
     void simulate(const cvSimInfo& info);
-    void integrate(float dt);
 
 private:
     cvWorldCInfo m_cInfo;
@@ -64,4 +73,6 @@ private:
 
     cvBodyManager m_bodyManager;
     cvMotionManager m_motionManager;
+	cvISimulationControl* m_simControl;
+	cvSimulationContext m_simCtx;
 };

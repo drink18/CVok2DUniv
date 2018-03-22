@@ -4,12 +4,22 @@
 #include <vector>
 
 using namespace std;
-void cvSimulationControlSimple::preCollide()
+void cvSimulationControlSimple::preCollide(cvSimulationContext& simCtx)
 {
 }
 
-void cvSimulationControlSimple::updateBP()
+void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
 {
+    cvBodyManager& bodyMgr = m_world->accessBodyManager();
+    // for now mark all bodies dirty
+    auto iter = bodyMgr.getBodyIter();
+    while(iter.isValid())
+    {
+        auto& body = bodyMgr.getBody(*iter);
+        m_bp->markBodyDirty(body);
+        iter++;
+    }
+
     vector<cvBroadphase::BPPair> newPairs;
     vector<cvBroadphase::BPPair> delPairs;
     m_bp->updateDirtyNodes(newPairs, delPairs);
@@ -22,7 +32,7 @@ void cvSimulationControlSimple::updateBP()
         ag->m_bodyIds[0] = node0->m_bodyId;
         ag->m_bodyIds[1] = node1->m_bodyId;
 
-        m_simContext->m_colAgents.push_back(std::move(ag));
+        simCtx.m_colAgents.push_back(std::move(ag));
     }
 
     for(int i = delPairs.size() - 1; i >=0; --i)
@@ -30,7 +40,7 @@ void cvSimulationControlSimple::updateBP()
         auto& p = delPairs[i];
         auto node0 = m_bp->getBPNode(p.m_h1);
         auto node1 = m_bp->getBPNode(p.m_h2);
-        auto& agents = m_simContext->m_colAgents;
+        auto& agents = simCtx.m_colAgents;
         for(int j = agents.size() - 1; j >= 0; --j)
         {
             auto& agent = agents[j];
@@ -40,8 +50,8 @@ void cvSimulationControlSimple::updateBP()
     }
 
     vector<cvBroadphase::BPPair> allPairs;
-    vector<cvNPPair>& npPairs = m_simContext->m_NpPairs;
-    vector<cvManifold>& manifolds = m_simContext->m_Manifolds;
+    vector<cvNPPair>& npPairs = simCtx.m_NpPairs;
+    vector<cvManifold>& manifolds = simCtx.m_Manifolds;
     npPairs.clear();
     manifolds.clear();
     m_bp->getAllPairs(allPairs);
@@ -71,10 +81,10 @@ void cvSimulationControlSimple::updateBP()
     }
 }
 
-void cvSimulationControlSimple::narrowPhase()
+void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
 {
-    auto& npPairs = m_simContext->m_NpPairs;
-    auto& manifolds = m_simContext->m_Manifolds;
+    auto& npPairs = simCtx.m_NpPairs;
+    auto& manifolds = simCtx.m_Manifolds;
     for(int i = 0; i < npPairs.size(); ++i)
     {
         auto& p = npPairs[i];
@@ -87,6 +97,32 @@ void cvSimulationControlSimple::narrowPhase()
     }
 }
 
-void cvSimulationControlSimple::postCollide()
+void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
 {
+}
+
+void cvSimulationControlSimple::integrate(float dt)
+{
+	cvBodyManager& bodyMgr = m_world->accessBodyManager();
+	const cvMotionManager& motionMgr = m_world->getMotionManager();
+    for(auto iter = bodyMgr.getBodyIter();iter.isValid(); ++iter)
+    {
+        cvBody& body = bodyMgr.accessBody(*iter);
+        const cvMotion& motion = motionMgr.getMotion(body.getMotionId());
+        cvTransform& xform = body.accessTransform();
+
+        xform.m_Rotation += motion.m_angularVel * dt;
+        xform.m_Translation += motion.m_linearVel * dt;
+    }
+}
+
+void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
+{
+	updateBP(simCtx);
+	preCollide(simCtx);
+	narrowPhase(simCtx);
+	postCollide(simCtx);
+
+
+	integrate(stepInfo.m_dt);
 }

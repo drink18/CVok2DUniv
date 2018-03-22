@@ -7,8 +7,7 @@
 TestCollisionDispatch::TestCollisionDispatch()
 {
     cvWorldCInfo info;
-    cvBroadphaseCInfo bpInfo;
-    info.m_broadPhase = new cvBroadphaseSAP(bpInfo);
+	info.m_bpAABBExpesnion = 0.5f;
     m_world.reset(new cvWorld(info));
 
     {
@@ -32,7 +31,9 @@ TestCollisionDispatch::TestCollisionDispatch()
 
 void TestCollisionDispatch::tick(cvDebugDraw& dbgDraw, float dt)
 {
-    m_world->integrate(dt);
+    cvSimInfo si;
+    si.deltaTime = dt;
+    m_world->simulate(si);
 
     dbgDraw.DrawWorld(*m_world);
 }

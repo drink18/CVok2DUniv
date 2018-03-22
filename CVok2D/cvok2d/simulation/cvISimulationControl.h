@@ -2,11 +2,14 @@
 
 class cvBroadphase;
 
+struct cvStepInfo
+{
+    float m_dt;
+};
+
 class cvISimulationControl
 {
 public:
-    virtual void preCollide() = 0;
-    virtual void updateBP() = 0;
-    virtual void narrowPhase() = 0;
-    virtual void postCollide() = 0;
+    virtual ~cvISimulationControl() {};
+    virtual void simulate(cvStepInfo& sepInfo, struct cvSimulationContext& simCtx) = 0;
 };
