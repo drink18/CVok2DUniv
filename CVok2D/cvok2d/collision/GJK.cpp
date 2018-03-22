@@ -232,7 +232,11 @@ namespace GJK
         auto res = pointToConvex(q0, input.shape);
 
         if(res.result == GJKResult::GJK_GOOD)
+        {
             res.closetPt = input.shapeXForm * res.closetPt;
+            res.normal = input.q - res.closetPt;
+            res.normal.normalize();
+        }
         return res;
     }
 
