@@ -1,6 +1,7 @@
 #include "GJK.h"
 
 #include <shape/cvShape.h>
+#include <shape/cvConvexShape.h>
 #include <shape/cvCircle.h>
 #include <shape/cvPolygonShape.h>
 
@@ -247,8 +248,10 @@ namespace GJK
 
         cvVec2f dA; invA.transformVector(d, dA);
         cvVec2f dB; invB.transformVector(d, dB);
-        auto pA = input.shapeA.getSupport(dA);
-        auto pB = input.shapeB.getSupport(-dB);
+        const cvConvexShape& cvxA = static_cast<const cvConvexShape&>(input.shapeA);
+        const cvConvexShape& cvxB = static_cast<const cvConvexShape&>(input.shapeB);
+        auto pA = cvxA.getSupport(d);
+        auto pB = cvxB.getSupport(-d);
 
         pA.p = input.poseA * pA.p;
         pB.p = input.poseB * pB.p;

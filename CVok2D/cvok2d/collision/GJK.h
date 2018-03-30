@@ -1,6 +1,7 @@
 #pragma once
 
 #include <core/cvMath.h>
+#include "cvQuery.h"
 #include "cvDistance.h"
 #include <memory>
 
@@ -25,8 +26,6 @@ namespace GJK
             return indexA == other.indexA && indexB == other.indexB;
         }
     };
-    struct cvShapeQueryInput;
-
 
     using namespace cvDist;
     struct GJKResult
@@ -40,19 +39,6 @@ namespace GJK
         cvVec2f closetPt;
         cvVec2f normal;
         float distance;
-    };
-
-    struct  cvShapeQueryInput
-    {
-        cvShapeQueryInput(const cvConvexShape& _shapeA, const cvConvexShape& _shapeB,
-                const cvMat33& _poseA, const cvMat33& _poseB)
-            :shapeA(_shapeA), shapeB(_shapeB), poseA(_poseA), poseB(_poseB)
-        {
-        }
-        const cvConvexShape& shapeA;
-        const cvConvexShape& shapeB;
-        cvMat33 poseA;
-        cvMat33 poseB;
     };
 
     struct cvPointQueryInput
