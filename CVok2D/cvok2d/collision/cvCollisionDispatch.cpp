@@ -3,7 +3,7 @@
 
 #include <collision/GJK.h>
 #include <shape/cvShape.h>
-#include <shape/cvCircle.cpp>
+#include <shape/cvCircle.h>
 #include <shape/cvPolygonShape.h>
 #include <collision/cvManifold.h>
 
