@@ -110,6 +110,8 @@ public:
     inline cvVec2f& operator=(const cvVec2f& v);
 
     inline bool operator==(const cvVec2f& v) const;
+
+    static cvVec2f getZero();
 };
 
 class cvVec3f

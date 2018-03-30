@@ -464,3 +464,8 @@ inline bool cvVec3f::operator==(const cvVec3f& v) const
         && std::abs(v.z - z) < CV_FLOAT_EPS;
 }
 
+inline cvVec2f cvVec2f::getZero()
+{
+    return cvVec2f(0, 0);
+}
+

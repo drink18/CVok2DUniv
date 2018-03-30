@@ -18,7 +18,7 @@ namespace SAT
 
         for(int i = 1; i < verts.size(); ++i)
         {
-            float p =  na.dot(verts[0] - pt);
+            float p =  na.dot(verts[i] - pt);
             minP = std::min(minP, p);
             maxP = std::max(maxP, p);
         }
@@ -83,9 +83,9 @@ namespace SAT
             wldVerts.push_back(wldV);
         }
 
-        int nEdge =wldVerts.size();
+        int nEdge = (int)wldVerts.size();
         float maxD;
-        float maxDEdgeIdx = 0;
+        int maxDEdgeIdx = 0;
         cvVec2f edgeN = wldVerts[1] - wldVerts[0];
         edgeN.normalize();
         maxD = _getPeneDistance(cVerts, wldVerts, edgeN, wldVerts[0]);
@@ -136,6 +136,87 @@ namespace SAT
         res.ep1 = wldVerts[nei];
         res.ei0 = maxDEdgeIdx;
         res.ei1 = nei;
+
+        return res;
+    }
+
+    float _getPointPeneOnAxis(const cvVec2f& pt, const cvVec2f& axis, const cvVec2f& ptOnAxis,
+                                 const vector<cvVec2f>& verts)
+    {
+            float minP, maxP, pp;
+            _projectCvxOnAxis(verts, axis, ptOnAxis, minP, maxP);
+            pp = axis.dot(pt - ptOnAxis);
+
+            if(pp > minP && pp < maxP)
+                return pp;
+
+            return 0;
+    }
+
+    SATResult _pointToPolygon(const cvVec2f& pt, const cvPolygonShape& poly, const cvMat33& trans)
+    {
+        SATResult res;
+
+        cvMat33 invT;  trans.getInvert(invT);
+        cvVec2f ptL = invT * pt; //point in local space of polygon
+
+        bool sep = false;
+        auto& verts = poly.getVertices();
+        int nedge = (int)verts.size();
+        cvVec2f e = (verts[1] - verts[0]).getNormalized();
+        cvVec2f midEdge = (verts[1] + verts[0]) / 2; 
+        cvVec3f sap3(e.x, e.y, 1);
+        sap3 = sap3.cross(cvVec3f(0, 0, 1));
+        cvVec2f sap2(sap3.x, sap3.y);
+
+        float deepestPen = _getPointPeneOnAxis(ptL, sap2, midEdge, verts);
+        int deepestPenEdge = 0;
+        cvVec2f deepestAxis = sap2;
+
+        if (deepestPen == 0.0f)
+        {
+            res.penetrated = false;
+            return res;
+        }
+
+        for (int i = 1; i < nedge; ++i)
+        {
+            int nei = (i == nedge - 1) ? 0 : i + 1;
+            e = (verts[nei] - verts[i]).getNormalized();
+            midEdge = (verts[nei] + verts[i]) / 2;
+            sap3.set(cvVec3f(e.x, e.y, 1));
+            sap3 = sap3.cross(cvVec3f(0, 0, 1));
+            sap2.set(sap3.x, sap3.y);
+
+            float pen = _getPointPeneOnAxis(ptL, sap2, midEdge, verts);
+            if (pen > deepestPen)
+            {
+                deepestPen = pen;
+                deepestPenEdge = i;
+                deepestAxis = sap2;
+            }
+
+            if(pen > 0)
+            {
+                res.penetrated = false;
+                return res;
+            }
+        }
+
+        // if we got here point is inside polygon
+        res.penetrated = true;
+        cvVec2f ptOnPoly = ptL - verts[deepestPenEdge];
+        res.closetPt = pt - deepestAxis * deepestPen;
+        res.distance = deepestPen;
+        res.normal = deepestAxis;
+        res.ei0 = deepestPenEdge;
+        res.ei1 = (deepestPenEdge == nedge - 1) ? 0 : deepestPenEdge + 1;
+        res.ep0 = verts[res.ei0];
+        res.ep1 = verts[res.ei1];
+        res.closetPt = trans * res.closetPt;
+        res.ep0 = trans * res.ep0;
+        res.ep1 = trans * res.ep1;
+        trans.transformVector(res.normal);
 
         return res;
     }

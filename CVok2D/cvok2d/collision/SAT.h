@@ -23,4 +23,6 @@ namespace  SAT
 
     SATResult _circleToPolygon(const cvCircle& circle, const cvPolygonShape& poly,
             const cvMat33& transA, const cvMat33& transB);
+
+    SATResult _pointToPolygon(const cvVec2f& pt, const cvPolygonShape& poly, const cvMat33& trans);
 }
