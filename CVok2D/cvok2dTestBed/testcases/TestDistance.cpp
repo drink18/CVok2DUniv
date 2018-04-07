@@ -42,14 +42,14 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
     }
 
     {
-        m_b1 = cvPolygonShape::createBox(cvVec2f(5, 5), 0.05f);
-        auto b2 = new cvCircle(cvVec2f(0,0), 5.0f);
+        m_b1 = cvPolygonShape::createBox(cvVec2f(1, 1), 0.05f);
+        auto b2 = new cvCircle(cvVec2f(0,0), 1.0f);
         cvTransform& t1 = m_t1;
         t1.m_Translation.set(0, 0);
         t1.m_Rotation += DEG2RAD(50) * dt;
 
         cvTransform &t2 = m_t2;
-        t2.m_Translation.set(10, 0);//17, 17);
+        t2.m_Translation.set(2.5f, 0);//17, 17);
         t2.m_Rotation -= DEG2RAD(45) * dt;
 
         gdbDraw.DrawShape(*m_b1, t1, cvColorf::Red);
@@ -63,7 +63,7 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
 
         auto pa = res.closetPt;
         auto pb = pa + res.normal * res.distance;
-        if(res.penetrated)
+        //if(res.penetrated)
         {
             gdbDraw.AddLine(pa, pb, cvColorf::Green);
             gdbDraw.AddLine(res.ep0, res.ep1, cvColorf::Green);

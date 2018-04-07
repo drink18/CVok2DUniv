@@ -2,6 +2,7 @@
 #include "cvManifold.h"
 
 #include <collision/GJK.h>
+#include <collision/SAT.h>
 #include <shape/cvShape.h>
 #include <shape/cvCircle.h>
 #include <shape/cvPolygonShape.h>
@@ -47,7 +48,7 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
 {
     using namespace GJK;
     auto& circleA = static_cast<const cvCircle&>(shapeA);
-    auto& polyB = static_cast<const cvConvexShape&>(shapeB);
+    auto& polyB = static_cast<const cvPolygonShape&>(shapeB);
     cvVec2f c = circleA.getCenter();
     float r = circleA.getRadius();
 
@@ -64,7 +65,10 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
     }
     else
     {
-        //need EPA or SAT
+        auto satRes = SAT::_circleToPolygon(circleA, polyB, matA, matB);
+        pt.m_normal = satRes.normal;
+        pt.m_point = satRes.closetPt;
+        pt.m_distance = satRes.distance;
     }
 }
 
