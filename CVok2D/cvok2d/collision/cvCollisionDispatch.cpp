@@ -80,6 +80,7 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
     cvShapeQueryInput input(polyA, polyB, matA, matB);
     auto res = cvGJKConvexToConvex(input);
 
+    manifold.m_numPt = 0;
     if(res.m_succeed)
     {
         manifold.m_numPt = 1;
@@ -108,7 +109,8 @@ cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType
     },
     // poly
     {
-        nullptr, nullptr
+        nullptr,
+        _colPolyvsPoly
     }
 
 };

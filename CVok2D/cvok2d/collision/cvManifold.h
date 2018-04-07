@@ -37,5 +37,4 @@ struct cvManifold
     cvManifoldPoint m_points[MAX_MANIFOLD_POINT];
     cvVec2f m_normal;
     int m_numPt = 0; //number of point in manfild
-
 };

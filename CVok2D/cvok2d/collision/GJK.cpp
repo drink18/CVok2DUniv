@@ -314,6 +314,8 @@ namespace GJK
             res.m_seperation.normalize();
         }
 
+        res.m_succeed = ptRes.result == GJKResult::GJK_GOOD;
+
         return res;
     }
 }
