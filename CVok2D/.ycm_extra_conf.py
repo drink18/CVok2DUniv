@@ -36,13 +36,13 @@ import ycm_core
 flags = [
     '-x',
     'c++',
-    '-ICVok2D',
-    '-ICVok2D/cvok2d',
-    '-ICVok2D/cvok2d/core',
-    '-ICVok2D/cvok2d/dynamic',
-    '-ICVok2D/cvok2d/shape',
-    '-ICVok2D/cvok2d/simulation',
-    '-ICVok2D/cvok2dTestBed',
+    '-I.',
+    '-Icvok2d',
+    '-Icvok2d/core',
+    '-Icvok2d/dynamic',
+    '-Icvok2d/shape',
+    '-Icvok2d/simulation',
+    '-Icvok2dTestBed',
     '-std=c++11',
 ]
 
