@@ -12,6 +12,8 @@ using cvCollisionFn = void(*)(const cvShape& shapeA, const cvShape& shapeB,
 
 extern cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count];
 
+cvCollisionFn cvGetCollisionFn(cvShape::ShapeType t1, cvShape::ShapeType t2);
+
 
 
 

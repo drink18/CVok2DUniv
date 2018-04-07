@@ -9,7 +9,6 @@
 #include <cvok2d/collision/GJK.h>
 #include <cvok2d/collision/SAT.h>
 #include <collision/cvCollisionDispatch.h>
-#include <cvok2dInit.h>
 
 #include <memory>
 
@@ -39,9 +38,6 @@ public:
         cvTransform& t2 = m_tCircle;
         t2.m_Translation.set(2.5f, 0);//17, 17);
         //t2.m_Rotation = DEG2RAD(45);
-        //
-        //
-        cv2DInit();
     }
 
     void TearDown() override
@@ -55,10 +51,9 @@ TEST_F(TestCP, TestCircle_Box_Sep)
     cvMat33 m1; m_tBox.toMat33(m1);
     cvMat33 m2; m_tCircle.toMat33(m2);
 
-    cvCollisionFn fn = g_collisionFunction[cvShape::eCircle][cvShape::ePolygon];
+    cvCollisionFn fn =cvGetCollisionFn(cvShape::eCircle, cvShape::ePolygon);
     cvManifold manifold;
 
-    //auto res = _circleToPolygon(*m_circle, *m_box, m2, m1);
     (*fn)(*m_circle, *m_box, m2, m1, manifold);
 
     ASSERT_EQ(1, manifold.m_numPt);
@@ -73,10 +68,9 @@ TEST_F(TestCP, TestCircle_Box_Overlap)
     cvMat33 m1; m_tBox.toMat33(m1);
     cvMat33 m2; m_tCircle.toMat33(m2);
 
-    cvCollisionFn fn = g_collisionFunction[cvShape::eCircle][cvShape::ePolygon];
+    cvCollisionFn fn =cvGetCollisionFn(cvShape::eCircle, cvShape::ePolygon);
     cvManifold manifold;
 
-    //auto res = _circleToPolygon(*m_circle, *m_box, m2, m1);
     (*fn)(*m_circle, *m_box, m2, m1, manifold);
 
     ASSERT_EQ(1, manifold.m_numPt);

@@ -9,7 +9,6 @@
 #include <collision/cvManifold.h>
 
 
-cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count];
 
 void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
         const cvMat33& matB, cvManifold& manifold)
@@ -98,8 +97,23 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
 
 void _initCollisionDispatchFns()
 {
-    g_collisionFunction[cvShape::eCircle][cvShape::eCircle] = _colCirclevsCircle;
-    g_collisionFunction[cvShape::eCircle][cvShape::ePolygon] = _colCirclevsPoly;
-    g_collisionFunction[cvShape::ePolygon][cvShape::ePolygon] = _colPolyvsPoly;
 }
 
+cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count] =
+{
+    // circle
+    {
+        _colCirclevsCircle,
+        _colCirclevsPoly
+    },
+    // poly
+    {
+        nullptr, nullptr
+    }
+
+};
+
+cvCollisionFn cvGetCollisionFn(cvShape::ShapeType t1, cvShape::ShapeType t2)
+{
+    return (t1 > t2) ? g_collisionFunction[t2][t1] : g_collisionFunction[t1][t2];
+}
