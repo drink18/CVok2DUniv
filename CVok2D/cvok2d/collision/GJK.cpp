@@ -250,8 +250,8 @@ namespace GJK
         cvVec2f dB; invB.transformVector(d, dB);
         const cvConvexShape& cvxA = static_cast<const cvConvexShape&>(input.shapeA);
         const cvConvexShape& cvxB = static_cast<const cvConvexShape&>(input.shapeB);
-        auto pA = cvxA.getSupport(d);
-        auto pB = cvxB.getSupport(-d);
+        auto pA = cvxA.getSupport(dA);
+        auto pB = cvxB.getSupport(-dB);
 
         pA.p = input.poseA * pA.p;
         pB.p = input.poseB * pB.p;

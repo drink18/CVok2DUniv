@@ -68,12 +68,12 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 
-    static float a = 0;
-    a += dt * DEG2RAD(45);
+    static float a = DEG2RAD(45);
+    //a += dt * DEG2RAD(45);
     // box box 
     {
         cvTransform t1; t1.m_Translation.set(5.0f, 5.0f); t1.m_Rotation = a;
-        cvTransform t2; t2.m_Translation.set(7.2f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(7.5f, 5.0f);
         updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
     }
 
