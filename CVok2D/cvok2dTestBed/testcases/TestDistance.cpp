@@ -57,6 +57,12 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
     }
 
     {
+        cvTransform t1; t1.m_Translation.set(-5.0f, 0);
+        cvTransform t2; t2.m_Translation.set(-2.5f, 0); t2.m_Rotation = DEG2RAD(45);
+        updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
+    }
+
+    {
         cvTransform t1; t1.m_Translation.set(0, 0);
         cvTransform t2; t2.m_Translation.set(2.5f, 0);
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
@@ -65,6 +71,12 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
     {
         cvTransform t1; t1.m_Translation.set(5.0f, 0);
         cvTransform t2; t2.m_Translation.set(6.9f, 0);
+        updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
+    }
+
+    {
+        cvTransform t1; t1.m_Translation.set(10.0f, 0);
+        cvTransform t2; t2.m_Translation.set(10.9f, 0);
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 

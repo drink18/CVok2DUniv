@@ -71,72 +71,13 @@ namespace SAT
     SATResult _circleToPolygon(const cvCircle& circle, const cvPolygonShape& poly,
             const cvMat33& transA, const cvMat33& transB)
     {
+        cvVec2f pt = transA * circle.getCenter();
+        auto ptRes = _pointToPolygon(pt, poly, transB);
+
         SATResult res;
-
-        vector<cvVec2f> cVerts{transA * circle.getCenter()};
-
-        vector<cvVec2f> wldVerts;
-        wldVerts.reserve(poly.getVertices().size());
-        for(auto& v : poly.getVertices())
-        {
-            cvVec2f wldV = transB * v;
-            wldVerts.push_back(wldV);
-        }
-
-        int nEdge = (int)wldVerts.size();
-        float maxD;
-        int maxDEdgeIdx = 0;
-        cvVec2f edgeN = wldVerts[1] - wldVerts[0];
-        edgeN.normalize();
-        maxD = _getPeneDistance(cVerts, wldVerts, edgeN, wldVerts[0]);
-
-        if(maxD > 0)
-        {
-            res.penetrated = false;
-            return res;
-        }
-
-        for(int i = 1; i < nEdge; ++i)
-        {
-            int nei = i + 1; // next edge vertex index
-            if(i == nEdge - 1)
-            {
-                nei = 0;
-            }
-            edgeN = wldVerts[nei] - wldVerts[i];
-            edgeN.normalize();
-
-            float p = _getPeneDistance(cVerts, wldVerts, edgeN, wldVerts[i]);
-
-            if(p > 0)
-            {
-                res.penetrated = false;
-                return res;
-            }
-
-            if(p < maxD)
-            {
-                maxD = p;
-                maxDEdgeIdx = i;
-            }
-        }
-        // project to deepest penetrated edge
-        cvVec2f pt = wldVerts[maxDEdgeIdx];
-        int nei = (maxDEdgeIdx == nEdge -1) ? 0 :(maxDEdgeIdx + 1);
-        edgeN = wldVerts[nei] - pt;
-        edgeN.normalize();
-
-        res.closetPt = pt +  edgeN * edgeN.dot(cVerts[0] - pt) ;
-        res.distance = maxD;
-
-        cvVec3f en3(edgeN.x, edgeN.y, 1);
-        cvVec3f n3 = en3.cross(cvVec3f(0, 0, 1));
-        res.normal.set(n3.x, n3.y);
-        res.ep0 = pt;
-        res.ep1 = wldVerts[nei];
-        res.ei0 = maxDEdgeIdx;
-        res.ei1 = nei;
-
+        res.closetPt = ptRes.closetPt;
+        res.distance = ptRes.distance - circle.getRadius();
+        res.normal = ptRes.normal;
         return res;
     }
 
@@ -204,7 +145,7 @@ namespace SAT
         // if we got here point is inside polygon
         res.penetrated = true;
         cvVec2f ptOnPoly = ptL - verts[deepestPenEdge];
-        res.closetPt = pt - deepestAxis * deepestPen;
+        res.closetPt = ptL - deepestAxis * deepestPen;
         res.distance = deepestPen;
         res.normal = deepestAxis;
         res.ei0 = deepestPenEdge;

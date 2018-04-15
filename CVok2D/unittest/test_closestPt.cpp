@@ -79,3 +79,39 @@ TEST_F(TestCP, TestCircle_Box_Overlap)
     ASSERT_FLOAT_EQ(-0.1f, manifold.m_points[0].m_distance);
 }
 
+TEST_F(TestCP, TestCircle_Box_DeepPene)
+{
+    m_tCircle.m_Translation.set(0.9f, 0);
+    cvMat33 m1; m_tBox.toMat33(m1);
+    cvMat33 m2; m_tCircle.toMat33(m2);
+
+    cvCollisionFn fn =cvGetCollisionFn(cvShape::eCircle, cvShape::ePolygon);
+    cvManifold manifold;
+
+    (*fn)(*m_circle, *m_box, m2, m1, manifold);
+
+    ASSERT_EQ(1, manifold.m_numPt);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_point);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_FLOAT_EQ(-1.1f, manifold.m_points[0].m_distance);
+}
+
+TEST_F(TestCP, TestCircle_Box_DeepPene_WithTrans)
+{
+    m_tBox.m_Translation.set(1.0f, 0);
+    m_tCircle.m_Translation.set(1.9f, 0);
+    cvMat33 m1; m_tBox.toMat33(m1);
+    cvMat33 m2; m_tCircle.toMat33(m2);
+
+
+    cvCollisionFn fn =cvGetCollisionFn(cvShape::eCircle, cvShape::ePolygon);
+    cvManifold manifold;
+
+    (*fn)(*m_circle, *m_box, m2, m1, manifold);
+
+    ASSERT_EQ(1, manifold.m_numPt);
+    ASSERT_EQ(cvVec2f(2.0f, 0), manifold.m_points[0].m_point);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_FLOAT_EQ(-1.1f, manifold.m_points[0].m_distance);
+}
+
