@@ -141,16 +141,14 @@ namespace SAT
     }
 
     float _getPointPeneOnAxis(const cvVec2f& pt, const cvVec2f& axis, const cvVec2f& ptOnAxis,
-                                 const vector<cvVec2f>& verts)
+            const cvConvexShape& cvxShape)
     {
-            float minP, maxP, pp;
-            _projectCvxOnAxis(verts, axis, ptOnAxis, minP, maxP);
-            pp = axis.dot(pt - ptOnAxis);
+        // we want to check if pt is inside shape projected on a given separating axis
+        cvVec2f s = cvxShape.getSupport(axis).p;
+        float pp = axis.dot(pt - ptOnAxis);
+        float sp = axis.dot(s - ptOnAxis);
 
-            if(pp > minP && pp < maxP)
-                return pp;
-
-            return 0;
+        return pp - sp;
     }
 
     SATResult _pointToPolygon(const cvVec2f& pt, const cvPolygonShape& poly, const cvMat33& trans)
@@ -169,7 +167,7 @@ namespace SAT
         sap3 = sap3.cross(cvVec3f(0, 0, 1));
         cvVec2f sap2(sap3.x, sap3.y);
 
-        float deepestPen = _getPointPeneOnAxis(ptL, sap2, midEdge, verts);
+        float deepestPen = _getPointPeneOnAxis(ptL, sap2, midEdge, poly);
         int deepestPenEdge = 0;
         cvVec2f deepestAxis = sap2;
 
@@ -188,7 +186,7 @@ namespace SAT
             sap3 = sap3.cross(cvVec3f(0, 0, 1));
             sap2.set(sap3.x, sap3.y);
 
-            float pen = _getPointPeneOnAxis(ptL, sap2, midEdge, verts);
+            float pen = _getPointPeneOnAxis(ptL, sap2, midEdge, poly);
             if (pen > deepestPen)
             {
                 deepestPen = pen;
