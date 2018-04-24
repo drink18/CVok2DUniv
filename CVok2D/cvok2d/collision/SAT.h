@@ -13,11 +13,9 @@ namespace  SAT
     struct SATResult
     {
         int numPt = 0;
-        cvVec2f closetPt;
-        cvVec2f secondPt; // second  pt when doing full manifold
+        cvVec2f point[2];
+        float distance[2];
         cvVec2f normal;
-        float distance;
-        float secDistance;
         int ei0;
         int ei1;
         cvVec2f ep0;

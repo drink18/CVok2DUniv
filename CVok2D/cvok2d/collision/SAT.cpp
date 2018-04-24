@@ -67,8 +67,9 @@ namespace SAT
         auto ptRes = _pointToPolygon(pt, poly, transB);
 
         SATResult res;
-        res.closetPt = ptRes.closetPt;
-        res.distance = ptRes.distance - circle.getRadius();
+        res.numPt = 1;
+        res.point[0] = ptRes.point[0];
+        res.distance[0] = ptRes.distance[0] - circle.getRadius();
         res.normal = ptRes.normal;
         return res;
     }
@@ -124,14 +125,14 @@ namespace SAT
         res.penetrated = true;
         res.numPt = 1;
         cvVec2f ptOnPoly = ptL - verts[deepestPenEdge];
-        res.closetPt = ptL - deepestAxis * deepestPen;
-        res.distance = deepestPen;
+        res.point[0] = ptL - deepestAxis * deepestPen;
+        res.distance[0] = deepestPen;
         res.normal = deepestAxis;
         res.ei0 = deepestPenEdge;
         res.ei1 = (deepestPenEdge == nedge - 1) ? 0 : deepestPenEdge + 1;
         res.ep0 = verts[res.ei0];
         res.ep1 = verts[res.ei1];
-        res.closetPt = trans * res.closetPt;
+        res.point[0] = trans * res.point[0];
         res.ep0 = trans * res.ep0;
         res.ep1 = trans * res.ep1;
         trans.transformVector(res.normal);
@@ -332,6 +333,7 @@ namespace SAT
         _clipEdgeWithNormal(incEp[0], incEp[1], neibN[0], neibEp0[0]);
         _clipEdgeWithNormal(incEp[0], incEp[1], neibN[0], neibEp1[1]);
 
+        res.numPt = 0;
         // find out edge points below ref plane
         bool hasCp = false;
         for(int i = 0; i < 2; ++i)
@@ -339,19 +341,9 @@ namespace SAT
             float d = (incEp[i] - refEp[0]).dot(sepNormal);
             if(d < 0)
             {
-                if(!hasCp)
-                {
-                    hasCp = 1;
-                    res.closetPt = incEp[i] - sepNormal * d;
-                    res.distance = d;
-                    res.numPt = 1;
-                }
-                else
-                {
-                    res.secondPt= incEp[i] - sepNormal * d;
-                    res.secDistance= d;
-                    res.numPt = 2;
-                }
+                res.point[res.numPt] = incEp[i] - sepNormal * d;
+                res.distance[res.numPt] = d;
+                res.numPt++;
             }
         }
 

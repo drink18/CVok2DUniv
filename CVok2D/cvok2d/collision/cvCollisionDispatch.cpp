@@ -66,8 +66,8 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
     {
         auto satRes = SAT::_circleToPolygon(circleA, polyB, matA, matB);
         pt.m_normal = satRes.normal;
-        pt.m_point = satRes.closetPt;
-        pt.m_distance = satRes.distance;
+        pt.m_point = satRes.point[0];
+        pt.m_distance = satRes.distance[0];
     }
 }
 
@@ -94,16 +94,12 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
         // need to run SAT or EPA
         auto satRes = SAT::_polyToPoly(polyA, polyB, matA, matB);
         manifold.m_numPt = satRes.numPt;
-        cvManifoldPoint& pt = manifold.m_points[0];
-        pt.m_point = satRes.closetPt;
-        pt.m_distance = satRes.distance;
-        pt.m_normal = satRes.normal;
-        if(manifold.m_numPt > 1)
+        for(int i = 0; i < manifold.m_numPt; ++i)
         {
-            cvManifoldPoint& pt1 = manifold.m_points[0];
-            pt1.m_point = satRes.secondPt;
-            pt1.m_distance = satRes.secDistance;
-            pt1.m_normal = satRes.normal;
+            cvManifoldPoint& pt = manifold.m_points[i];
+            pt.m_point = satRes.point[i];
+            pt.m_distance = satRes.distance[i];
+            pt.m_normal = satRes.normal;
         }
     }
 }
