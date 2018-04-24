@@ -89,6 +89,12 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
         updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
     }
 
+    {
+        cvTransform t1; t1.m_Translation.set(15.0f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(16.0f, 5.0f);
+        updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
+    }
+
 }
 
 REGISTER_TEST("TestDistance", [](){return new ClosestPointTest();});

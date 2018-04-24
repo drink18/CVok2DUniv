@@ -42,22 +42,26 @@ TEST_F(TestSAT, pt2Box_in)
     EXPECT_TRUE(res.penetrated);
     EXPECT_EQ(cvVec2f(0.5f, 0.25f), res.closetPt);
     EXPECT_EQ(cvVec2f(1.0f, 0), res.normal);
+    EXPECT_EQ(1, res.numPt);
 
     pt.set(0.25f, 0.26f);
     res = _pointToPolygon(pt, *cvBox, iden);
     EXPECT_TRUE(res.penetrated);
     EXPECT_EQ(cvVec2f(0.25f, 0.5f), res.closetPt);
     EXPECT_EQ(cvVec2f(0, 1.0f), res.normal);
+    EXPECT_EQ(1, res.numPt);
 
     pt.set(0.25f, -0.26f);
     res = _pointToPolygon(pt, *cvBox, iden);
     EXPECT_TRUE(res.penetrated);
     EXPECT_EQ(cvVec2f(0.25f, -0.5f), res.closetPt);
     EXPECT_EQ(cvVec2f(0, -1.0f), res.normal);
+    EXPECT_EQ(1, res.numPt);
 
     pt.set(-0.26f, 0.25f);
     res = _pointToPolygon(pt, *cvBox, iden);
     EXPECT_TRUE(res.penetrated);
     EXPECT_EQ(cvVec2f(-0.5f, 0.25f), res.closetPt);
     EXPECT_EQ(cvVec2f(-1.0f, 0), res.normal);
+    EXPECT_EQ(1, res.numPt);
 }

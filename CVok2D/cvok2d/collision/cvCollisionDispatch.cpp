@@ -92,6 +92,19 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
     else
     {
         // need to run SAT or EPA
+        auto satRes = SAT::_polyToPoly(polyA, polyB, matA, matB);
+        manifold.m_numPt = satRes.numPt;
+        cvManifoldPoint& pt = manifold.m_points[0];
+        pt.m_point = satRes.closetPt;
+        pt.m_distance = satRes.distance;
+        pt.m_normal = satRes.normal;
+        if(manifold.m_numPt > 1)
+        {
+            cvManifoldPoint& pt1 = manifold.m_points[0];
+            pt1.m_point = satRes.secondPt;
+            pt1.m_distance = satRes.secDistance;
+            pt1.m_normal = satRes.normal;
+        }
     }
 }
 
