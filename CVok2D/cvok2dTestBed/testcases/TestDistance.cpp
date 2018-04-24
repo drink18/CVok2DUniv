@@ -84,17 +84,28 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
     //a += dt * DEG2RAD(45);
     // box box 
     {
+        cvTransform t1; t1.m_Translation.set(-5.0f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(-3.0f, 5.0f); t2.m_Rotation = DEG2RAD(45);
+        updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
+    }
+
+    {
+        cvTransform t1; t1.m_Translation.set(0.0f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(1.0f, 5.0f); t2.m_Rotation = DEG2RAD(20);
+        updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
+    }
+
+    {
         cvTransform t1; t1.m_Translation.set(5.0f, 5.0f); t1.m_Rotation = a;
         cvTransform t2; t2.m_Translation.set(7.5f, 5.0f);
         updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
     }
 
     {
-        cvTransform t1; t1.m_Translation.set(15.0f, 5.0f);
-        cvTransform t2; t2.m_Translation.set(16.0f, 5.0f);
+        cvTransform t1; t1.m_Translation.set(10.0f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(11.0f, 5.0f);
         updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
     }
-
 }
 
 REGISTER_TEST("TestDistance", [](){return new ClosestPointTest();});

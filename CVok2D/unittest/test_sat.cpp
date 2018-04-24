@@ -79,6 +79,27 @@ TEST_F(TestSAT, polyToPoly)
     EXPECT_EQ(2, res.numPt);
     EXPECT_EQ(cvVec2f(0.5f, 0.4f), res.point[0]);
     EXPECT_NEAR(-0.1f, res.distance[0], CV_FLOAT_EPS);;
+    EXPECT_EQ(cvVec2f(0, -1), res.normal);
     EXPECT_EQ(cvVec2f(-0.5f, 0.4f), res.point[1]);
     EXPECT_NEAR(-0.1f, res.distance[1], CV_FLOAT_EPS);;
+}
+
+TEST_F(TestSAT, polyToPoly_horizontal)
+{
+    auto m_poly = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+    auto m_poly1 = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(0.8f, 0.8f), 0.05f));
+
+    cvMat33 mat1; mat1.setIdentity();
+    mat1.setTranslation(cvVec2f(15.0f, 5.0f));
+    cvMat33 mat2; mat2.setIdentity();
+    mat2.setTranslation(cvVec2f(16.0f, 5.0f));
+
+    auto res = _polyToPoly(*m_poly, *m_poly1, mat1, mat2);
+
+    EXPECT_EQ(2, res.numPt);
+    EXPECT_EQ(cvVec2f(15.2f, 4.2f), res.point[0]);
+    EXPECT_NEAR(-0.8f, res.distance[0], CV_FLOAT_EPS);;
+    EXPECT_EQ(cvVec2f(15.2f, 5.8f), res.point[1]);
+    EXPECT_NEAR(-0.8f, res.distance[1], CV_FLOAT_EPS);;
+    EXPECT_EQ(cvVec2f(-1.0f, 0),  res.normal);
 }

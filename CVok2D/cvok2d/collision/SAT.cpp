@@ -52,8 +52,7 @@ namespace SAT
         return pp - sp;
     }
 
-    float _getPeneDist(const cvVec2f& axis, const cvVec2f& pt, const cvConvexShape& cvxShape,
-            const cvMat33 trans)
+    float _getPeneDist(const cvVec2f& axis, const cvVec2f& pt, const cvConvexShape& cvxShape)
     {
         cvVec2f s = cvxShape.getSupport(-axis).p;
         float d = axis.dot(s - pt);
@@ -185,12 +184,12 @@ namespace SAT
             cvVec2f ev = ep1 - ep0;
             cvVec2f en = ev.computePerpendicular();
             en.normalize();
-
-            //edge normal in world
-            transA.transformVector(en);
-            // ep0 in world
-            cvVec2f ep0w = transA * ep0;
-            float p = _getPeneDist(en, ep0w, shape, transB);
+            cvVec2f enlocal = en;
+            //edge normal in local of shape B
+            a2b.transformVector(enlocal);
+            // ep0 in local of B
+            cvVec2f ep0w = a2b * ep0;
+            float p = _getPeneDist(enlocal, ep0w, shape);
 
             if(p > 0)
             {
@@ -331,9 +330,10 @@ namespace SAT
 
         // clipping 
         _clipEdgeWithNormal(incEp[0], incEp[1], neibN[0], neibEp0[0]);
-        _clipEdgeWithNormal(incEp[0], incEp[1], neibN[0], neibEp1[1]);
+        _clipEdgeWithNormal(incEp[0], incEp[1], neibN[1], neibEp1[1]);
 
         res.numPt = 0;
+        res.normal = sepNormal;
         // find out edge points below ref plane
         bool hasCp = false;
         for(int i = 0; i < 2; ++i)
