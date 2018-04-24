@@ -8,6 +8,8 @@
 #define cvSqrt sqrtf
 
 
+class cvVec3f;
+
 inline bool almost_equal(float x, float y)
 {
 	return std::abs(x - y) < CV_FLOAT_EPS;
@@ -112,6 +114,8 @@ public:
     inline bool operator==(const cvVec2f& v) const;
 
     static cvVec2f getZero();
+
+    inline cvVec2f computePerpendicular() const;
 };
 
 class cvVec3f

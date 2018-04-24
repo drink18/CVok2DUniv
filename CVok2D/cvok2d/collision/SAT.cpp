@@ -86,9 +86,7 @@ namespace SAT
         int nedge = (int)verts.size();
         cvVec2f e = (verts[1] - verts[0]).getNormalized();
         cvVec2f midEdge = (verts[1] + verts[0]) / 2; 
-        cvVec3f sap3(e.x, e.y, 1);
-        sap3 = sap3.cross(cvVec3f(0, 0, 1));
-        cvVec2f sap2(sap3.x, sap3.y);
+        cvVec2f sap2 = e.computePerpendicular();
 
         float deepestPen = _getPointPeneOnAxis(ptL, sap2, midEdge, poly);
         int deepestPenEdge = 0;
@@ -105,9 +103,7 @@ namespace SAT
             int nei = _nextEdge(i, nedge);
             e = (verts[nei] - verts[i]).getNormalized();
             midEdge = (verts[nei] + verts[i]) / 2;
-            sap3.set(cvVec3f(e.x, e.y, 1));
-            sap3 = sap3.cross(cvVec3f(0, 0, 1));
-            sap2.set(sap3.x, sap3.y);
+            cvVec2f sap2 = e.computePerpendicular();
 
             float pen = _getPointPeneOnAxis(ptL, sap2, midEdge, poly);
             if (pen > deepestPen)
@@ -186,9 +182,7 @@ namespace SAT
             cvVec2f ep0 = verts[i];
             cvVec2f ep1 = verts[nei];
             cvVec2f ev = ep1 - ep0;
-            cvVec3f ev3(ev.x, ev.y, 1);
-            cvVec3f en3 = ev3.cross(cvVec3f(0, 0, 1));
-            cvVec2f en(en3.x, en3.y);
+            cvVec2f en = ev.computePerpendicular();
             en.normalize();
 
             //edge normal in world
@@ -224,9 +218,7 @@ namespace SAT
             cvVec2f e0 = verts[i];
             cvVec2f e1 = verts[_nextEdge(i, verts.size())];
             cvVec2f e = e1 - e0;
-            cvVec3f e3(e.x, e.y, 1);
-            cvVec3f en3 = e3.cross(cvVec3f(0, 0, 1));
-            cvVec2f en(en3.x, en3.y);
+            cvVec2f en = e.computePerpendicular();
 
             float d = refNormal.dot(en);
             if(d < maxD)

@@ -210,6 +210,15 @@ bool cvVec2f::operator==(const cvVec2f& v) const
     return abs(v.x - x) < CV_FLOAT_EPS && abs(v.y - y) < CV_FLOAT_EPS;
 }
 
+cvVec2f cvVec2f::computePerpendicular() const
+{
+    cvVec3f v3(x, y, 0.0f);
+    cvVec3f up(0, 0, 1.0f);
+    cvVec3f pe = v3.cross(up);
+
+    return cvVec2f(pe.x, pe.y);
+}
+
 inline float cvVec3f::length() const
 {
     float sl = sqrLength();
