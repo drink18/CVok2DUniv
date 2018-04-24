@@ -65,3 +65,20 @@ TEST_F(TestSAT, pt2Box_in)
     EXPECT_EQ(cvVec2f(-1.0f, 0), res.normal);
     EXPECT_EQ(1, res.numPt);
 }
+
+TEST_F(TestSAT, polyToPoly)
+{
+    unique_ptr<cvPolygonShape> box;
+    box.reset(cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+    cvMat33 mat1; mat1.setIdentity();
+    cvMat33 mat2; mat2.setIdentity();
+    mat2.setTranslation(cvVec2f(0, 1.4f));
+
+    auto res = _polyToPoly(*cvBox, *box, mat1, mat2);
+
+    EXPECT_EQ(2, res.numPt);
+    EXPECT_EQ(cvVec2f(0.5f, 0.4f), res.closetPt);
+    EXPECT_NEAR(-0.1f, res.distance, CV_FLOAT_EPS);;
+    EXPECT_EQ(cvVec2f(-0.5f, 0.4f), res.secondPt);
+    EXPECT_NEAR(-0.1f, res.secDistance, CV_FLOAT_EPS);;
+}

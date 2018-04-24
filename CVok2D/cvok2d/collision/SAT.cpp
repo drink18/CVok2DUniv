@@ -168,7 +168,7 @@ namespace SAT
     float _getMinPenD(const cvPolygonShape& refShape, const cvPolygonShape& shape,
             const cvMat33& transA, const cvMat33& transB, int& minEdgeIndx, cvVec2f& enormal)
     {
-        float smallestPen = FLT_MIN;
+        float smallestPen = -FLT_MAX;
 
         cvMat33 invB; transB.getInvert(invB);
         cvMat33 a2b = transA * invB;
@@ -236,11 +236,11 @@ namespace SAT
     {
         SATResult res;
 
-        float smallestPen = FLT_MIN;
+        float smallestPen = -FLT_MAX;
         int minEdgeIndex = 0;
 
-        float minPenA = FLT_MIN;
-        float minPenB = FLT_MIN;
+        float minPenA = -FLT_MAX;
+        float minPenB = -FLT_MAX;
         int minEdgeIdxA = 0;
         int minEdgeIdxB = 0;
         cvVec2f edgeNormalA;
@@ -286,16 +286,20 @@ namespace SAT
             auto& incVert = shapeB.getVertices();
             auto& refVert = shapeA.getVertices();
 
-            incEp[0] = incVert[incidentEdgeIdx];
-            incEp[1] = incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
-            refEp[0] = refVert[refEdgeIdx];
-            refEp[1] = refVert[_nextEdge(refEdgeIdx, refVert.size())];
-            neibEp0[0] = refVert[neEdgeIdx0];
-            neibEp0[1] = refVert[_nextEdge(neEdgeIdx0, refVert.size())];
-            neibEp1[0] = refVert[neEdgeIdx1];
-            neibEp1[1] = refVert[_nextEdge(neEdgeIdx1, refVert.size())];
+            incEp[0] = matB * incVert[incidentEdgeIdx];
+            incEp[1] = matB * incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
+            refEp[0] = matA * refVert[refEdgeIdx];
+            refEp[1] = matA * refVert[_nextEdge(refEdgeIdx, refVert.size())];
+            neibEp0[0] = matA * refVert[neEdgeIdx0];
+            neibEp0[1] = matA * refVert[_nextEdge(neEdgeIdx0, refVert.size())];
+            neibEp1[0] = matA * refVert[neEdgeIdx1];
+            neibEp1[1] = matA * refVert[_nextEdge(neEdgeIdx1, refVert.size())];
             neibN[0] = neibEp0[1] - neibEp0[0];
+            neibN[0] = neibN[0].computePerpendicular();
+            neibN[0].normalize();
             neibN[1] = neibEp1[1] - neibEp1[0];
+            neibN[1] = neibN[1].computePerpendicular();
+            neibN[1].normalize();
         }
         else
         {
@@ -308,16 +312,20 @@ namespace SAT
             auto& incVert = shapeA.getVertices();
             auto& refVert = shapeB.getVertices();
 
-            incEp[0] = incVert[incidentEdgeIdx];
-            incEp[1] = incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
-            refEp[0] = refVert[refEdgeIdx];
-            refEp[1] = refVert[_nextEdge(refEdgeIdx, refVert.size())];
-            neibEp0[0] = refVert[neEdgeIdx0];
-            neibEp0[1] = refVert[_nextEdge(neEdgeIdx0, refVert.size())];
-            neibEp1[0] = refVert[neEdgeIdx1];
-            neibEp1[1] = refVert[_nextEdge(neEdgeIdx1, refVert.size())];
+            incEp[0] = matA * incVert[incidentEdgeIdx];
+            incEp[1] = matA * incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
+            refEp[0] = matB * refVert[refEdgeIdx];
+            refEp[1] = matB * refVert[_nextEdge(refEdgeIdx, refVert.size())];
+            neibEp0[0] = matB * refVert[neEdgeIdx0];
+            neibEp0[1] = matB * refVert[_nextEdge(neEdgeIdx0, refVert.size())];
+            neibEp1[0] = matB * refVert[neEdgeIdx1];
+            neibEp1[1] = matB * refVert[_nextEdge(neEdgeIdx1, refVert.size())];
             neibN[0] = neibEp0[1] - neibEp0[0];
+            neibN[0] = neibN[0].computePerpendicular();
+            neibN[0].normalize();
             neibN[1] = neibEp1[1] - neibEp1[0];
+            neibN[1] = neibN[1].computePerpendicular();
+            neibN[1].normalize();
         }
 
         // clipping 
