@@ -24,7 +24,7 @@ void cvDebugDraw::DrawWorld(const cvWorld& world)
             for(int i = 0; i < m.m_numPt; ++i)
             {
                 const cvManifoldPoint& p = m.m_points[i];
-                AddLine(p.m_point, p.m_point + p.m_normal * p.m_distance, cvColorf::Green);
+                AddLine(p.m_point, p.m_point + m.m_normal * p.m_distance, cvColorf::Green);
             }
         }
 

@@ -25,6 +25,7 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
     float len = d.length();
 
     manifold.m_numPt = 1;
+    manifold.m_normal = d;
     cvManifoldPoint& pt = manifold.m_points[0];
 
     if(len > CV_FLOAT_EPS)
@@ -37,7 +38,6 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
     }
 
     pt.m_distance = len - ra - rb;
-    pt.m_normal = d;
     pt.m_point = wldB + d * rb;
 
 }
@@ -51,20 +51,22 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
     float r = circleA.getRadius();
 
     manifold.m_numPt = 1;
-    cvManifoldPoint& pt = manifold.m_points[0];
 
     cvPointQueryInput input(matA * circleA.getCenter(), polyB, matB);
     GJKResult res = cvPointToConvexShape(input);
+    cvManifoldPoint& pt = manifold.m_points[0];
     if(res.result == GJKResult::GJK_GOOD)
     {
-        pt.m_normal = res.normal;
+        manifold.m_normal = res.normal;
+
         pt.m_point = res.closetPt;
         pt.m_distance = res.distance - r;
     }
     else
     {
         auto satRes = SAT::_circleToPolygon(circleA, polyB, matA, matB);
-        pt.m_normal = satRes.normal;
+
+        manifold.m_normal = satRes.normal;
         pt.m_point = satRes.point[0];
         pt.m_distance = satRes.distance[0];
     }
@@ -83,22 +85,22 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
     if(res.m_succeed)
     {
         manifold.m_numPt = 1;
+        manifold.m_normal = res.m_seperation;
         cvManifoldPoint& pt = manifold.m_points[0];
         pt.m_point = res.m_pA;
         pt.m_distance = res.m_distance;
-        pt.m_normal = res.m_seperation;
     }
     else
     {
         // need to run SAT or EPA
         auto satRes = SAT::_polyToPoly(polyA, polyB, matA, matB);
         manifold.m_numPt = satRes.numPt;
+        manifold.m_normal = satRes.normal;
         for(int i = 0; i < manifold.m_numPt; ++i)
         {
             cvManifoldPoint& pt = manifold.m_points[i];
             pt.m_point = satRes.point[i];
             pt.m_distance = satRes.distance[i];
-            pt.m_normal = satRes.normal;
         }
     }
 }

@@ -36,7 +36,7 @@ void ClosestPointTest::updateShapePair(cvDebugDraw& gdbDraw, const cvConvexShape
         {
             cvManifoldPoint mp = manifold.m_points[i];
             auto pa = mp.m_point;
-            auto pb = pa + mp.m_normal * mp.m_distance;
+            auto pb = pa + manifold.m_normal * mp.m_distance;
 
             gdbDraw.AddLine(pa, pb, cvColorf::Green);
         }
@@ -105,6 +105,14 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
         cvTransform t1; t1.m_Translation.set(10.0f, 5.0f);
         cvTransform t2; t2.m_Translation.set(11.0f, 5.0f);
         updateShapePair(gdbDraw, *m_poly, *m_poly1, t1, t2);
+    }
+
+    {
+        auto poly = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+        cvTransform t1; t1.m_Translation.set(15.0f, 5.0f);
+        cvTransform t2; t2.m_Translation.set(16.5f, 5.0f);
+
+        updateShapePair(gdbDraw, *m_poly, *poly, t1, t2);
     }
 }
 

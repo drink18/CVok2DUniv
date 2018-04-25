@@ -58,7 +58,7 @@ TEST_F(TestCP, TestCircle_Box_Sep)
 
     ASSERT_EQ(1, manifold.m_numPt);
     ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_point);
-    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_normal);
     ASSERT_FLOAT_EQ(0.5f, manifold.m_points[0].m_distance);
 }
 
@@ -75,7 +75,7 @@ TEST_F(TestCP, TestCircle_Box_Overlap)
 
     ASSERT_EQ(1, manifold.m_numPt);
     ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_point);
-    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_normal);
     ASSERT_FLOAT_EQ(-0.1f, manifold.m_points[0].m_distance);
 }
 
@@ -92,7 +92,7 @@ TEST_F(TestCP, TestCircle_Box_DeepPene)
 
     ASSERT_EQ(1, manifold.m_numPt);
     ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_point);
-    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_normal);
     ASSERT_FLOAT_EQ(-1.1f, manifold.m_points[0].m_distance);
 }
 
@@ -111,7 +111,7 @@ TEST_F(TestCP, TestCircle_Box_DeepPene_WithTrans)
 
     ASSERT_EQ(1, manifold.m_numPt);
     ASSERT_EQ(cvVec2f(2.0f, 0), manifold.m_points[0].m_point);
-    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_points[0].m_normal);
+    ASSERT_EQ(cvVec2f(1.0f, 0), manifold.m_normal);
     ASSERT_FLOAT_EQ(-1.1f, manifold.m_points[0].m_distance);
 }
 
