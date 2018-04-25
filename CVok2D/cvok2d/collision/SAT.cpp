@@ -236,24 +236,16 @@ namespace SAT
     {
         SATResult res;
 
-        float smallestPen = -FLT_MAX;
         int minEdgeIndex = 0;
 
-        float minPenA = -FLT_MAX;
-        float minPenB = -FLT_MAX;
         int minEdgeIdxA = 0;
         int minEdgeIdxB = 0;
         cvVec2f edgeNormalA;
         cvVec2f edgeNormalB;
 
-
-        cvVec2f ep0, ep1;
-        float minPen;
-
-
         //for all edges of shape A
-        minPenA = _getMinPenD(shapeA, shapeB, matA, matB, minEdgeIdxA, edgeNormalA);
-        minPenB = _getMinPenD(shapeB, shapeA, matB, matA, minEdgeIdxB, edgeNormalB);
+        float minPenA = _getMinPenD(shapeA, shapeB, matA, matB, minEdgeIdxA, edgeNormalA);
+        float minPenB = _getMinPenD(shapeB, shapeA, matB, matA, minEdgeIdxB, edgeNormalB);
 
         if(minPenA > 0 || minPenB > 0) //has sep axis 
             return res;
@@ -272,61 +264,58 @@ namespace SAT
         cvVec2f neibEp0[2];
         cvVec2f neibEp1[2];
         cvVec2f neibN[2];
-        cvPolygonShape* incShape = nullptr;
-        cvPolygonShape* refShape = nullptr;
+        const cvPolygonShape* incShape = nullptr;
+        const cvPolygonShape* refShape = nullptr;
+
+        cvMat33 refMat;
+        cvMat33 incMat;;
 
         // work on sep axis with smallest penetration
         if(minPenA > minPenB)
         {
+            incShape = &shapeB;
+            incMat = matB;
+            refShape = &shapeA;
+            refMat = matA;
+
             sepNormal = edgeNormalA;
             refEdgeIdx = minEdgeIdxA;
-            neEdgeIdx0 = _prevEdge(refEdgeIdx, shapeA.getVertices().size());
-            neEdgeIdx1 = _nextEdge(refEdgeIdx, shapeA.getVertices().size());
-            _findIncidentEdge(shapeB, edgeNormalA, matB, incidentEdgeIdx);
-            auto& incVert = shapeB.getVertices();
-            auto& refVert = shapeA.getVertices();
 
-            incEp[0] = matB * incVert[incidentEdgeIdx];
-            incEp[1] = matB * incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
-            refEp[0] = matA * refVert[refEdgeIdx];
-            refEp[1] = matA * refVert[_nextEdge(refEdgeIdx, refVert.size())];
-            neibEp0[0] = matA * refVert[neEdgeIdx0];
-            neibEp0[1] = matA * refVert[_nextEdge(neEdgeIdx0, refVert.size())];
-            neibEp1[0] = matA * refVert[neEdgeIdx1];
-            neibEp1[1] = matA * refVert[_nextEdge(neEdgeIdx1, refVert.size())];
-            neibN[0] = neibEp0[1] - neibEp0[0];
-            neibN[0] = neibN[0].computePerpendicular();
-            neibN[0].normalize();
-            neibN[1] = neibEp1[1] - neibEp1[0];
-            neibN[1] = neibN[1].computePerpendicular();
-            neibN[1].normalize();
         }
         else
         {
+            incShape = &shapeA;
+            incMat = matA;
+            refShape = &shapeB;
+            refMat = matB;
+
             sepNormal = edgeNormalB;
             refEdgeIdx = minEdgeIdxB;
-            neEdgeIdx0 = _prevEdge(refEdgeIdx, shapeB.getVertices().size());
-            neEdgeIdx1 = _nextEdge(refEdgeIdx, shapeB.getVertices().size());
-            _findIncidentEdge(shapeA, edgeNormalB, matA, incidentEdgeIdx);
-
-            auto& incVert = shapeA.getVertices();
-            auto& refVert = shapeB.getVertices();
-
-            incEp[0] = matA * incVert[incidentEdgeIdx];
-            incEp[1] = matA * incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
-            refEp[0] = matB * refVert[refEdgeIdx];
-            refEp[1] = matB * refVert[_nextEdge(refEdgeIdx, refVert.size())];
-            neibEp0[0] = matB * refVert[neEdgeIdx0];
-            neibEp0[1] = matB * refVert[_nextEdge(neEdgeIdx0, refVert.size())];
-            neibEp1[0] = matB * refVert[neEdgeIdx1];
-            neibEp1[1] = matB * refVert[_nextEdge(neEdgeIdx1, refVert.size())];
-            neibN[0] = neibEp0[1] - neibEp0[0];
-            neibN[0] = neibN[0].computePerpendicular();
-            neibN[0].normalize();
-            neibN[1] = neibEp1[1] - neibEp1[0];
-            neibN[1] = neibN[1].computePerpendicular();
-            neibN[1].normalize();
         }
+
+        // compute incident edge, and neihbough edges 
+        neEdgeIdx0 = _prevEdge(refEdgeIdx, (*refShape).getVertices().size());
+        neEdgeIdx1 = _nextEdge(refEdgeIdx, (*refShape).getVertices().size());
+
+        _findIncidentEdge((*incShape), sepNormal, incMat, incidentEdgeIdx);
+        auto& incVert = (*incShape).getVertices();
+        auto& refVert = (*refShape).getVertices();
+
+        incEp[0] = incMat * incVert[incidentEdgeIdx];
+        incEp[1] = incMat * incVert[_nextEdge(incidentEdgeIdx, incVert.size())];
+        refEp[0] = refMat * refVert[refEdgeIdx];
+        refEp[1] = refMat * refVert[_nextEdge(refEdgeIdx, refVert.size())];
+        neibEp0[0] = refMat * refVert[neEdgeIdx0];
+        neibEp0[1] = refMat * refVert[_nextEdge(neEdgeIdx0, refVert.size())];
+        neibEp1[0] = refMat * refVert[neEdgeIdx1];
+        neibEp1[1] = refMat * refVert[_nextEdge(neEdgeIdx1, refVert.size())];
+
+        neibN[0] = neibEp0[1] - neibEp0[0];
+        neibN[0] = neibN[0].computePerpendicular();
+        neibN[0].normalize();
+        neibN[1] = neibEp1[1] - neibEp1[0];
+        neibN[1] = neibN[1].computePerpendicular();
+        neibN[1].normalize();
 
         // clipping 
         _clipEdgeWithNormal(incEp[0], incEp[1], neibN[0], neibEp0[0]);
