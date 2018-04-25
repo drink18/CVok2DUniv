@@ -88,7 +88,6 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
     for(int i = 0; i < npPairs.size(); ++i)
     {
         auto& p = npPairs[i];
-        int numPt = 0;
         auto* shapeA = p.m_shapeA;
         auto* shapeB = p.m_shapeB;
         auto fn = g_collisionFunction[shapeA->getShapeType()][shapeB->getShapeType()];

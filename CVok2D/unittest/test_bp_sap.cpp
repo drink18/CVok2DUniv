@@ -84,7 +84,7 @@ TEST(cvBroadphase, removeBody)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(0, 0), cvVec2f(1, 1));
-    auto handle1 = add_node_helper(aabb1, &broadPhase);
+    add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(0.5f, 0.5f), cvVec2f(1, 1));
     auto handle2 = add_node_helper(aabb2, &broadPhase);
@@ -135,7 +135,7 @@ TEST(cvBroadphase, updateBody_MoveLeft)
     auto handle1 = add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1.5f, 1.5f), cvVec2f(3, 3));
-    auto handle2 = add_node_helper(aabb2, &broadPhase);
+    add_node_helper(aabb2, &broadPhase);
 
 	std::vector<cvBroadphase::BPPair> pairs;
 	broadPhase.getAllPairs(pairs);
@@ -152,10 +152,10 @@ TEST(cvBroadphase, updateBody_MoveExpand)
 	cvBroadphaseCInfo cInfo;
 	cvBroadphaseSAP broadPhase(cInfo);
 	cvAabb aabb1(cvVec2f(-2.0f, -1.0f), cvVec2f(-1.0f, 1.0f));
-    auto handle1 = add_node_helper(aabb1, &broadPhase);
+    add_node_helper(aabb1, &broadPhase);
 
 	cvAabb aabb2(cvVec2f(1.0f, -1.0f), cvVec2f(2, 1));
-    auto handle2 = add_node_helper(aabb2, &broadPhase);
+    add_node_helper(aabb2, &broadPhase);
 
 
 	cvAabb aabb3(cvVec2f(-0.9f, -1.0f), cvVec2f(0.9f, 1.0f));
@@ -179,12 +179,12 @@ TEST(cvBroadphase, addNode_testEP)
 	cvBroadphaseSAP broadPhase(cInfo);
 
 	cvAabb aabb1(cvVec2f(1, 1), cvVec2f(2, 2));
-    auto handle1 = add_node_helper(aabb1, &broadPhase);
+    add_node_helper(aabb1, &broadPhase);
 
     const cvBroadphaseSAP::NodeEPList& epList = broadPhase.getEpList(0);
 
 	cvAabb aabb2(cvVec2f(3, 3), cvVec2f(4, 4));
-    auto handle2 = add_node_helper(aabb2, &broadPhase);
+    add_node_helper(aabb2, &broadPhase);
 
     broadPhase.updateDirtyNodes(newPairs, removedPairs);
 

@@ -24,7 +24,7 @@ struct TestInfo
     const char* m_name;
 
     TestInfo(const char* name, TestCreateFn fn)
-        :m_name(name), m_testFn(fn) {}
+        :m_testFn(fn), m_name(name) {}
 };
 
 extern std::vector<TestInfo>* g_RegisteredTests;

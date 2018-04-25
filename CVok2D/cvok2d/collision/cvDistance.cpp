@@ -47,7 +47,6 @@ namespace cvDist
         float vca = ca.v;
 
         //barycentric coord of triangle
-        float area = (b - a).cross(c -a);
         float uABC = (b - q).cross(c -q);
         float vABC = (c - q).cross(a -q);
         float wABC = (a - q).cross(b -q);

@@ -110,7 +110,6 @@ namespace GJK
                 cvVec2f d = _getDFromEdge(queryPt, a.p, b.p);
                 //get support
                 auto simP = getSimplexFromSupport(d);
-                cvVec2f sp = simP.p;
                 p2LRes = pointDistanceToLine(simP.p, a.p, b.p);
 
                 if(simplex.hasVtx(simP) || (p2LRes.pt - simP.p).sqrLength() < CV_FLOAT_EPS) // duplicate vertex or colinear

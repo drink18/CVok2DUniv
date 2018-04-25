@@ -286,7 +286,6 @@ void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vecto
 
     for(auto& dn: m_DirtyNodes)
     {
-        const BPNode& node = m_Nodes.getAt(dn.first);
         updateOneNode(dn.first, dn.second);
     }
 

@@ -27,7 +27,7 @@ public:
     {
     public:
         AllocatedBodyIter(const std::unordered_set<cvBodyId>& bodyBuffer)
-            : m_allocatedBodies(bodyBuffer), bodyIter(bodyBuffer.begin()) { }
+            : bodyIter(bodyBuffer.begin()), m_allocatedBodies(bodyBuffer)  { }
         bool isValid() const {return m_allocatedBodies.end() != (bodyIter&)(*this);}
         const std::unordered_set<cvBodyId>& m_allocatedBodies;
     };

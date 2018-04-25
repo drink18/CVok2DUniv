@@ -140,10 +140,6 @@ int main(int, char**)
 
     g_currentTest.reset(GetRegisteredTests()[g_currentDemoIdx].m_testFn());
 
-    bool show_test_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImColor(114, 144, 154);
-
     float lastTime = glfwGetTime();
     float dt ;
     // main loop

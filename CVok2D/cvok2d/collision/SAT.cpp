@@ -30,7 +30,6 @@ namespace SAT
     {
         cvVec2f na = axis.getNormalized();
 
-        float pv = na.dot(verts[0] - pt);
         minP = maxP =  na.dot(verts[0] - pt);
 
         for(int i = 1; i < verts.size(); ++i)
@@ -81,7 +80,6 @@ namespace SAT
         cvMat33 invT;  trans.getInvert(invT);
         cvVec2f ptL = invT * pt; //point in local space of polygon
 
-        bool sep = false;
         auto& verts = poly.getVertices();
         int nedge = (int)verts.size();
         cvVec2f e = (verts[1] - verts[0]).getNormalized();
@@ -123,7 +121,6 @@ namespace SAT
         // if we got here point is inside polygon
         res.penetrated = true;
         res.numPt = 1;
-        cvVec2f ptOnPoly = ptL - verts[deepestPenEdge];
         res.point[0] = ptL - deepestAxis * deepestPen;
         res.distance[0] = deepestPen;
         res.normal = deepestAxis;
@@ -236,8 +233,6 @@ namespace SAT
     {
         SATResult res;
 
-        int minEdgeIndex = 0;
-
         int minEdgeIdxA = 0;
         int minEdgeIdxB = 0;
         cvVec2f edgeNormalA;
@@ -324,7 +319,6 @@ namespace SAT
         res.numPt = 0;
         res.normal = sepNormal;
         // find out edge points below ref plane
-        bool hasCp = false;
         for(int i = 0; i < 2; ++i)
         {
             float d = (incEp[i] - refEp[0]).dot(sepNormal);
