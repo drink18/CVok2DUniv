@@ -27,6 +27,7 @@ const cvMotion& cvMotionManager::getMotion(cvMotionId id) const
 cvMotionId cvMotionManager::addMotion(const cvMotion& motion)
 {
     cvMotionId id = m_motionBuffer.alloc(motion);
+    m_allocated.insert(id);
     return id;
 }
 
@@ -38,5 +39,15 @@ void cvMotionManager::removeMotion(cvMotionId id)
         return;
     }
     m_motionBuffer.free(id);
+    m_allocated.erase(id);
 }
 
+void cvMotionManager::refreshSolverId()
+{
+    int i = 0;
+    for(const auto& id : m_allocated)
+    {
+        cvMotion& m = accessMotion(id);
+        m.solverBodyId = i++;
+    }
+}

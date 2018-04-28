@@ -4,15 +4,13 @@
 
 #include "cvSimulationContext.h"
 
+class cvPGSSolver;
 class cvWorld;
 
 class cvSimulationControlSimple : public cvISimulationControl
 {
 public:
-    cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx, cvWorld* world)
-        :m_bp(bp), m_world(world)
-    {
-    }
+    cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx, cvWorld* world);
 
     virtual ~cvSimulationControlSimple(){};
 
@@ -21,9 +19,11 @@ public:
     void narrowPhase(cvSimulationContext& simCtx);
     void postCollide(cvSimulationContext& simCtx);
     void integrate(float dt);
+    void solve(cvSimulationContext& simCtx);
     virtual void simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx) override;
 
 private:
     cvBroadphase* m_bp;
     cvWorld* m_world;
+    cvPGSSolver* m_solver;
 };

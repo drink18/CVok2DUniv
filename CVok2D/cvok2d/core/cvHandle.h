@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 
 template<typename T, T INVALID_VALUE> 
 struct cvHandle
@@ -17,6 +18,20 @@ public:
 
     bool operator!=(const cvHandle<T, INVALID_VALUE>& other) const
     { return m_val != other.m_val; }
+
 private:
 	T m_val;
 };
+
+namespace std
+{
+    template<typename  T, T inv>
+    struct hash<cvHandle<T, inv>>
+    {
+        size_t operator() (const cvHandle<T, inv>& h) const
+        {
+            hash<uint16_t> h16;
+            return h16(h.getVal());
+        }
+    };
+}

@@ -401,12 +401,19 @@ inline cvVec3f cvVec3f::operator*(float s) const
     return t;
 }
 
+inline cvVec3f cvVec3f::operator*(const cvVec3f& v) const
+{
+    cvVec3f ret(x * v.x, y * v.y, z * v.z);
+    return ret;
+}
+
 // v *= s
 inline cvVec3f& cvVec3f::operator*=(float s)
 {
     setScale(s);
     return *this;
 }
+
 
 // v1 = v / s
 inline cvVec3f cvVec3f::operator/(float s) const

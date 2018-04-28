@@ -1,9 +1,17 @@
 #include "cvSimulationControlSimple.h"
 #include <collision/cvCollisionDispatch.h>
+#include <solver/cvPGS.h>
 #include <world/cvWorld.h>
 #include <vector>
 
 using namespace std;
+cvSimulationControlSimple::cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx, 
+        cvWorld* world)
+    :m_bp(bp), m_world(world)
+{
+    m_solver = new cvPGSSolver();
+}
+
 void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
 {
     cvBodyManager& bodyMgr = m_world->accessBodyManager();
@@ -92,7 +100,7 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
 
         manifolds.resize(manifolds.size() + 1);
         cvManifold& manifold = manifolds.back();
-        manifold.m_bodyB = np.m_bodyA;
+        manifold.m_bodyA = np.m_bodyA;
         manifold.m_bodyB = np.m_bodyB;
         manifold.m_numPt = 0;
     }
@@ -120,19 +128,30 @@ void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
 void cvSimulationControlSimple::integrate(float dt)
 {
 	cvBodyManager& bodyMgr = m_world->accessBodyManager();
-	const cvMotionManager& motionMgr = m_world->getMotionManager();
+	cvMotionManager& motionMgr = m_world->accessMotionManager();
     for(auto iter = bodyMgr.getBodyIter();iter.isValid(); ++iter)
     {
         cvBody& body = bodyMgr.accessBody(*iter);
         if(body.getMotionId() == cvMotionId::invalid())
             continue;
 
-        const cvMotion& motion = motionMgr.getMotion(body.getMotionId());
-        cvTransform& xform = body.accessTransform();
+        cvMotion& motion = motionMgr.accessMotion(body.getMotionId());
+        cvTransform& xform = motion.m_transform; 
 
         xform.m_Rotation += motion.m_angularVel * dt;
         xform.m_Translation += motion.m_linearVel * dt;
+
+        body.accessTransform() = xform;
     }
+}
+
+void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx)
+{
+    m_solver->setupSolverBodies(*m_world);
+    m_solver->setupContratins(simCtx.m_Manifolds, *m_world);
+
+    m_solver->solveContacts();
+    m_solver->finishSolver(*m_world);
 }
 
 void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
@@ -142,6 +161,7 @@ void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationConte
 	narrowPhase(simCtx);
 	postCollide(simCtx);
 
+    solve(simCtx);
 
 	integrate(stepInfo.m_dt);
 }

@@ -6,18 +6,6 @@
 #include <core/collection/cvFreeList.h>
 #include <world/cvBody.h>
 
-
-namespace std
-{
-    template<> struct hash<cvBodyId>
-    {
-        std::size_t operator()(const cvBodyId& h) const
-        {
-            return hash<uint16_t>{}(h.getVal());
-        }
-    };
-}
-
 class cvBodyManager
 {
 public:

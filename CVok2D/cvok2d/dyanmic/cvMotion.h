@@ -2,10 +2,12 @@
 
 #include <core/cvMath.h>
 #include <core/cvHandle.h>
+#include <functional>
 
 struct cvBodyCInfo;
 
 typedef cvHandle<uint16_t, 0x7FFF> cvMotionId;
+
 
 class cvMotion
 {
@@ -25,6 +27,9 @@ public:
     cvVec2f m_linearVel;
     float m_angularVel = 0;
     cvVec2f m_invMassAndInertia;
+    cvTransform m_transform;
+
+    int solverBodyId = -1;
 
 public:
     float getInvMass() const {return m_invMassAndInertia.x;}

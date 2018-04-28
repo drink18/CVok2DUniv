@@ -183,6 +183,7 @@ public:
 
     //  v1 = v * s
     inline cvVec3f operator*(float s) const;
+    inline cvVec3f operator*(const cvVec3f& v) const; //per component mul
 
     // v *= s
     inline cvVec3f& operator*=(float s);
