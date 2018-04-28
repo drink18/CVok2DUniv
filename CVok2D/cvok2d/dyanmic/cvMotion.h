@@ -3,10 +3,19 @@
 #include <core/cvMath.h>
 #include <core/cvHandle.h>
 
+struct cvBodyCInfo;
+
 typedef cvHandle<uint16_t, 0x7FFF> cvMotionId;
 
 class cvMotion
 {
+public:
+    enum class MotionType
+    {
+        Static,
+        Kinematic,
+        Dynamic
+    };
 public:
     static const cvMotionId StaticMotionId;
 
@@ -15,4 +24,8 @@ public:
 
     cvVec2f m_linearVel;
     float m_angularVel = 0;
+    cvVec2f m_invMassAndInertia;
+
+    static void InitializeMotion(cvMotion& motion, MotionType mt, const cvBodyCInfo& cinfo);
+
 };

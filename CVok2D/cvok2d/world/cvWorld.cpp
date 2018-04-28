@@ -32,8 +32,13 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool add)
 	body.m_transform = cInfo.m_initTransform;
 	body.m_shape = cInfo.m_shape;
 	body.m_mass.x = cInfo.m_mass;
-    cvMotion motion;
-    body.m_motionId = m_motionManager.addMotion(motion);
+
+    if(cInfo.m_motionType != cvMotion::MotionType::Static)
+    {
+        cvMotion motion;
+        cvMotion::InitializeMotion(motion, cInfo.m_motionType, cInfo);
+        body.m_motionId = m_motionManager.addMotion(motion);
+    }
     body.m_id = id;
 
     if(add)
