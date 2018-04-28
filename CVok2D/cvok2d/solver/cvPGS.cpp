@@ -74,10 +74,14 @@ void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, const cvW
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
 
+            contact.bias = pt.m_distance < 0 ? pt.m_distance * 0.8f : 0;
+
             m_ContactContraints.push_back(contact);
         }
     }
 }
+
+static float nrelV;
 
 void cvPGSSolver::solveContacts()
 {
@@ -106,14 +110,16 @@ void cvPGSSolver::solveContacts()
         // relative vel
         float v = velA.dot(c.JA) + velB.dot(c.JB);
 
-        float lambda = - v / em;
+        float lambda = (- v) / em;
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
 
-        if(c.bodyAId > 0)
+        nrelV = velA.dot(c.JA) + velB.dot(c.JB);
+
+        if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;
 
-        if(c.bodyBId > 0)
+        if(c.bodyBId >= 0)
             m_solverBodies[c.bodyBId].m_velocity = velB;
     }
 }

@@ -149,7 +149,7 @@ int main(int, char**)
         lastTime = glfwGetTime();
 
         if (g_currentTest)
-            g_currentTest->tick(*pdbgDraw, dt);
+            g_currentTest->tick(*pdbgDraw, 1.0f/ 60);
 
         glfwPollEvents();
 

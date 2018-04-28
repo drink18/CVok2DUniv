@@ -15,5 +15,7 @@ struct cvContactConstraint
     int bodyAId;
     int bodyBId;
 
+    float bias;
+
     cvManifold manifold;
 };

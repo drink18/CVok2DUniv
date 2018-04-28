@@ -150,7 +150,10 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx)
     m_solver->setupSolverBodies(*m_world);
     m_solver->setupContratins(simCtx.m_Manifolds, *m_world);
 
-    m_solver->solveContacts();
+    for(int i = 0; i < 1; ++i)
+    {
+        m_solver->solveContacts();
+    }
     m_solver->finishSolver(*m_world);
 }
 
