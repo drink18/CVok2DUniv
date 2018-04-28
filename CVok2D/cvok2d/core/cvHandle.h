@@ -14,6 +14,9 @@ public:
 
 	bool operator==(const cvHandle<T, INVALID_VALUE>& other)  const
 	{return  m_val == other.m_val; }
+
+    bool operator!=(const cvHandle<T, INVALID_VALUE>& other) const
+    { return m_val != other.m_val; }
 private:
 	T m_val;
 };

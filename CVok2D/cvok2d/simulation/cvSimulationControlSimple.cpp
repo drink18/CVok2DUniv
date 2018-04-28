@@ -4,8 +4,25 @@
 #include <vector>
 
 using namespace std;
-void cvSimulationControlSimple::preCollide(cvSimulationContext& simCtx)
+void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
 {
+    cvBodyManager& bodyMgr = m_world->accessBodyManager();
+    //applying gravity here?
+    // for now mark all bodies dirty
+    auto iter = bodyMgr.getBodyIter();
+    while(iter.isValid())
+    {
+        auto& body = bodyMgr.getBody(*iter);
+        if(body.getMotionId() != cvMotionId::invalid())
+        {
+            cvMotion& motion = m_world->accessBodyMotion(body.getBodyId());
+            if(motion.getInvMass() != 0.0f)
+            {
+                motion.m_linearVel += m_world->getCInfo().m_gravity * stepInfo.m_dt;
+            }
+        }
+        iter++;
+    }
 }
 
 void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
@@ -107,6 +124,9 @@ void cvSimulationControlSimple::integrate(float dt)
     for(auto iter = bodyMgr.getBodyIter();iter.isValid(); ++iter)
     {
         cvBody& body = bodyMgr.accessBody(*iter);
+        if(body.getMotionId() == cvMotionId::invalid())
+            continue;
+
         const cvMotion& motion = motionMgr.getMotion(body.getMotionId());
         cvTransform& xform = body.accessTransform();
 
@@ -118,7 +138,7 @@ void cvSimulationControlSimple::integrate(float dt)
 void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
 {
 	updateBP(simCtx);
-	preCollide(simCtx);
+	preCollide(stepInfo, simCtx);
 	narrowPhase(simCtx);
 	postCollide(simCtx);
 

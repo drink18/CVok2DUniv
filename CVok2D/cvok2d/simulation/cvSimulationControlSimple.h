@@ -16,7 +16,7 @@ public:
 
     virtual ~cvSimulationControlSimple(){};
 
-    void preCollide(cvSimulationContext& simCtx);
+    void preCollide(cvStepInfo& stepInfo, cvSimulationContext& simCtx);
     void updateBP(cvSimulationContext& simCtx); //generate collison agent for narrow phase
     void narrowPhase(cvSimulationContext& simCtx);
     void postCollide(cvSimulationContext& simCtx);

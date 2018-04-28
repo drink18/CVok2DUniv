@@ -65,6 +65,8 @@ public:
     cvISimulationControl& getSimControl() {return *m_simControl;}
     const cvSimulationContext& getSimContext() const {return m_simCtx;}
 
+    const cvWorldCInfo& getCInfo() const { return m_cInfo;}
+
     // Simulation related
 public:
     void simulate(const cvSimInfo& info);

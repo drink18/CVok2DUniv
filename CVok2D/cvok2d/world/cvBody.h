@@ -51,7 +51,6 @@ private:
 	cvVec2f m_mass;
 
     cvBroadphaseHandle m_broadphaseId = cvBroadphaseHandle::invalid();
-
     cvMotionId m_motionId = cvMotionId::invalid();
 };
 

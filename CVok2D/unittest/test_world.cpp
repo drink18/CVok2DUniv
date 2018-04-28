@@ -92,3 +92,28 @@ TEST_F(WorldTest, integrate)
     EXPECT_NEAR(0.02f, xform.m_Rotation, CV_FLOAT_EPS);
     EXPECT_EQ(cvVec2f(0.02f, 0.04f), xform.m_Translation);
 }
+
+TEST_F(WorldTest, testMotionType)
+{
+    cvBodyCInfo bodyCInfo;
+    bodyCInfo.m_shape = std::shared_ptr<cvShape>(
+            cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
+
+    bodyCInfo.m_motionType = cvMotion::MotionType::Static;
+    bodyCInfo.m_initTransform.m_Translation.set(0.0f, 0);
+    cvBodyId id1 = m_world->createBody(bodyCInfo, true);
+
+    bodyCInfo.m_motionType = cvMotion::MotionType::Dynamic;
+    bodyCInfo.m_initTransform.m_Translation.set(5.0f, 0);
+    cvBodyId id2 = m_world->createBody(bodyCInfo, true);
+
+    cvSimInfo info;
+    info.deltaTime = 0.01f;
+
+    m_world->simulate(info);
+
+    // static body should not move
+    EXPECT_EQ(cvVec2f::getZero(), m_world->getBodyTransform(id1).m_Translation);
+    // dynamic bodies should fall
+    EXPECT_GT(0, m_world->getBodyTransform(id2).m_Translation.y);
+}

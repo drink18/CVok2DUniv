@@ -26,6 +26,9 @@ public:
     float m_angularVel = 0;
     cvVec2f m_invMassAndInertia;
 
+public:
+    float getInvMass() const {return m_invMassAndInertia.x;}
+    float getInvInertia() const {return m_invMassAndInertia.y;}
     static void InitializeMotion(cvMotion& motion, MotionType mt, const cvBodyCInfo& cinfo);
 
 };
