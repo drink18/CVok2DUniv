@@ -14,7 +14,7 @@ class cvWorld;
 
 struct cvBodyCInfo
 {
-    cvMotion::MotionType m_motionType = cvMotion::MotionType::Static;
+    cvMotion::MotionType m_motionType = cvMotion::MotionType::Dynamic;
 	std::shared_ptr<cvShape> m_shape;
 	cvTransform m_initTransform;
 	float m_mass = 1.0f;
