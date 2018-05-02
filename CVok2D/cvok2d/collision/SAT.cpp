@@ -322,7 +322,7 @@ namespace SAT
         for(int i = 0; i < 2; ++i)
         {
             float d = (incEp[i] - refEp[0]).dot(sepNormal);
-            if(d < 0)
+            //if(d < 0)
             {
                 res.point[res.numPt] = incEp[i] - sepNormal * d;
                 res.distance[res.numPt] = d;

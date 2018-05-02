@@ -15,17 +15,17 @@ Stacks::Stacks()
     m_world = new cvWorld(cInfo);
 
     m_shape = shared_ptr<cvPolygonShape> (
-            cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
+            cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
 
     {
         cvBodyCInfo bodyInfo;
-        bodyInfo.m_initTransform.m_Translation = cvVec2f(8.0f, 0.0f);
-        bodyInfo.m_initTransform.m_Rotation = DEG2RAD(20);
+        bodyInfo.m_initTransform.m_Translation = cvVec2f(10.0f, 0.0f);
+        bodyInfo.m_initTransform.m_Rotation = DEG2RAD(40);
         bodyInfo.m_mass = 1.0f;
         bodyInfo.m_shape = m_shape;
 
         auto id = m_world->createBody(bodyInfo, true);
-        //m_world->setBodyAngularVelocity(m_Id, 0.0f);
+        m_world->setBodyAngularVelocity(m_Id, 0.0f);
     }
 
     {

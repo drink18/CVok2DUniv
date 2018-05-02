@@ -2,6 +2,8 @@
 
 #include <world/cvWorld.h>
 #include <collision/cvManifold.h>
+#include <algorithm>
+
 
 
 using namespace std;
@@ -76,7 +78,8 @@ void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, const cvW
 
             contact.bias = pt.m_distance < 0 ? pt.m_distance * 0.8f : 0;
 
-            m_ContactContraints.push_back(contact);
+            if(pt.m_distance < 0) 
+                m_ContactContraints.push_back(contact);
         }
     }
 }
@@ -111,6 +114,9 @@ void cvPGSSolver::solveContacts()
         float v = velA.dot(c.JA) + velB.dot(c.JB);
 
         float lambda = (- v) / em;
+
+        lambda = std::max(0.0f, lambda);
+
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
 
