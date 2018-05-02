@@ -6,6 +6,7 @@ cvMotionId const cvMotion::StaticMotionId = cvMotionId(0);
 void cvMotion::InitializeMotion(cvMotion& motion, cvMotion::MotionType mt, const cvBodyCInfo& cinfo)
 {
     cvAssertMsg(mt != cvMotion::MotionType::Static, "Should not be called on static bodies");
+    motion.m_transform = cinfo.m_initTransform;
     motion.m_angularVel = 0;
     motion.m_linearVel = cvVec2f::getZero();
 

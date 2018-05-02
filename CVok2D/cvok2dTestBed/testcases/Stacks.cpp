@@ -1,6 +1,7 @@
 #include "Stacks.h"
 
 #include <shape/cvShape.h>
+#include <shape/cvCircle.h>
 #include <shape/cvPolygonShape.h>
 #include <world/cvWorld.h>
 #include <collision/GJK.h>
@@ -14,17 +15,28 @@ Stacks::Stacks()
     m_world = new cvWorld(cInfo);
 
     m_shape = shared_ptr<cvPolygonShape> (
-            cvPolygonShape::createBox(cvVec2f(2.0f, 2.0f), 0.05f));
+            cvPolygonShape::createBox(cvVec2f(0.5f, 0.5f), 0.05f));
+
+    {
+        cvBodyCInfo bodyInfo;
+        bodyInfo.m_initTransform.m_Translation = cvVec2f(8.0f, 0.0f);
+        bodyInfo.m_initTransform.m_Rotation = DEG2RAD(20);
+        bodyInfo.m_mass = 1.0f;
+        bodyInfo.m_shape = m_shape;
+
+        auto id = m_world->createBody(bodyInfo, true);
+        //m_world->setBodyAngularVelocity(m_Id, 0.0f);
+    }
 
     {
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, 0.0f);
         bodyInfo.m_initTransform.m_Rotation = DEG2RAD(45);
         bodyInfo.m_mass = 1.0f;
-        bodyInfo.m_shape = m_shape;
+        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.0f);
 
         m_Id = m_world->createBody(bodyInfo, true);
-        m_world->setBodyAngularVelocity(m_Id, 1.0f);
+        //m_world->setBodyAngularVelocity(m_Id, 0.0f);
     }
 
 
@@ -37,7 +49,7 @@ Stacks::Stacks()
         bodyInfo.m_shape = shared_ptr<cvPolygonShape> (
                 cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
 
-        m_Id = m_world->createBody(bodyInfo, true);
+        auto id = m_world->createBody(bodyInfo, true);
     }
 }
 

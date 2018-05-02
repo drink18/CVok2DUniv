@@ -115,7 +115,7 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
         auto& p = npPairs[i];
         auto* shapeA = p.m_shapeA;
         auto* shapeB = p.m_shapeB;
-        auto fn = g_collisionFunction[shapeA->getShapeType()][shapeB->getShapeType()];
+        auto fn = cvGetCollisionFn(shapeA->getShapeType(), shapeB->getShapeType());
 
         fn(*shapeA, *shapeB, p.m_transA, p.m_transB, manifolds[i]);
     }

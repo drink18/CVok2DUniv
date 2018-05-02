@@ -14,7 +14,7 @@ class cvISimulationControl;
 struct cvWorldCInfo
 {
     cvBroadphase* m_broadPhase = nullptr;
-    float m_bpAABBExpesnion = 0.05f;
+    float m_bpAABBExpesnion = 0.1f;
     cvVec2f m_gravity = cvVec2f(0, -9.8f);
 };
 
