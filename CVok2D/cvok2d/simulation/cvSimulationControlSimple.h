@@ -19,7 +19,7 @@ public:
     void narrowPhase(cvSimulationContext& simCtx);
     void postCollide(cvSimulationContext& simCtx);
     void integrate(float dt);
-    void solve(cvSimulationContext& simCtx);
+    void solve(cvSimulationContext& simCtx, const cvStepInfo& stepInfo);
     virtual void simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx) override;
 
 private:

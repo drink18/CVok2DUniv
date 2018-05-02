@@ -18,4 +18,6 @@ struct cvContactConstraint
     float bias;
 
     cvManifold manifold;
+
+    float m_accumImpl = 0;
 };

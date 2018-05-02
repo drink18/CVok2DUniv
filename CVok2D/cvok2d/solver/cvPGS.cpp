@@ -3,6 +3,7 @@
 #include <world/cvWorld.h>
 #include <collision/cvManifold.h>
 #include <algorithm>
+#include <simulation/cvISimulationControl.h>
 
 
 
@@ -26,7 +27,8 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
     }
 }
 
-void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, const cvWorld& world)
+void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, 
+        const cvWorld& world, const cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
 {
     m_ContactContraints.clear();
     for(auto& m : manifolds)
@@ -76,7 +78,8 @@ void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, const cvW
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
 
-            contact.bias = pt.m_distance < 0 ? pt.m_distance * 0.8f : 0;
+            contact.bias = pt.m_distance < 0 ? -pt.m_distance * 0.8f : 0;
+            contact.bias /= stepInfo.m_dt;
 
             if(pt.m_distance < 0) 
                 m_ContactContraints.push_back(contact);
@@ -104,7 +107,6 @@ void cvPGSSolver::solveContacts()
             velB = bodyB.m_velocity;
         }
 
-
         // eM
         float emA = c.JA.dot(c.MA * c.JA);
         float emB = c.JB.dot(c.MB * c.JB);
@@ -113,9 +115,13 @@ void cvPGSSolver::solveContacts()
         // relative vel
         float v = velA.dot(c.JA) + velB.dot(c.JB);
 
-        float lambda = (- v) / em;
+        float lambda = (c.bias - v) / em;
 
-        lambda = std::max(0.0f, lambda);
+        float oldImp = c.m_accumImpl;
+        c.m_accumImpl += lambda;
+        c.m_accumImpl = std::max(0.0f, c.m_accumImpl);
+
+        lambda = c.m_accumImpl - oldImp;
 
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;

@@ -145,12 +145,12 @@ void cvSimulationControlSimple::integrate(float dt)
     }
 }
 
-void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx)
+void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
 {
     m_solver->setupSolverBodies(*m_world);
-    m_solver->setupContratins(simCtx.m_Manifolds, *m_world);
+    m_solver->setupContratins(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
 
-    for(int i = 0; i < 1; ++i)
+    for(int i = 0; i < 6; ++i)
     {
         m_solver->solveContacts();
     }
@@ -164,7 +164,7 @@ void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationConte
 	narrowPhase(simCtx);
 	postCollide(simCtx);
 
-    solve(simCtx);
+    solve(simCtx, stepInfo);
 
 	integrate(stepInfo.m_dt);
 }
