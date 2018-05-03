@@ -114,6 +114,16 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
 
         updateShapePair(gdbDraw, *m_poly, *poly, t1, t2);
     }
+
+   //know bugs 
+    a += dt * DEG2RAD(45);
+    {
+        auto poly = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(10.0f, 0.5f), 0.05f));
+        cvTransform t1; t1.m_Translation.set(15.0f, -10.0f); t1.m_Rotation = a;
+        cvTransform t2; t2.m_Translation.set(15.0f, -11.0f);
+
+        updateShapePair(gdbDraw, *m_poly, *poly, t1, t2);
+    }
 }
 
 REGISTER_TEST("TestDistance", [](){return new ClosestPointTest();});

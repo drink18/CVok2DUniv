@@ -216,6 +216,7 @@ namespace SAT
             cvVec2f e1 = verts[_nextEdge(i, verts.size())];
             cvVec2f e = e1 - e0;
             cvVec2f en = e.computePerpendicular();
+            trans.transformVector(en);
 
             float d = refNormal.dot(en);
             if(d < maxD)
@@ -292,6 +293,7 @@ namespace SAT
         neEdgeIdx0 = _prevEdge(refEdgeIdx, (*refShape).getVertices().size());
         neEdgeIdx1 = _nextEdge(refEdgeIdx, (*refShape).getVertices().size());
 
+        refMat.transformVector(sepNormal);
         _findIncidentEdge((*incShape), sepNormal, incMat, incidentEdgeIdx);
         auto& incVert = (*incShape).getVertices();
         auto& refVert = (*refShape).getVertices();
