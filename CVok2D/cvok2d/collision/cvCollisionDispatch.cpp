@@ -46,8 +46,9 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
         const cvMat33& matB, cvManifold& manifold)
 {
     using namespace GJK;
-    auto& circleA = static_cast<const cvCircle&>(shapeA);
-    auto& polyB = static_cast<const cvPolygonShape&>(shapeB);
+    bool aIsCircle = shapeA.getShapeType() == cvShape::eCircle ? true: false;
+    auto& circleA = static_cast<const cvCircle&>(aIsCircle ? shapeA : shapeB);
+    auto& polyB = static_cast<const cvPolygonShape&>(aIsCircle ? shapeB : shapeA);
     float r = circleA.getRadius();
 
     manifold.m_numPt = 1;
