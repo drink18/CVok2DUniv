@@ -266,6 +266,7 @@ namespace SAT
         cvMat33 refMat;
         cvMat33 incMat;;
 
+        bool reverted = false;
         // work on sep axis with smallest penetration
         if(minPenA > minPenB)
         {
@@ -276,7 +277,7 @@ namespace SAT
 
             sepNormal = edgeNormalA;
             refEdgeIdx = minEdgeIdxA;
-
+            reverted = true;
         }
         else
         {
@@ -330,6 +331,15 @@ namespace SAT
                 res.distance[res.numPt] = d;
                 res.numPt++;
             }
+        }
+
+        if(reverted)
+        {
+            for(int i = 0; i < res.numPt; ++i)
+            {
+                res.point[i] = res.point[i] + sepNormal * res.distance[i];
+            }
+            res.normal *= -1;
         }
 
         return res;

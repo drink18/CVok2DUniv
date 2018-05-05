@@ -60,26 +60,29 @@ void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds,
         for(int i = 0; i < m.m_numPt; ++i)
         {
             cvContactConstraint contact;
-
             const cvManifoldPoint& pt = m.m_points[i];
-            cvVec2f pa = pt.m_point + m.m_normal * pt.m_distance;
-            cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
-            float rxnA = rA.cross(m.m_normal);
 
-            contact.JA = cvVec3f(m.m_normal.x, m.m_normal.y, rxnA);
+            cvVec2f na = m.m_normal;
+            cvVec2f nb = -m.m_normal;
+
+            auto pa = pt.m_point;
+            auto pb = pt.m_point;
+
+            cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
+            float rxnA = rA.cross(na);
+            contact.JA = cvVec3f(na.x, na.y, rxnA);
             contact.MA =  cvVec3f(invMA, invMA, invInertiaA);
 
-            cvVec2f rB = pt.m_point - bodyB.getTransform().m_Translation;
-            float rxnB = rB.cross(m.m_normal);
-            contact.JB =  cvVec3f(m.m_normal.x, m.m_normal.y, rxnB);
+            cvVec2f rB = pb - bodyB.getTransform().m_Translation;
+            float rxnB = rB.cross(nb);
+            contact.JB =  cvVec3f(nb.x, nb.y, rxnB);
             contact.MB =  cvVec3f(invMB, invMB, invInertiaB);
 
             contact.manifold = m;
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
 
-            contact.bias = pt.m_distance < 0 ? -pt.m_distance * 0.8f : 0;
-            contact.bias /= stepInfo.m_dt;
+            contact.bias = pt.m_distance < 0 ? pt.m_distance * 0.4f / stepInfo.m_dt : 0;
 
             if(pt.m_distance < 0) 
                 m_ContactContraints.push_back(contact);
@@ -115,7 +118,7 @@ void cvPGSSolver::solveContacts()
         // relative vel
         float v = velA.dot(c.JA) + velB.dot(c.JB);
 
-        float lambda = (c.bias - v) / em;
+        float lambda = -(c.bias + v) / em;
 
         float oldImp = c.m_accumImpl;
         c.m_accumImpl += lambda;

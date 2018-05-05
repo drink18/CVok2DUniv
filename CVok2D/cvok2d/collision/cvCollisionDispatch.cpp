@@ -39,29 +39,26 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
 
     pt.m_distance = len - ra - rb;
     pt.m_point = wldB + d * rb;
-
 }
 
-void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
+
+void __colCirclevsPoly(const cvCircle& circleA, const cvPolygonShape& polyB, const cvMat33& matA,
         const cvMat33& matB, cvManifold& manifold)
 {
     using namespace GJK;
-    bool aIsCircle = shapeA.getShapeType() == cvShape::eCircle ? true: false;
-    auto& circleA = static_cast<const cvCircle&>(aIsCircle ? shapeA : shapeB);
-    auto& polyB = static_cast<const cvPolygonShape&>(aIsCircle ? shapeB : shapeA);
     float r = circleA.getRadius();
 
     manifold.m_numPt = 1;
 
-    cvPointQueryInput input(matA * circleA.getCenter(), polyB, matB);
+    auto wldCetner = matA * circleA.getCenter();
+    cvPointQueryInput input(wldCetner, polyB, matB);
     GJKResult res = cvPointToConvexShape(input);
     cvManifoldPoint& pt = manifold.m_points[0];
     if(res.result == GJKResult::GJK_GOOD)
     {
         manifold.m_normal = res.normal;
-
-        pt.m_point = res.closetPt;
         pt.m_distance = res.distance - r;
+        pt.m_point = res.closetPt;
     }
     else
     {
@@ -70,6 +67,27 @@ void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat3
         manifold.m_normal = satRes.normal;
         pt.m_point = satRes.point[0];
         pt.m_distance = satRes.distance[0];
+    }
+}
+
+void _colCirclevsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
+        const cvMat33& matB, cvManifold& manifold)
+{
+
+    bool invert = shapeA.getShapeType() != cvShape::eCircle;
+    if(invert)
+    {
+        __colCirclevsPoly(static_cast<const cvCircle&>(shapeB), static_cast<const cvPolygonShape&>(shapeA),
+                matB, matA, manifold);
+
+        cvManifoldPoint& pt = manifold.m_points[0];
+        pt.m_point = pt.m_point + manifold.m_normal * pt.m_distance;
+        manifold.m_normal *= -1; 
+    }
+    else
+    {
+        __colCirclevsPoly(static_cast<const cvCircle&>(shapeA), static_cast<const cvPolygonShape&>(shapeB),
+                matA, matB, manifold);
     }
 }
 
@@ -88,7 +106,7 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
         manifold.m_numPt = 1;
         manifold.m_normal = res.m_seperation;
         cvManifoldPoint& pt = manifold.m_points[0];
-        pt.m_point = res.m_pA;
+        pt.m_point = res.m_pB;
         pt.m_distance = res.m_distance;
     }
     else

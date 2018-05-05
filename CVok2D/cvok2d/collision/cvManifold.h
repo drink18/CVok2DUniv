@@ -29,6 +29,7 @@ struct cvManifoldPoint
 struct cvManifold
 {
     static constexpr int MAX_MANIFOLD_POINT = 2;
+    bool m_reverted = false;
 
     cvBodyId m_bodyA;
     cvBodyId m_bodyB;

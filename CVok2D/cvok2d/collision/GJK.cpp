@@ -309,7 +309,7 @@ namespace GJK
                 default:
                     break;
             }
-            res.m_seperation = res.m_pB - res.m_pA;
+            res.m_seperation = res.m_pA - res.m_pB;
             res.m_seperation.normalize();
         }
 

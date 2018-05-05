@@ -163,27 +163,75 @@ TEST(TestGJK, ParallelBoxes)
     auto bb = cvPolygonShape::createBox(cvVec2f(7.5f, 7.5f),  0.01f);
     cvMat33 ma; ma.setIdentity();
     cvMat33 mb; mb.setTranslation(cvVec2f(19, 0));
-    cvShapeQueryInput input(*ba,*bb, ma, mb);
 
-    auto res = cvGJKConvexToConvex(input);
-    EXPECT_EQ(true, res.m_succeed);
-    EXPECT_NEAR(6.5f, res.m_distance, CV_FLOAT_EPS);
-    EXPECT_EQ(cvVec2f(5.0f, 0), res.m_pA);
-    EXPECT_EQ(cvVec2f(11.5f, 0), res.m_pB);
+    {
+        cvShapeQueryInput input(*ba,*bb, ma, mb);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(6.5f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(5.0f, 0), res.m_pA);
+        EXPECT_EQ(cvVec2f(11.5f, 0), res.m_pB);
+        EXPECT_EQ(cvVec2f(-1.0f, 0), res.m_seperation);
+    }
+    {
+        cvShapeQueryInput input(*bb,*ba, mb, ma);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(6.5f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(5.0f, -5.0f), res.m_pB);
+        EXPECT_EQ(cvVec2f(11.5f, -5.0f), res.m_pA);
+        EXPECT_EQ(cvVec2f(1.0f, 0), res.m_seperation);
+    }
 }
 
-TEST(TestGJK, ParallelBoxes_bug)
+TEST(TestGJK, NonParallelBoxes_bug)
 {
     auto ba = cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f);
     auto bb = cvPolygonShape::createBox(cvVec2f(0.8f, 0.8f),  0.01f);
     cvTransform ta; ta.m_Rotation = DEG2RAD(45);
     cvMat33 ma; ta.toMat33(ma);
     cvMat33 mb; mb.setTranslation(cvVec2f(2.5f, 0));
-    cvShapeQueryInput input(*ba,*bb, ma, mb);
 
-    auto res = cvGJKConvexToConvex(input);
-    EXPECT_EQ(true, res.m_succeed);
-    EXPECT_NEAR(0.285786f, res.m_distance, CV_FLOAT_EPS);
-    EXPECT_EQ(cvVec2f(1.41421356f, 0), res.m_pA);
-    EXPECT_EQ(cvVec2f(1.0f, 0), res.m_seperation);
+    {
+        cvShapeQueryInput input(*ba,*bb, ma, mb);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(0.285786f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(1.41421356f, 0), res.m_pA);
+        EXPECT_EQ(cvVec2f(-1.0f, 0), res.m_seperation);
+    }
+    {
+        cvShapeQueryInput input(*bb,*ba, mb, ma);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(0.285786f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(1.7f, 0), res.m_pA);
+        EXPECT_EQ(cvVec2f(1.0f, 0), res.m_seperation);
+    }
+}
+
+TEST(TestGJK, Boxes_bug)
+{
+    auto ba = cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f);
+    auto bb = cvPolygonShape::createBox(cvVec2f(0.8f, 0.8f),  0.01f);
+    cvTransform ta; ta.m_Rotation = DEG2RAD(45);
+    cvMat33 ma; ta.toMat33(ma);
+    cvMat33 mb; mb.setTranslation(cvVec2f(2.5f, 0));
+
+    {
+        cvShapeQueryInput input(*ba,*bb, ma, mb);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(0.285786f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(1.41421356f, 0), res.m_pA);
+        EXPECT_EQ(cvVec2f(-1.0f, 0), res.m_seperation);
+    }
+    {
+        cvShapeQueryInput input(*bb,*ba, mb, ma);
+        auto res = cvGJKConvexToConvex(input);
+        EXPECT_EQ(true, res.m_succeed);
+        EXPECT_NEAR(0.285786f, res.m_distance, CV_FLOAT_EPS);
+        EXPECT_EQ(cvVec2f(1.7f, 0), res.m_pA);
+        EXPECT_EQ(cvVec2f(1.0f, 0), res.m_seperation);
+    }
 }

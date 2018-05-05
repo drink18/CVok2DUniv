@@ -7,7 +7,7 @@ struct cvManifold;
 struct cvManifoldPoint;
 class cvShape;
 
-using cvCollisionFn = void(*)(const cvShape& shapeA, const cvShape& shapeB,
+using cvCollisionFn =void (*)(const cvShape& shapeA, const cvShape& shapeB,
         const cvMat33& matA, const cvMat33& matB, cvManifold& manifold);
 
 extern cvCollisionFn g_collisionFunction[cvShape::eShapeType_Count][cvShape::eShapeType_Count];

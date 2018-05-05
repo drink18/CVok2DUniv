@@ -44,6 +44,7 @@ void ClosestPointTest::updateShapePair(cvDebugDraw& gdbDraw, const cvConvexShape
 
 void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
 {
+    static float a = DEG2RAD(45);
     {
         cvTransform t1; t1.m_Translation.set(0, -5.0f);
         cvTransform t2; t2.m_Translation.set(2.5f, -5.0f);
@@ -57,30 +58,29 @@ void ClosestPointTest::tick(cvDebugDraw& gdbDraw, float dt)
     }
 
     {
-        cvTransform t1; t1.m_Translation.set(-5.0f, 0);
-        cvTransform t2; t2.m_Translation.set(-2.5f, 0); t2.m_Rotation = DEG2RAD(45);
+        cvTransform t1; t1.m_Translation.set(-5.0f, 0);t1.m_Rotation = a;
+        cvTransform t2; t2.m_Translation.set(-2.5f, 0); t2.m_Rotation = a;
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 
     {
-        cvTransform t1; t1.m_Translation.set(0, 0);
-        cvTransform t2; t2.m_Translation.set(2.5f, 0);
+        cvTransform t1; t1.m_Translation.set(0, 0);t1.m_Rotation = a;
+        cvTransform t2; t2.m_Translation.set(2.5f, 0);t2.m_Rotation = a;
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 
     {
-        cvTransform t1; t1.m_Translation.set(5.0f, 0);
-        cvTransform t2; t2.m_Translation.set(6.9f, 0);
+        cvTransform t1; t1.m_Translation.set(5.0f, 0);t1.m_Rotation = a;
+        cvTransform t2; t2.m_Translation.set(6.9f, 0);t2.m_Rotation = a;
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 
     {
         cvTransform t1; t1.m_Translation.set(10.0f, 0);
-        cvTransform t2; t2.m_Translation.set(10.9f, 0);
+        cvTransform t2; t2.m_Translation.set(10.9f, 0); t2.m_Rotation = a;
         updateShapePair(gdbDraw, *m_circle, *m_poly, t1, t2);
     }
 
-    static float a = DEG2RAD(45);
     //a += dt * DEG2RAD(45);
     // box box 
     {

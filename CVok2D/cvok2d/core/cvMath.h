@@ -121,7 +121,7 @@ public:
 class cvVec3f
 {
 public:
-	cvVec3f() {};
+	cvVec3f(): x(0), y(0), z(0) {};
 	cvVec3f(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 	cvVec3f(const cvVec3f& v) : x(v.x), y(v.y), z(v.z) {}
 	void set(const cvVec3f& v)
