@@ -83,7 +83,12 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             contact.bodyBId = sbIdB;
 
             contact.bias = 0;
-            contact.posBias = pt.m_distance < 0 ? pt.m_distance * 0.2f / stepInfo.m_dt : 0;
+            if(pt.m_distance < 0)
+            {
+                const float slop = 0.01f;
+                float pen = pt.m_distance + slop;
+                contact.posBias = pen * 0.2f / stepInfo.m_dt;
+            } 
 
             // friction
             cvVec2f t = m.m_normal.computePerpendicular();
