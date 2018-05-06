@@ -15,9 +15,14 @@ public:
 
     void solveContacts(int nIter);
     void setupSolverBodies(cvWorld& world);
-    void setupConstraints(const std::vector<cvManifold> &manifolds,
-                          const cvWorld &world, const cvSimulationContext &simCtx,
-                          const cvStepInfo &stepInfo);
+    void setupContactConstraints(const std::vector<cvManifold> &manifolds,
+                                 const cvWorld &world, const cvSimulationContext &simCtx,
+                                 const cvStepInfo &stepInfo);
+
+    void setupFrictionConstraints(const std::vector<cvManifold> &manifolds,
+                                 const cvWorld &world, const cvSimulationContext &simCtx,
+                                 const cvStepInfo &stepInfo);
+
     void finishSolver(cvWorld& world, const cvStepInfo &stepInfo);
 
     std::vector<cvSolverBody> m_solverBodies;

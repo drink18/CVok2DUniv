@@ -148,7 +148,8 @@ void cvSimulationControlSimple::integrate(float dt)
 void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
 {
     m_solver->setupSolverBodies(*m_world);
-    m_solver->setupConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
+    m_solver->setupContactConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
+    m_solver->setupFrictionConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
 
     m_solver->solveContacts(6);
     m_solver->finishSolver(*m_world, stepInfo);

@@ -27,8 +27,9 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
     }
 }
 
-void cvPGSSolver::setupConstraints(const vector<cvManifold> &manifolds,
-                                   const cvWorld &world, const cvSimulationContext &simCtx, const cvStepInfo &stepInfo)
+void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
+                                          const cvWorld &world, const cvSimulationContext &simCtx,
+                                          const cvStepInfo &stepInfo)
 {
     m_ContactContraints.clear();
     for(auto& m : manifolds)
@@ -78,17 +79,30 @@ void cvPGSSolver::setupConstraints(const vector<cvManifold> &manifolds,
             contact.JB =  cvVec3f(nb.x, nb.y, rxnB);
             contact.MB =  cvVec3f(invMB, invMB, invInertiaB);
 
-            contact.manifold = m;
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
 
             contact.bias = 0;
             contact.posBias = pt.m_distance < 0 ? pt.m_distance * 0.2f / stepInfo.m_dt : 0;
 
+            // friction
+            cvVec2f t = m.m_normal.computePerpendicular();
+            cvVec2f ta = -t;
+            cvVec2f tb = t;
+
+            contact.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
+            contact.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
+
             if(pt.m_distance < 0) 
                 m_ContactContraints.push_back(contact);
         }
     }
+}
+
+void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold> &manifolds,
+                                          const cvWorld &world, const cvSimulationContext &simCtx,
+                                          const cvStepInfo &stepInfo)
+{
 }
 
 
@@ -175,13 +189,57 @@ void cvPGSSolver::solvePositionErr()
     }
 }
 
+void cvPGSSolver::solveFriction()
+{
+    for(auto& c : m_ContactContraints)
+    {
+        cvVec3f velA, velB;
+
+        if(c.bodyAId >= 0)
+        {
+            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
+            velA = bodyA.m_velocity;
+        }
+
+        if(c.bodyBId >= 0)
+        {
+            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
+            velB = bodyB.m_velocity;
+        }
+
+        // eM
+        float emA = c.tJA.dot(c.MA * c.tJA);
+        float emB = c.tJB.dot(c.MB * c.tJB);
+        float em = emA + emB;
+
+
+        // relative vel
+        float v = velA.dot(c.tJA) + velB.dot(c.tJB);
+        float lambda = -(c.bias + v) / em;
+
+        float miu = 0.1f;
+        lambda = std::max(-c.m_accumImpl * miu, lambda);
+        lambda = std::min(c.m_accumImpl * miu, lambda);
+
+        velA += c.tJA * c.MA * lambda;
+        velB += c.tJB * c.MB * lambda;
+
+        if(c.bodyAId >= 0)
+            m_solverBodies[c.bodyAId].m_velocity = velA;
+
+        if(c.bodyBId >= 0)
+            m_solverBodies[c.bodyBId].m_velocity = velB;
+    }
+}
+
 void cvPGSSolver::solveContacts(int nIter)
 {
     for(int i = 0; i < nIter; ++i)
-    {
         solvePenetrations();
+    for(int i = 0; i < nIter; ++i)
+        solveFriction();
+    for(int i = 0; i < nIter; ++i)
         solvePositionErr();
-    }
 }
 
 void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)

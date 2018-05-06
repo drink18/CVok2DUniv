@@ -1,4 +1,4 @@
-#include "Stacks.h"
+#include "TestFriction.h"
 
 #include <shape/cvShape.h>
 #include <shape/cvCircle.h>
@@ -9,7 +9,7 @@
 
 using namespace std;
 
-Stacks::Stacks()
+TestFriction::TestFriction()
 {
     cvWorldCInfo cInfo;
     m_world = new cvWorld(cInfo);
@@ -24,36 +24,29 @@ Stacks::Stacks()
         bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, -15.0f);
 
         bodyInfo.m_shape = shared_ptr<cvPolygonShape> (
-                cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
+                cvPolygonShape::createBox(cvVec2f(40.0f, 0.5f), 0.05f));
 
         auto id = m_world->createBody(bodyInfo, true);
 
-        //slop
-        bodyInfo.m_initTransform.m_Translation.set(-15, -15); 
-        bodyInfo.m_initTransform.m_Rotation = -45;
-        m_world->createBody(bodyInfo, true);
-
-        bodyInfo.m_initTransform.m_Translation.set(25, -15); 
-        bodyInfo.m_initTransform.m_Rotation = 45;
-        m_world->createBody(bodyInfo, true);
     }
 
     // boxes
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 15; ++i)
     {
         for(int j = 0; j < 1; ++j)
         {
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.2f * i - 4.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 
+                    2.2f * i - 4.5f);
             bodyInfo.m_mass = 1.0f;
             bodyInfo.m_shape = m_shape;
 
             auto id = m_world->createBody(bodyInfo, true);
-            //m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
+            //m_world->setBodyLinearVelocity(id, cvVec2f(-10.5f, 0));
         }
     }
 
-    for(int i = 0;i < 1; ++i)
+    for(int i = 0; i < 0; ++i)
     {
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f);
@@ -64,11 +57,9 @@ Stacks::Stacks()
         m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
         //m_world->setBodyAngularVelocity(m_Id, 0.0f);
     }
-
-
 }
 
-void Stacks::tick(cvDebugDraw& debugDraw, float dt)
+void TestFriction::tick(cvDebugDraw& debugDraw, float dt)
 {
     cvSimInfo simInfo;
     simInfo.deltaTime = dt;
@@ -76,4 +67,4 @@ void Stacks::tick(cvDebugDraw& debugDraw, float dt)
     debugDraw.DrawWorld(*m_world);
 }
 
-REGISTER_TEST("Stacks", [](){return new Stacks();});
+REGISTER_TEST("TestFriction", [](){return new TestFriction();});
