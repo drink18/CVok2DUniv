@@ -27,8 +27,8 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
     }
 }
 
-void cvPGSSolver::setupContratins(const vector<cvManifold>& manifolds, 
-        const cvWorld& world, const cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
+void cvPGSSolver::setupConstraints(const vector<cvManifold> &manifolds,
+                                   const cvWorld &world, const cvSimulationContext &simCtx, const cvStepInfo &stepInfo)
 {
     m_ContactContraints.clear();
     for(auto& m : manifolds)
