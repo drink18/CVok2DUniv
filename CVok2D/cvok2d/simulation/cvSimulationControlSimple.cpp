@@ -150,11 +150,8 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStep
     m_solver->setupSolverBodies(*m_world);
     m_solver->setupConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
 
-    for(int i = 0; i < 6; ++i)
-    {
-        m_solver->solveContacts();
-    }
-    m_solver->finishSolver(*m_world);
+    m_solver->solveContacts(6);
+    m_solver->finishSolver(*m_world, stepInfo);
 }
 
 void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)

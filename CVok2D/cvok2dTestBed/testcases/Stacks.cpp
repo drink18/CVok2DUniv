@@ -19,19 +19,21 @@ Stacks::Stacks()
             cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
 
     // boxes
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 8; ++i)
     {
-        cvBodyCInfo bodyInfo;
-        bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, 2.0f * i + 1.5f);
-        //bodyInfo.m_initTransform.m_Rotation = DEG2RAD(40);
-        bodyInfo.m_mass = 1.0f;
-        bodyInfo.m_shape = m_shape;
+        for(int j = 0; j < 5; ++j)
+        {
+            cvBodyCInfo bodyInfo;
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.0f * i - 4.5f);
+            bodyInfo.m_mass = 1.0f;
+            bodyInfo.m_shape = m_shape;
 
-        auto id = m_world->createBody(bodyInfo, true);
-        m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
+            auto id = m_world->createBody(bodyInfo, true);
+            //m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
+        }
     }
 
-    for(int i = 0;i < 2; ++i)
+    for(int i = 0;i < 0; ++i)
     {
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(10.0f + i * 0.1f, i * 2.0f);

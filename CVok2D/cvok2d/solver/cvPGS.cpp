@@ -82,7 +82,8 @@ void cvPGSSolver::setupConstraints(const vector<cvManifold> &manifolds,
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
 
-            contact.bias = pt.m_distance < 0 ? pt.m_distance * 0.4f / stepInfo.m_dt : 0;
+            contact.bias = 0;
+            contact.posBias = pt.m_distance < 0 ? pt.m_distance * 0.2f / stepInfo.m_dt : 0;
 
             if(pt.m_distance < 0) 
                 m_ContactContraints.push_back(contact);
@@ -90,9 +91,8 @@ void cvPGSSolver::setupConstraints(const vector<cvManifold> &manifolds,
     }
 }
 
-static float nrelV;
 
-void cvPGSSolver::solveContacts()
+void cvPGSSolver::solvePenetrations()
 {
     for(auto& c : m_ContactContraints)
     {
@@ -129,8 +129,6 @@ void cvPGSSolver::solveContacts()
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
 
-        nrelV = velA.dot(c.JA) + velB.dot(c.JB);
-
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;
 
@@ -139,7 +137,54 @@ void cvPGSSolver::solveContacts()
     }
 }
 
-void cvPGSSolver::finishSolver(cvWorld& world)
+void cvPGSSolver::solvePositionErr()
+{
+    for(auto& c : m_ContactContraints)
+    {
+        cvVec3f velA, velB;
+
+        if(c.bodyAId >= 0)
+        {
+            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
+            velA = bodyA.m_posVelocity;
+        }
+
+        if(c.bodyBId >= 0)
+        {
+            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
+            velB = bodyB.m_posVelocity;
+        }
+
+        // eM
+        float emA = c.JA.dot(c.MA * c.JA);
+        float emB = c.JB.dot(c.MB * c.JB);
+        float em = emA + emB;
+
+        // relative vel
+        float v = velA.dot(c.JA) + velB.dot(c.JB);
+        float lambda = -(c.posBias + v) / em;
+
+        velA += c.JA * c.MA * lambda;
+        velB += c.JB * c.MB * lambda;
+
+        if(c.bodyAId >= 0)
+            m_solverBodies[c.bodyAId].m_posVelocity = velA;
+
+        if(c.bodyBId >= 0)
+            m_solverBodies[c.bodyBId].m_posVelocity = velB;
+    }
+}
+
+void cvPGSSolver::solveContacts(int nIter)
+{
+    for(int i = 0; i < nIter; ++i)
+    {
+        solvePenetrations();
+        solvePositionErr();
+    }
+}
+
+void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
 {
     cvMotionManager& motionMgr = world.accessMotionManager();
     auto& mIds = motionMgr.getAllocatedIds();
@@ -151,5 +196,11 @@ void cvPGSSolver::finishSolver(cvWorld& world)
         motion.m_transform = sbody.m_transform;
         motion.m_linearVel.set(sbody.m_velocity.x, sbody.m_velocity.y);
         motion.m_angularVel = sbody.m_velocity.z;
+
+
+        // applying position correction
+        cvVec2f posCoorLinVel(sbody.m_posVelocity.x, sbody.m_posVelocity.y);
+        motion.m_transform.m_Translation += posCoorLinVel * stepInfo.m_dt; 
+        motion.m_transform.m_Rotation += sbody.m_posVelocity.z * stepInfo.m_dt;
     }
 }
