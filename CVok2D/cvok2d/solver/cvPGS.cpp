@@ -222,7 +222,7 @@ void cvPGSSolver::solveFriction()
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        float miu = 0.1f;
+        float miu = 3.f;
         lambda = std::max(-c.m_accumImpl * miu, lambda);
         lambda = std::min(c.m_accumImpl * miu, lambda);
 

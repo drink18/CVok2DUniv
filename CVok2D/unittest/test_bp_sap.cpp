@@ -354,4 +354,24 @@ TEST(cvBroadphase,  add_exact_boundingVolume_vertical)
     EXPECT_EQ(1, pairs.size());
 }
 
+TEST(cvBroadphase, sap_bug)
+{
+	cvBroadphaseCInfo cInfo;
+	cvBroadphaseSAP broadPhase(cInfo);
+	std::vector<cvBroadphase::BPPair> pairs;
+
+    cvVec2f v(5.0f, -4.5f);
+    float o = 2.1f;
+
+	cvAabb aabb1(v - cvVec2f(1, 1), v + cvVec2f(1, 1));
+    add_node_helper(aabb1, &broadPhase);
+
+	cvAabb aabb2(v - cvVec2f(1 + o, 1 + o), v + cvVec2f(1 + o, 1 + o));
+    add_node_helper(aabb2, &broadPhase);
+
+    broadPhase.getAllPairs(pairs);
+    EXPECT_EQ(1, pairs.size());
+}
+
+
 

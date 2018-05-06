@@ -12,6 +12,7 @@ using namespace std;
 Stacks::Stacks()
 {
     cvWorldCInfo cInfo;
+    //cInfo.m_gravity = cvVec2f::getZero();
     m_world = new cvWorld(cInfo);
 
     m_shape = shared_ptr<cvPolygonShape> (
@@ -39,30 +40,29 @@ Stacks::Stacks()
     }
 
     // boxes
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < 10; ++i)
     {
-        for(int j = 0; j < 1; ++j)
+        for(int j = 0; j < 5; ++j)
         {
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.2f * i - 4.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.1f * i - 4.5f);
             bodyInfo.m_mass = 1.0f;
             bodyInfo.m_shape = m_shape;
 
             auto id = m_world->createBody(bodyInfo, true);
-            //m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
         }
     }
 
-    for(int i = 0;i < 1; ++i)
+    for(int i = 0; i < 1; ++i)
     {
         cvBodyCInfo bodyInfo;
-        bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f);
-        bodyInfo.m_mass = 30.0f;
-        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.0f);
+        bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f - 0.5f);
+        bodyInfo.m_mass = 1.0f;
+        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.5f);
 
         auto id = m_world->createBody(bodyInfo, true);
-        m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
-        //m_world->setBodyAngularVelocity(m_Id, 0.0f);
+        m_world->setBodyLinearVelocity(id, cvVec2f(11.5f, 0));
+        m_world->setBodyAngularVelocity(m_Id, 0.0f);
     }
 
 
