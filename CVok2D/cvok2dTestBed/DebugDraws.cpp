@@ -428,7 +428,7 @@ struct GLRenderLines
 		m_colors.clear();
 	}
 
-	enum { e_maxVertices = 2 * 512 };
+	enum { e_maxVertices = 64 * 1024 };
 	std::vector<cvVec2f> m_vertices;
 
 	std::vector<cvColorf> m_colors;
@@ -502,6 +502,10 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
             {
                 const cvCircle& circle = static_cast<const cvCircle&>(shape);
                 const cvVec2f c = circle.getCenter();;
+                cvVec2f wldC = mat * c;
+                cvVec2f wldUp = cvVec2f(0, 1);
+                mat.transformVector(wldUp);
+                AddLine(wldC, wldC + wldUp * circle.getRadius(), color);
                 const int subDiv = 16;
                 float x0 = c.x;
                 float y0 = circle.getRadius() + c.y;
