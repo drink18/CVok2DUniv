@@ -8,6 +8,12 @@ class cvShape;
 class cvBody;
 class cvWorld;
 
+struct cvDebugDrawOptions
+{
+    bool bDrawBroadphase = true;
+    bool bDrawManifoild = true;
+};
+
 struct Camera
 {
 	Camera()
@@ -47,6 +53,7 @@ public:
 
 	void Flush();
 
+    cvDebugDrawOptions m_DbgDrawOpts;
 private:
 	GLRenderPoints* m_pointRender;
 	GLRenderLines* m_lineRender;

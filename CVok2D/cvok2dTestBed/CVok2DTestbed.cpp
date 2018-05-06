@@ -52,9 +52,12 @@ static void RenderUI()
         ImGui::ListBox("Tests", &g_currentDemoIdx, &testNames[0], testNames.size());
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
         static float f = 0.0f;
-        ImGui::Text("Hellow world!");
         ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
         ImGui::ColorEdit3("clear color", (float*)&clear_color);
+
+        // render options
+        ImGui::Checkbox("Draw AABB", &g_dbgDraw->m_DbgDrawOpts.bDrawBroadphase);
+        ImGui::Checkbox("Draw Manifold", &g_dbgDraw->m_DbgDrawOpts.bDrawManifoild);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -130,6 +133,7 @@ int main(int, char**)
     glfwSetScrollCallback(window, scroll_callback);
 
     cvDebugDraw* pdbgDraw = new cvDebugDraw();
+    g_dbgDraw = pdbgDraw;
     // setup imgui binding
     if (ImGui_ImplGlfwGL3_Init(window, false) == false)
     {
