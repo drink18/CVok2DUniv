@@ -12,7 +12,6 @@ using namespace std;
 Stacks::Stacks()
 {
     cvWorldCInfo cInfo;
-    //cInfo.m_gravity = cvVec2f::getZero();
     m_world = new cvWorld(cInfo);
 
     m_shape = shared_ptr<cvPolygonShape> (
@@ -24,7 +23,7 @@ Stacks::Stacks()
         for(int j = 0; j < 5; ++j)
         {
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.0f * i - 4.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.2f * i - 4.5f);
             bodyInfo.m_mass = 1.0f;
             bodyInfo.m_shape = m_shape;
 
