@@ -47,13 +47,15 @@ static void RenderUI()
     int oldDemoIdx = g_currentDemoIdx;
     ImVec4 clear_color = ImColor(114, 144, 154);
     ImGui_ImplGlfwGL3_NewFrame();
+    bool reset = false;
     // 1. show a simple window
     {
         ImGui::ListBox("Tests", &g_currentDemoIdx, &testNames[0], testNames.size());
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
         static float f = 0.0f;
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
+
+        if(ImGui::Button("Reset"))
+            reset = true;
 
         // render options
         ImGui::Checkbox("Draw AABB", &g_dbgDraw->m_DbgDrawOpts.bDrawBroadphase);
@@ -62,7 +64,7 @@ static void RenderUI()
     }
     ImGui::Render();
 
-    if(g_currentDemoIdx != oldDemoIdx)
+    if(g_currentDemoIdx != oldDemoIdx || reset)
     {
         g_currentTest.reset(GetRegisteredTests()[g_currentDemoIdx].m_testFn());
     }
