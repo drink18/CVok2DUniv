@@ -361,13 +361,23 @@ TEST(cvBroadphase, sap_bug)
 	std::vector<cvBroadphase::BPPair> pairs;
 
     cvVec2f v(5.0f, -4.5f);
-    float o = 2.1f;
+    float o = 2.0f;
+    cvVec2f s = cvVec2f(o, o);
+    cvVec2f s2 = cvVec2f(1.98f, 1.98f);
 
-	cvAabb aabb1(v - cvVec2f(1, 1), v + cvVec2f(1, 1));
+    cvVec2f min =  v - cvVec2f(1, 1);
+    cvVec2f max =  v + cvVec2f(1, 1);
+
+	cvAabb aabb1(min, max);
     add_node_helper(aabb1, &broadPhase);
 
-	cvAabb aabb2(v - cvVec2f(1 + o, 1 + o), v + cvVec2f(1 + o, 1 + o));
-    add_node_helper(aabb2, &broadPhase);
+	cvAabb aabb2(min + s, max + s);
+    auto id = add_node_helper(aabb2, &broadPhase);
+
+    broadPhase.getAllPairs(pairs);
+    EXPECT_EQ(0, pairs.size());
+
+    broadPhase.updateOneNode(id, cvAabb(v + s2, v + s2));
 
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());
