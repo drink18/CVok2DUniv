@@ -24,6 +24,7 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
         sbody.m_transform = motion.m_transform;
         sbody.m_accumImpl = 0;
         sbody.m_velocity = cvVec3f(motion.m_linearVel.x, motion.m_linearVel.y, motion.m_angularVel);
+        sbody.m_posVelocity = cvVec3f(0, 0, 0) ;
     }
 }
 
@@ -83,11 +84,12 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             contact.bodyBId = sbIdB;
 
             contact.bias = 0;
+            const float beta = 0.8f;
             if(pt.m_distance < 0)
             {
                 const float slop = 0.01f;
                 float pen = pt.m_distance + slop;
-                contact.posBias = pen * 0.2f / stepInfo.m_dt;
+                contact.posBias = pen * beta / stepInfo.m_dt;
             } 
 
             // friction
@@ -222,12 +224,20 @@ void cvPGSSolver::solveFriction()
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        float miu = 3.f;
+        float miu = 0.5f;
+
+        float oldImp = c.m_tangentImpl;
+        c.m_tangentImpl += lambda;
+        lambda = c.m_tangentImpl;
         lambda = std::max(-c.m_accumImpl * miu, lambda);
         lambda = std::min(c.m_accumImpl * miu, lambda);
+        c.m_tangentImpl = lambda;
+        lambda = c.m_tangentImpl - oldImp;
 
         velA += c.tJA * c.MA * lambda;
         velB += c.tJB * c.MB * lambda;
+
+        float nv = velA.dot(c.tJA) + velB.dot(c.tJB);
 
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;

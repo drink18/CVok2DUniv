@@ -19,6 +19,7 @@ struct cvContactConstraint
     float posBias = 0;
 
     float m_accumImpl = 0;
+    float m_tangentImpl = 0;
     float m_posAccumImp = 0;
 
     cvVec3f tJA;

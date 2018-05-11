@@ -12,6 +12,7 @@ using namespace std;
 Stacks::Stacks()
 {
     cvWorldCInfo cInfo;
+    //cInfo.m_bpAABBExpesnion = 0.2f;
     //cInfo.m_gravity = cvVec2f::getZero();
     m_world = new cvWorld(cInfo);
 
@@ -40,7 +41,7 @@ Stacks::Stacks()
     }
 
     // boxes
-    for(int i = 0; i < 10; ++i)
+    for(int i = 0; i < 8; ++i)
     {
         for(int j = 0; j < 5; ++j)
         {
@@ -61,8 +62,8 @@ Stacks::Stacks()
         bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.5f);
 
         auto id = m_world->createBody(bodyInfo, true);
-        m_world->setBodyLinearVelocity(id, cvVec2f(11.5f, 0));
-        m_world->setBodyAngularVelocity(m_Id, 0.0f);
+        m_world->setBodyLinearVelocity(id, cvVec2f(90.5f, 0));
+        //m_world->setBodyAngularVelocity(m_Id, 0.8f);
     }
 
 
