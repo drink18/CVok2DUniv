@@ -711,7 +711,7 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvMat33& mat, const cvCo
                 for(auto& sub : shapeInsts)
                 {
                     cvMat33 childMat; sub.m_transform.toMat33(childMat);
-                    DrawShape(*sub.m_shape, mat * childMat, color);
+                    DrawShape(*sub.m_shape, childMat * mat, color);
                 }
             }
             break;

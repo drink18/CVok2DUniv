@@ -1,5 +1,12 @@
 #include "cvCompoundShape.h"
 
+using namespace std;
+cvCompoundShape::cvCompoundShape(vector<cvCompoundShape::ShapeInstance>& shapeInstances)
+    :m_shapeInstances(shapeInstances)
+{
+    updateAabb();
+}
+
 void cvCompoundShape::updateAabb()
 {
     cvAabb a = m_shapeInstances[0].m_shape->getAabb();;

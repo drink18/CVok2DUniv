@@ -13,10 +13,7 @@ public:
         cvTransform m_transform;
     };
 
-    cvCompoundShape(std::vector<ShapeInstance>& shapeInstances)
-        :m_shapeInstances(shapeInstances)
-    {
-    }
+    cvCompoundShape(std::vector<ShapeInstance>& shapeInstances);
 
     virtual ShapeType getShapeType() const override
     {
