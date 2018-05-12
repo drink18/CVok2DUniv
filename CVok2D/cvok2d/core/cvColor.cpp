@@ -9,3 +9,4 @@ cvColorf cvColorf::Purple(1.0f, 0.0f, 1.0f, 1);
 cvColorf cvColorf::Yellow(1.0f, 1.0f, 0, 1);
 cvColorf cvColorf::Cyan(0, 1.0f, 1.0f, 1);
 cvColorf cvColorf::Black(0, 0, 0, 1);
+cvColorf cvColorf::Orange(1, 0.644f, 0, 1);

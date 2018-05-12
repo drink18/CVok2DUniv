@@ -31,8 +31,6 @@ public:
 	const cvTransform& getTransform() const { return m_transform; }
     cvTransform& accessTransform() {return m_transform;}
 
-	bool isStatic() const;
-	bool isDynamic() const;
 
     std::shared_ptr<cvShape> getShape() const {return m_shape;}
     void getAabb(cvAabb& out) const;
@@ -43,6 +41,9 @@ public:
     cvMotionId getMotionId() const {return m_motionId;}
 
     cvBodyId getBodyId() const {return m_id;}
+
+    bool isStatic() const {return m_motionId == cvMotionId::invalid();}
+	bool isDynamic() const {return !isStatic();};
 
 private:
     cvBodyId m_id;

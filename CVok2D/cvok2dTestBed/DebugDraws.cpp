@@ -705,8 +705,16 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
     }
 }
 
+static cvColorf _getBodyDbgColor(const cvBody& body)
+{
+    if(body.isStatic())
+        return cvColorf::White;
+    else
+        return cvColorf::Orange;
+}
+
 void cvDebugDraw::DrawBody(const cvBody& body, const cvColorf& color)
 {
     cvShape* shape = body.getShape().get();
-    DrawShape(*shape, body.getTransform(), color);
+    DrawShape(*shape, body.getTransform(),_getBodyDbgColor(body));
 }
