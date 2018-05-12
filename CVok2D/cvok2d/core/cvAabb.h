@@ -12,6 +12,9 @@ public:
 	inline bool contains(const cvAabb& other) const;
 	inline bool overlaps(const cvAabb& other) const;
     inline void expand(const cvVec2f& expansion);
+
+    void transform(const cvTransform& trans);
+    void transform(const cvMat33& trans);
 public:
 	cvVec2f m_Min;
 	cvVec2f m_Max;

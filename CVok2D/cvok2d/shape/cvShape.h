@@ -22,39 +22,18 @@ public:
     {
         eCircle,
         ePolygon,
+        eCompoundShape,
         eShapeType_Count
     };
+
     virtual ShapeType getShapeType() const = 0;
     virtual ~cvShape() {}
 
     const cvAabb& getAabb() const {return m_aabb;}
     const void getAabb(const cvTransform& trans, cvAabb& outAabb) const
     {
-        cvVec2f vert[4];
-        vert[0] = m_aabb.m_Min;
-        vert[1].set(m_aabb.m_Max.x, m_aabb.m_Min.y);
-        vert[2].set(m_aabb.m_Max.x, m_aabb.m_Max.y);
-        vert[3].set(m_aabb.m_Min.x, m_aabb.m_Max.y);
-
-        cvMat33 m;
-        trans.toMat33(m);
-        for(auto & v : vert)
-            v = m * v;
-
-        cvVec2f min, max;
-        min = vert[0];
-        max = vert[0];
-
-        for(int i = 0; i < 4; ++i)
-        {
-            min.x = std::min(min.x, vert[i].x);
-            min.y = std::min(min.y, vert[i].y);
-            max.x = std::max(max.x, vert[i].x);
-            max.y = std::max(max.y, vert[i].y);
-        }
-
-        outAabb.m_Min = min;
-        outAabb.m_Max = max;
+        outAabb = m_aabb;
+        outAabb.transform(trans);
     }
 
     virtual void updateAabb() = 0;
