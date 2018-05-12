@@ -2,6 +2,7 @@
 
 cvBody::cvBody()
 {
+    m_flags = 0;
 }
 
 cvBody::cvBody(cvBodyCInfo& cinfo)
@@ -15,4 +16,12 @@ cvBody::cvBody(cvBodyCInfo& cinfo)
 void cvBody::getAabb(cvAabb& out) const
 {
     m_shape->getAabb(m_transform, out);
+}
+
+void cvBody::setFlag(cvBody::Flags flags, bool enable)
+{
+    if(enable)
+        m_flags |= flags;
+    else
+        m_flags &= (~flags);
 }

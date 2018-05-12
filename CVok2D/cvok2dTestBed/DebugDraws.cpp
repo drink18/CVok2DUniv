@@ -725,6 +725,8 @@ static cvColorf _getBodyDbgColor(const cvBody& body)
 {
     if(body.isStatic())
         return cvColorf::White;
+    if(body.IsKinematic())
+        return cvColorf::DarkPurple;
     else
         return cvColorf::Orange;
 }

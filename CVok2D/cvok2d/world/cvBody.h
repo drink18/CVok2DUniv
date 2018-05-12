@@ -24,6 +24,11 @@ class cvBody
 {
     friend class cvWorld;
 
+    enum Flags
+    {
+        bKinematic = 1 << 0,
+    };
+
 public:
     cvBody();
 	cvBody(cvBodyCInfo& cinfo);
@@ -44,9 +49,13 @@ public:
 
     bool isStatic() const {return m_motionId == cvMotionId::invalid();}
 	bool isDynamic() const {return !isStatic();};
+    bool IsKinematic() const {return isFlagSet(bKinematic);}
 
+    void setFlag(Flags f, bool enable);
+    bool isFlagSet(Flags f) const {return m_flags & f;}
 private:
     cvBodyId m_id;
+    uint32_t m_flags;
 	cvTransform m_transform;
 	std::shared_ptr<cvShape> m_shape;
 	cvVec2f m_mass;

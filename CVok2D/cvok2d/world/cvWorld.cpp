@@ -35,6 +35,9 @@ cvBodyId cvWorld::createBody(const cvBodyCInfo& cInfo, bool add)
 
     if(cInfo.m_motionType != cvMotion::MotionType::Static)
     {
+        if(cInfo.m_motionType == cvMotion::MotionType::Kinematic)
+            body.setFlag(cvBody::bKinematic, true);
+
         cvMotion motion;
         cvMotion::InitializeMotion(motion, cInfo.m_motionType, cInfo);
         body.m_motionId = m_motionManager.addMotion(motion);

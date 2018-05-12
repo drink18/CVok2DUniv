@@ -34,6 +34,7 @@ public:
 public:
     float getInvMass() const {return m_invMassAndInertia.x;}
     float getInvInertia() const {return m_invMassAndInertia.y;}
+    cvVec2f getInvMassProp() const {return m_invMassAndInertia;}
     static void InitializeMotion(cvMotion& motion, MotionType mt, const cvBodyCInfo& cinfo);
 
 };

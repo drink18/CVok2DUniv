@@ -22,7 +22,7 @@ void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationCon
     while(iter.isValid())
     {
         auto& body = bodyMgr.getBody(*iter);
-        if(body.getMotionId() != cvMotionId::invalid())
+        if(body.isDynamic())
         {
             cvMotion& motion = m_world->accessBodyMotion(body.getBodyId());
             if(motion.getInvMass() != 0.0f)
