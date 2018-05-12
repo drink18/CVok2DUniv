@@ -23,4 +23,5 @@ struct cvColorf
     static cvColorf Purple;
     static cvColorf Yellow;
     static cvColorf Cyan;
+    static cvColorf Black;
 };

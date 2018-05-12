@@ -35,7 +35,7 @@ static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
-
+static ImVec4 clear_color = ImColor(114, 144, 154);
 static void RenderUI()
 {
     vector<const char*> testNames;
@@ -45,7 +45,6 @@ static void RenderUI()
     }
 
     int oldDemoIdx = g_currentDemoIdx;
-    ImVec4 clear_color = ImColor(114, 144, 154);
     ImGui_ImplGlfwGL3_NewFrame();
     bool reset = false;
     // 1. show a simple window
@@ -133,6 +132,7 @@ int main(int, char**)
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetScrollCallback(window, scroll_callback);
+    glClearColor(clear_color.x, clear_color.y, clear_color.z, 1);
 
     cvDebugDraw* pdbgDraw = new cvDebugDraw();
     g_dbgDraw = pdbgDraw;

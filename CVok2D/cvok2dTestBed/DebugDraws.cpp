@@ -441,6 +441,161 @@ struct GLRenderLines
 	GLint m_colorAttribute;
 };
 
+struct GLRenderPolygon
+{
+    struct Poly
+    {
+        std::vector<cvVec2f> m_vertices;
+        cvColorf m_color;
+        cvMat33 m_transform;
+    };
+
+	void Create()
+	{
+		const char* vs = \
+			"#version 400\n"
+			"uniform mat4 projectionMatrix;\n"
+			"layout(location = 0) in vec2 v_position;\n"
+			"layout(location = 1) in vec4 v_color;\n"
+			"out vec4 f_color;\n"
+			"void main(void)\n"
+			"{\n"
+			"	f_color = v_color;\n"
+			"	gl_Position = projectionMatrix * vec4(v_position, 0.0f, 1.0f);\n"
+			"}\n";
+
+		const char* fs = \
+			"#version 400\n"
+			"in vec4 f_color;\n"
+			"out vec4 color;\n"
+			"void main(void)\n"
+			"{\n"
+			"	color = f_color;\n"
+            "   color.w = 0.5f;\n"
+			"}\n";
+
+		m_programId = sCreateShaderProgram(vs, fs);
+		m_projectionUniform = glGetUniformLocation(m_programId, "projectionMatrix");
+		m_vertexAttribute = 0;
+		m_colorAttribute = 1;
+
+		// generate 
+		glGenVertexArrays(1, &m_vaoId);
+		glGenBuffers(2, m_vboIds);
+		
+		glBindVertexArray(m_vaoId);
+		glEnableVertexAttribArray(m_vertexAttribute);
+		glEnableVertexAttribArray(m_colorAttribute);
+
+		// vertex buffer 
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[0]);
+		glVertexAttribPointer(m_vertexAttribute, 2, GL_FLOAT, GL_FALSE, 0, 0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cvVec2f) * e_maxVertices, nullptr, GL_DYNAMIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[1]);
+		glVertexAttribPointer(m_colorAttribute, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cvColorf) * e_maxVertices, nullptr, GL_DYNAMIC_DRAW);
+
+		sCheckGLError();
+
+		//clean up
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+	}
+
+	void Destroy()
+	{
+		if (m_vaoId)
+		{
+			glDeleteVertexArrays(1, &m_vaoId);
+			glDeleteBuffers(2, m_vboIds);
+			m_vaoId = 0;
+		}
+
+		if (m_programId)
+		{
+			glDeleteProgram(m_programId);
+			m_programId = 0;
+		}
+	}
+
+    void Polygon(const std::vector<cvVec2f>& vertices, const cvMat33& mat,
+            const cvColorf& color)
+    {
+        m_polygons.resize(m_polygons.size() + 1);
+        auto& p = m_polygons.back();
+        p.m_vertices = vertices;
+        p.m_color = color;
+        p.m_transform = mat;
+    }
+
+	void Flush()
+	{
+		if (m_polygons.size() == 0)
+			return;
+
+        m_vertices.clear();
+        m_colors.clear();
+
+        for(auto& p : m_polygons)
+        {
+            cvVec2f o =  p.m_transform * p.m_vertices[0];
+            for(int i = 1; i < p.m_vertices.size() - 1; ++i)
+            {
+                auto v1 = p.m_transform * p.m_vertices[i];
+                auto v2 = p.m_transform * p.m_vertices[i + 1];
+                m_vertices.push_back(o);
+                m_vertices.push_back(v1);
+                m_vertices.push_back(v2);
+                m_colors.push_back(p.m_color);
+                m_colors.push_back(p.m_color);
+                m_colors.push_back(p.m_color);
+            }
+        }
+        m_polygons.clear();
+
+
+		glUseProgram(m_programId);
+
+		float proj[16] = { 0.0f };
+		g_camera.BuildProjectionMatrix(proj, 0.1f);
+
+		glUniformMatrix4fv(m_projectionUniform, 1, GL_FALSE, proj);
+
+		glBindVertexArray(m_vaoId);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[0]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertices.size() * sizeof(cvVec2f), &m_vertices[0]);
+
+		glBindBuffer(GL_ARRAY_BUFFER, m_vboIds[1]);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, m_colors.size() * sizeof(cvColorf), &m_colors[0]);
+
+		glDrawArrays(GL_TRIANGLES, 0, (GLsizei) m_vertices.size());
+
+		sCheckGLError();
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		glUseProgram(0);
+
+		m_vertices.clear();
+		m_colors.clear();
+	}
+
+	enum { e_maxVertices = 64 * 1024 };
+	std::vector<cvVec2f> m_vertices;
+
+	std::vector<cvColorf> m_colors;
+    std::vector<Poly> m_polygons;
+
+	GLuint m_vaoId;
+	GLuint m_vboIds[2];
+	GLuint m_programId;
+	GLint m_projectionUniform;
+	GLint m_vertexAttribute;
+	GLint m_colorAttribute;
+};
+
 cvDebugDraw::cvDebugDraw()
 {
 	m_pointRender = new GLRenderPoints();
@@ -448,6 +603,16 @@ cvDebugDraw::cvDebugDraw()
 
 	m_lineRender = new GLRenderLines();
 	m_lineRender->Create();
+
+    m_polyRender = new GLRenderPolygon();
+    m_polyRender->Create();
+}
+
+cvDebugDraw::~cvDebugDraw()
+{
+    delete m_pointRender;
+    delete m_lineRender;
+    delete m_polyRender;
 }
 
 void cvDebugDraw::AddPoint(const cvVec2f& pos, float size, const cvColorf& color)
@@ -458,6 +623,15 @@ void cvDebugDraw::AddPoint(const cvVec2f& pos, float size, const cvColorf& color
 void cvDebugDraw::AddLine(const cvVec2f& p1, const cvVec2f& p2, const cvColorf& color)
 {
 	m_lineRender->Vertex(p1, p2, color, color);
+}
+
+
+void cvDebugDraw::AddPolygon(const std::vector<cvVec2f>& vertices, 
+        const cvTransform& trans, const cvColorf& color)
+{
+    cvMat33 mat;
+    trans.toMat33(mat);
+    m_polyRender->Polygon(vertices, mat, color);
 }
 
 void cvDebugDraw::DrawAabb(const cvAabb& aabb, const cvColorf& color)
@@ -475,6 +649,7 @@ void cvDebugDraw::DrawAabb(const cvAabb& aabb, const cvColorf& color)
 
 void cvDebugDraw::Flush()
 {
+    m_polyRender->Flush();
 	m_pointRender->Flush();
 	m_lineRender->Flush();
 }
@@ -489,12 +664,12 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
         case cvShape::ePolygon:
             {
                 const cvPolygonShape& poly = static_cast<const cvPolygonShape&>(shape);
+                AddPolygon(poly.getVertices(), trans, color);
                 auto& verts = poly.getVertices();
                 for(int i = 0; i < verts.size(); ++i)
                 {
                     int ni = (i == verts.size() - 1) ? 0 : i + 1;
-
-                    AddLine(mat * verts[i], mat * verts[ni], color);
+                    AddLine(mat * verts[i], mat * verts[ni], cvColorf::Black);
                 }
             }
             break;
@@ -502,23 +677,26 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
             {
                 const cvCircle& circle = static_cast<const cvCircle&>(shape);
                 const cvVec2f c = circle.getCenter();;
-                cvVec2f wldC = mat * c;
+                cvVec2f wldC = mat * circle.getCenter();;
                 cvVec2f wldUp = cvVec2f(0, 1);
                 mat.transformVector(wldUp);
-                AddLine(wldC, wldC + wldUp * circle.getRadius(), color);
+                AddLine(wldC, wldC + wldUp * circle.getRadius(), cvColorf::Black);
                 const int subDiv = 16;
                 float x0 = c.x;
                 float y0 = circle.getRadius() + c.y;
                 const float dA = 2 * CV_PI / subDiv;
+                vector<cvVec2f> vertices;
                 for(int i = 0; i <= subDiv; i++)
                 {
-                    float x = circle.getRadius() * std::sin(i * dA) + c.x;
-                    float y = circle.getRadius() * std::cos(i * dA) + c.y;
+                    float x = circle.getRadius() * std::sin(i * dA);
+                    float y = circle.getRadius() * std::cos(i * dA);
 
-                    AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), color);
+                    vertices.push_back(cvVec2f(x, y));
+                    AddLine(mat * cvVec2f(x0, y0), mat * cvVec2f(x, y), cvColorf::Black);
                     x0 = x;
                     y0 = y;
                 }
+                AddPolygon(vertices, trans, color);
             }
             break;
 
