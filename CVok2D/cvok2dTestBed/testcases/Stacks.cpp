@@ -3,6 +3,7 @@
 #include <shape/cvShape.h>
 #include <shape/cvCircle.h>
 #include <shape/cvPolygonShape.h>
+#include <shape/cvCompoundShape.h>
 #include <world/cvWorld.h>
 #include <collision/GJK.h>
 #include <DebugDraw.h>
@@ -24,20 +25,36 @@ Stacks::Stacks()
         cvBodyCInfo bodyInfo;
         bodyInfo.m_motionType = cvMotion::MotionType::Static;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, -15.0f);
+        vector<cvCompoundShape::ShapeInstance> shapeInsts;
 
-        bodyInfo.m_shape = shared_ptr<cvPolygonShape> (
-                cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
+        {
+            cvCompoundShape::ShapeInstance inst0;
+            inst0.m_shape = shared_ptr<cvPolygonShape> (
+                    cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
+            inst0.m_transform.m_Translation = cvVec2f(5.0f, -15.0f);
+            shapeInsts.push_back(inst0);
+        }
+        {
+            cvCompoundShape::ShapeInstance inst0;
+            inst0.m_shape = shared_ptr<cvPolygonShape> (
+                    cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
+            inst0.m_transform.m_Translation = cvVec2f(-15.0f, -15.0f);
+            inst0.m_transform.m_Rotation = -45;
+            shapeInsts.push_back(inst0);
+        }
+        {
+            cvCompoundShape::ShapeInstance inst0;
+            inst0.m_shape = shared_ptr<cvPolygonShape> (
+                    cvPolygonShape::createBox(cvVec2f(20.0f, 0.5f), 0.05f));
+            inst0.m_transform.m_Translation = cvVec2f(25.0f, -15.0f);
+            inst0.m_transform.m_Rotation = 45;
+            shapeInsts.push_back(inst0);
+        }
+
+
+        bodyInfo.m_shape = make_shared<cvCompoundShape>(shapeInsts);
 
         auto id = m_world->createBody(bodyInfo, true);
-
-        //slop
-        bodyInfo.m_initTransform.m_Translation.set(-15, -15); 
-        bodyInfo.m_initTransform.m_Rotation = -45;
-        m_world->createBody(bodyInfo, true);
-
-        bodyInfo.m_initTransform.m_Translation.set(25, -15); 
-        bodyInfo.m_initTransform.m_Rotation = 45;
-        m_world->createBody(bodyInfo, true);
     }
 
     // boxes
