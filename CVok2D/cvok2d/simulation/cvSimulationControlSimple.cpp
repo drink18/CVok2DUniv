@@ -205,7 +205,7 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStep
     m_solver->setupContactConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
     m_solver->setupFrictionConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
 
-    m_solver->solveContacts(6);
+    m_solver->solveContacts(simCtx.m_solverIterCount);
     m_solver->finishSolver(*m_world, stepInfo);
 }
 

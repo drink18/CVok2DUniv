@@ -224,7 +224,7 @@ void cvPGSSolver::solveFriction()
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        float miu = 0.5f;
+        float miu = 0.2f;
 
         float oldImp = c.m_tangentImpl;
         c.m_tangentImpl += lambda;

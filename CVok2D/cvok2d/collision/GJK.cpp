@@ -235,7 +235,13 @@ namespace GJK
         {
             res.closetPt = input.shapeXForm * res.closetPt;
             res.normal = input.q - res.closetPt;
-            res.normal.normalize();
+            float len = res.normal.length();
+            if(len < CV_FLOAT_EPS)
+            {
+                res.result = GJKResult::GJK_OVERLAP;
+                return res;
+            }
+            res.normal /= len;
         }
         return res;
     }

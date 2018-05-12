@@ -583,7 +583,7 @@ struct GLRenderPolygon
 		m_colors.clear();
 	}
 
-	enum { e_maxVertices = 64 * 1024 };
+	enum { e_maxVertices = 4 * 1024 * 1024 };
 	std::vector<cvVec2f> m_vertices;
 
 	std::vector<cvColorf> m_colors;
