@@ -25,6 +25,8 @@ public:
 
     virtual void updateAabb() override;
 
+    const std::vector<ShapeInstance>& getSubshapes() const {return m_shapeInstances;}
+
 private:
     std::vector<ShapeInstance> m_shapeInstances;
 };

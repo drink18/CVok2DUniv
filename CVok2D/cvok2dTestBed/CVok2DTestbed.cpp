@@ -51,7 +51,6 @@ static void RenderUI()
     {
         ImGui::ListBox("Tests", &g_currentDemoIdx, &testNames[0], testNames.size());
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
-        static float f = 0.0f;
 
         if(ImGui::Button("Reset"))
             reset = true;

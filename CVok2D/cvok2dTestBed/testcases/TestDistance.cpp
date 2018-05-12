@@ -22,11 +22,12 @@ ClosestPointTest::ClosestPointTest()
 void ClosestPointTest::updateShapePair(cvDebugDraw& gdbDraw, const cvConvexShape& poly, 
         const cvConvexShape& poly1, const cvTransform& t1, const cvTransform& t2)
 {
-        gdbDraw.DrawShape(poly, t1, cvColorf::Blue);
-        gdbDraw.DrawShape(poly1, t2, cvColorf::Red);
+        cvMat33 m1, m2;
+        t1.toMat33(m1);
+        t2.toMat33(m2);
+        gdbDraw.DrawShape(poly, m1, cvColorf::Blue);
+        gdbDraw.DrawShape(poly1, m2, cvColorf::Red);
 
-        cvMat33 m1; t1.toMat33(m1);
-        cvMat33 m2; t2.toMat33(m2);
 
         auto fn = cvGetCollisionFn(poly.getShapeType(), poly1.getShapeType());
         cvManifold manifold;

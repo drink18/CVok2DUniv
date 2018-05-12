@@ -12,6 +12,7 @@
 #include <core/cvMath.h>
 #include <shape/cvShape.h>
 #include <shape/cvPolygonShape.h>
+#include <shape/cvCompoundShape.h>
 #include <shape/cvCircle.h>
 #include <world/cvBody.h>
 #include <world/cvWorld.h>
@@ -631,6 +632,12 @@ void cvDebugDraw::AddPolygon(const std::vector<cvVec2f>& vertices,
 {
     cvMat33 mat;
     trans.toMat33(mat);
+    AddPolygon(vertices, mat, color);
+}
+
+void cvDebugDraw::AddPolygon(const std::vector<cvVec2f>& vertices, 
+        const cvMat33& mat, const cvColorf& color)
+{
     m_polyRender->Polygon(vertices, mat, color);
 }
 
@@ -654,17 +661,14 @@ void cvDebugDraw::Flush()
 	m_lineRender->Flush();
 }
 
-void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, const cvColorf& color)
+void cvDebugDraw::DrawShape(const cvShape& shape, const cvMat33& mat, const cvColorf& color)
 {
-    cvMat33 mat;
-    mat.setTranslation(trans.m_Translation);
-    mat.setRotation(trans.m_Rotation);
     switch(shape.getShapeType())
     {
         case cvShape::ePolygon:
             {
                 const cvPolygonShape& poly = static_cast<const cvPolygonShape&>(shape);
-                AddPolygon(poly.getVertices(), trans, color);
+                AddPolygon(poly.getVertices(), mat, color);
                 auto& verts = poly.getVertices();
                 for(int i = 0; i < verts.size(); ++i)
                 {
@@ -696,7 +700,19 @@ void cvDebugDraw::DrawShape(const cvShape& shape, const cvTransform& trans, cons
                     x0 = x;
                     y0 = y;
                 }
-                AddPolygon(vertices, trans, color);
+                AddPolygon(vertices, mat, color);
+            }
+            break;
+
+        case cvShape::eCompoundShape:
+            {
+                const cvCompoundShape& compound = static_cast<const cvCompoundShape&>(shape);
+                auto& shapeInsts = compound.getSubshapes();
+                for(auto& sub : shapeInsts)
+                {
+                    cvMat33 childMat; sub.m_transform.toMat33(childMat);
+                    DrawShape(*sub.m_shape, mat * childMat, color);
+                }
             }
             break;
 
@@ -716,5 +732,6 @@ static cvColorf _getBodyDbgColor(const cvBody& body)
 void cvDebugDraw::DrawBody(const cvBody& body, const cvColorf& color)
 {
     cvShape* shape = body.getShape().get();
-    DrawShape(*shape, body.getTransform(),_getBodyDbgColor(body));
+    cvMat33 mat; body.getTransform().toMat33(mat);
+    DrawShape(*shape, mat, _getBodyDbgColor(body));
 }

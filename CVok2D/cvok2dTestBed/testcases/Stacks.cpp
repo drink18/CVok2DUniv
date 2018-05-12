@@ -46,7 +46,7 @@ Stacks::Stacks()
         for(int j = 0; j < 5; ++j)
         {
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 2.1f * i - 4.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.1f * j, 2.1f * i - 8.5f);
             bodyInfo.m_mass = 1.0f;
             bodyInfo.m_shape = m_shape;
 
@@ -62,7 +62,7 @@ Stacks::Stacks()
         bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.5f);
 
         auto id = m_world->createBody(bodyInfo, true);
-        m_world->setBodyLinearVelocity(id, cvVec2f(90.5f, 0));
+        //m_world->setBodyLinearVelocity(id, cvVec2f(90.5f, 0));
         //m_world->setBodyAngularVelocity(m_Id, 0.8f);
     }
 
