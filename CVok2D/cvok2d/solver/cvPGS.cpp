@@ -64,6 +64,9 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             cvContactConstraint contact;
             const cvManifoldPoint& pt = m.m_points[i];
 
+            contact.m_friction = m.m_friction;
+            contact.m_restitution = m.m_restitution;
+
             cvVec2f na = m.m_normal;
             cvVec2f nb = -m.m_normal;
 
@@ -224,7 +227,7 @@ void cvPGSSolver::solveFriction()
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        float miu = 0.2f;
+        float miu = c.m_friction;
 
         float oldImp = c.m_tangentImpl;
         c.m_tangentImpl += lambda;

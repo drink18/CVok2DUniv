@@ -37,4 +37,7 @@ struct cvManifold
     cvManifoldPoint m_points[MAX_MANIFOLD_POINT];
     cvVec2f m_normal;
     int m_numPt = 0; //number of point in manfild
+
+    float m_friction = 0;
+    float m_restitution = 0;
 };

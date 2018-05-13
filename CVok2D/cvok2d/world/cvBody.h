@@ -11,11 +11,13 @@
 
 
 class cvWorld;
+class cvMaterial;
 
 struct cvBodyCInfo
 {
     cvMotion::MotionType m_motionType = cvMotion::MotionType::Dynamic;
 	std::shared_ptr<cvShape> m_shape;
+    std::shared_ptr<cvMaterial> m_material;
 	cvTransform m_initTransform;
 	float m_mass = 1.0f;
 };
@@ -53,11 +55,14 @@ public:
 
     void setFlag(Flags f, bool enable);
     bool isFlagSet(Flags f) const {return m_flags & f;}
+
+    std::shared_ptr<cvMaterial> getMaterial() const {return m_material;}
 private:
     cvBodyId m_id;
     uint32_t m_flags;
 	cvTransform m_transform;
 	std::shared_ptr<cvShape> m_shape;
+    std::shared_ptr<cvMaterial> m_material;
 	cvVec2f m_mass;
 
     cvBroadphaseHandle m_broadphaseId = cvBroadphaseHandle::invalid();

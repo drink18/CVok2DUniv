@@ -2,6 +2,7 @@
 #include <collision/cvCollisionDispatch.h>
 #include <shape/cvCompoundShape.h>
 #include <solver/cvPGS.h>
+#include <world/cvMaterial.h>
 #include <world/cvWorld.h>
 #include <vector>
 
@@ -156,6 +157,18 @@ void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
     manifold.m_bodyA = np.m_bodyA;
     manifold.m_bodyB = np.m_bodyB;
     manifold.m_numPt = 0;
+    if(bodyA.getMaterial() && bodyB.getMaterial())
+    {
+        manifold.m_friction = cvMaterial::CombineFirction(*bodyA.getMaterial(), *bodyB.getMaterial());
+    }
+    else if(bodyA.getMaterial())
+    {
+        manifold.m_friction = bodyA.getMaterial()->m_friction;
+    }
+    else if(bodyB.getMaterial())
+    {
+        manifold.m_friction = bodyB.getMaterial()->m_friction;
+    }
 }
 
 void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)

@@ -8,6 +8,9 @@ struct cvContactConstraint
     cvVec3f JA;
     cvVec3f JB;
 
+    cvVec3f tJA;
+    cvVec3f tJB;
+
     cvVec3f MA; //mass matrice
     cvVec3f MB; //mass matrice
 
@@ -22,6 +25,6 @@ struct cvContactConstraint
     float m_tangentImpl = 0;
     float m_posAccumImp = 0;
 
-    cvVec3f tJA;
-    cvVec3f tJB;
+    float m_friction = 0;
+    float m_restitution = 0;
 };
