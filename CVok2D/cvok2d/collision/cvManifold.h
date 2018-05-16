@@ -38,7 +38,7 @@ struct cvManifold
     cvVec2f m_normal;
     int m_numPt = 0; //number of point in manfild
 
-    float m_friction = 0;
-    float m_restitution = 0;
-    float m_rollingFriction = 0;
+    float m_friction = 0.2f;
+    float m_restitution = 0.05f;
+    float m_rollingFriction = 0.05f;
 };
