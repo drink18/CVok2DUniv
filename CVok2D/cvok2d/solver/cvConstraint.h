@@ -11,6 +11,10 @@ struct cvContactConstraint
     cvVec3f tJA;
     cvVec3f tJB;
 
+    // rolling frction
+    cvVec3f rJA;
+    cvVec3f rJB;
+
     cvVec3f MA; //mass matrice
     cvVec3f MB; //mass matrice
 
@@ -27,4 +31,5 @@ struct cvContactConstraint
 
     float m_friction = 0;
     float m_restitution = 0;
+    float m_rollingFriction = 0;
 };

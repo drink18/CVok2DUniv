@@ -160,14 +160,17 @@ void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
     if(bodyA.getMaterial() && bodyB.getMaterial())
     {
         manifold.m_friction = cvMaterial::CombineFirction(*bodyA.getMaterial(), *bodyB.getMaterial());
+        manifold.m_rollingFriction = cvMaterial::CombineRollingFriction(*bodyA.getMaterial(), *bodyB.getMaterial());
     }
     else if(bodyA.getMaterial())
     {
         manifold.m_friction = bodyA.getMaterial()->m_friction;
+        manifold.m_rollingFriction = bodyA.getMaterial()->m_rollingFriction;
     }
     else if(bodyB.getMaterial())
     {
         manifold.m_friction = bodyB.getMaterial()->m_friction;
+        manifold.m_rollingFriction = bodyB.getMaterial()->m_rollingFriction;
     }
 }
 

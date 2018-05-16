@@ -32,4 +32,5 @@ protected:
     void solvePenetrations();
     void solvePositionErr();
     void solveFriction();
+    void solveRollingFriction();
 };

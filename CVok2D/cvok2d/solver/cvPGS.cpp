@@ -66,6 +66,7 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
 
             contact.m_friction = m.m_friction;
             contact.m_restitution = m.m_restitution;
+            contact.m_rollingFriction = m.m_rollingFriction;
 
             cvVec2f na = m.m_normal;
             cvVec2f nb = -m.m_normal;
@@ -102,6 +103,11 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
 
             contact.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
             contact.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
+
+            contact.rJA = cvVec3f(1, 1, 1);
+            contact.rJA.normalize();
+            contact.rJB = cvVec3f(-1, -1, -1);
+            contact.rJB.normalize();
 
             if(pt.m_distance < 0) 
                 m_ContactContraints.push_back(contact);
@@ -240,7 +246,14 @@ void cvPGSSolver::solveFriction()
         velA += c.tJA * c.MA * lambda;
         velB += c.tJB * c.MB * lambda;
 
-        float nv = velA.dot(c.tJA) + velB.dot(c.tJB);
+        // rolling frition
+        float rv = velA.dot(c.rJA) + velB.dot(c.rJB);
+        float rlambda = -rv / em;
+        rlambda = min(max(-c.m_accumImpl * c.m_rollingFriction, rlambda), 
+                c.m_accumImpl* c.m_rollingFriction);
+        velA += c.rJA * c.MA * rlambda;
+        velB += c.rJB * c.MB * rlambda;
+
 
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;

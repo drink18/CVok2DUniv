@@ -51,7 +51,7 @@ TestFriction::TestFriction()
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f);
         bodyInfo.m_mass = 30.0f;
-        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 1.0f);
+        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 0.5f);
 
         auto id = m_world->createBody(bodyInfo, true);
         m_world->setBodyLinearVelocity(id, cvVec2f(-0.5f, 0));
