@@ -40,5 +40,5 @@ struct cvManifold
 
     float m_friction = 0.2f;
     float m_restitution = 0.05f;
-    float m_rollingFriction = 0.05f;
+    float m_rollingFriction = 0.00f;
 };
