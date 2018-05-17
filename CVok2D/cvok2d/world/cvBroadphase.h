@@ -98,6 +98,14 @@ public:
 				return p1.getSortKey();
 			}
 		};
+
+        struct lessThan
+        {
+            bool operator()(const BPPair& p1, const BPPair& p2)
+            {
+                return p1.getSortKey() < p2.getSortKey();
+            }
+        };
 	};
 
 public:

@@ -2,7 +2,9 @@
 #include "cvBroadPhaseSAP.h"
 #include <world/cvBody.h>
 #include <world/cvWorld.h>
+#include <algorithm>
 
+using namespace std;
 cvBroadphaseSAP::cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo)
 	:cvBroadphase(cinfo)
 {
@@ -22,6 +24,7 @@ cvBroadphaseHandle cvBroadphaseSAP::addNode(const cvAabb& nodeAabb)
 
 	cvBroadphaseHandle handle = m_Nodes.alloc();
 	BPNode& newNode = m_Nodes.accessAt(handle);
+    m_allocatedNodes.insert(handle);
 	newNode.m_aabb = nodeAabb;
 	NodeEndPoint min0, min1;
 	NodeEndPoint max0, max1;
@@ -87,6 +90,8 @@ void cvBroadphaseSAP::removeNode(cvBroadphaseHandle handle)
 		endPoints.erase(endPoints.begin() + minIdx);
 		endPoints.erase(endPoints.begin() + maxIdx - 1);
 	}
+
+    m_allocatedNodes.erase(handle);
 }
 
 void cvBroadphaseSAP::updateOneNode(cvBroadphaseHandle handle, const cvAabb& newAabb)
@@ -305,9 +310,42 @@ void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vecto
         removedPairs.push_back(n);
 
     m_DirtyNodes.clear();
+
+    validate();
 }
 
 void cvBroadphaseSAP::getBpAABB(cvBroadphaseHandle handle, cvAabb& outAabb) const
 {
     outAabb = m_Nodes.getAt(handle).m_aabb;
+}
+
+void cvBroadphaseSAP::validate()
+{
+    vector<cvBroadphaseHandle> allNodes;
+    vector<BPPair> pairs;
+    vector<BPPair> pairsToCheck;
+    getAllPairs(pairsToCheck);
+    for(auto& node : m_allocatedNodes)
+    {
+        allNodes.push_back(node);
+    }
+
+    for(int i = 0; i < allNodes.size(); ++i)
+    {
+        const BPNode& n1 = m_Nodes.getAt(allNodes[i]);
+        for(int j = i + 1; j < allNodes.size(); ++j)
+        {
+            const BPNode& n2 = m_Nodes.getAt(allNodes[j]);
+            if(n1.m_aabb.overlaps(n2.m_aabb))
+            {
+                pairs.push_back(BPPair(allNodes[i], allNodes[j]));
+            }
+        }
+    }
+
+    BPPair::lessThan lt;
+    std::sort(pairsToCheck.begin(), pairsToCheck.end(), lt);
+    std::sort(pairs.begin(), pairs.end(), lt);
+
+    cvAssertMsg(pairs == pairsToCheck, "BP validation failed");
 }

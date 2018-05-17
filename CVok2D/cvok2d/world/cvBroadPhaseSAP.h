@@ -21,6 +21,7 @@ public:
     typedef std::vector<cvBroadphase::NodeEndPoint> NodeEPList;
     typedef cvFreeList<BPNode, cvBroadphaseHandle> NodeList;
     typedef std::unordered_set<BPPair, BPPair::compBPPair > BPPairSet;
+    typedef std::unordered_set<cvBroadphaseHandle> NodeSet;
 public:
 	cvBroadphaseSAP(const cvBroadphaseCInfo& cinfo);
 
@@ -55,6 +56,8 @@ public:
 private:
 	void updateNodeOnOneAxis(int nodeIdx, float min, float max, int axis);
 	void moveEndPoint(int axis, int endPtIdx, int direction);
+
+    void validate();
 private:
 	NodeEPList  m_EndPoints[2];
 	NodeList m_Nodes;
@@ -62,6 +65,7 @@ private:
 	BPPairSet m_newPairs;
 	BPPairSet m_removedPairs;
 
+    NodeSet m_allocatedNodes;
 
     std::unordered_map<cvBroadphaseHandle, cvAabb> m_DirtyNodes;
 };
