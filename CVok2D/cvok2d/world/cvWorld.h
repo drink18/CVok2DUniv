@@ -63,6 +63,7 @@ public:
 	const cvMotionManager& getMotionManager() const {return m_motionManager;}
 
     cvISimulationControl& getSimControl() {return *m_simControl;}
+    cvSimulationContext& getSimContext() {return m_simCtx;}
     const cvSimulationContext& getSimContext() const {return m_simCtx;}
 
     const cvWorldCInfo& getCInfo() const { return m_cInfo;}

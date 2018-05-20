@@ -311,7 +311,7 @@ void cvBroadphaseSAP::updateDirtyNodes(std::vector<BPPair>& newPairs, std::vecto
 
     m_DirtyNodes.clear();
 
-    validate();
+    //validate();
 }
 
 void cvBroadphaseSAP::getBpAABB(cvBroadphaseHandle handle, cvAabb& outAabb) const

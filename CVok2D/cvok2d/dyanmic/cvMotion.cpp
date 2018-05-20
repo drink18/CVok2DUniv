@@ -24,6 +24,7 @@ void cvMotion::InitializeMotion(cvMotion& motion, cvMotion::MotionType mt, const
             float inertia = 0.5f * cinfo.m_mass * r * r;
             invInertia = 1.0f / inertia;
         }
+
         if(cinfo.m_shape->getShapeType() == cvShape::ePolygon)
         {
             auto& poly = static_cast<cvPolygonShape&>(*cinfo.m_shape);

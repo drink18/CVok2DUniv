@@ -14,6 +14,5 @@ public:
 private:
     cvPolygonShape* m_box = nullptr;
     cvCircle* m_circle = nullptr;
-    cvWorld* m_world = nullptr;
 };
 

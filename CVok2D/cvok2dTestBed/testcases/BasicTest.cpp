@@ -9,9 +9,6 @@ BasicTest::BasicTest()
     m_box = cvPolygonShape::createBox(cvVec2f(5, 5), 0.01f);
     m_circle = new cvCircle(cvVec2f(0, 0), 3);
 
-    cvWorldCInfo cinfo;
-    m_world = new cvWorld(cinfo);
-
     cvBodyCInfo bInfo;
     bInfo.m_shape.reset(m_box);
     bInfo.m_initTransform.setIdentity();

@@ -10,9 +10,6 @@ using namespace std;
 
 WorldIntegration::WorldIntegration()
 {
-    cvWorldCInfo cInfo;
-    m_world = new cvWorld(cInfo);
-
     m_shape = shared_ptr<cvPolygonShape> (
             cvPolygonShape::createBox(cvVec2f(2.0f, 2.0f), 0.05f));
     cvBodyCInfo bodyInfo;

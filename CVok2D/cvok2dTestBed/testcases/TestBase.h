@@ -2,6 +2,8 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <memory>
+#include <world/cvWorld.h>
 
 #pragma once
 
@@ -14,6 +16,12 @@ public:
     TestBase ();
 
     virtual void tick(cvDebugDraw& dbgDraw, float dt);
+
+    virtual void setSolverIteration(int n);
+    int getSolverIteration();
+
+protected:
+    std::unique_ptr<cvWorld> m_world;
 };
 
 struct TestInfo

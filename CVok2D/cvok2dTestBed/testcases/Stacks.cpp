@@ -12,11 +12,6 @@ using namespace std;
 
 Stacks::Stacks()
 {
-    cvWorldCInfo cInfo;
-    //cInfo.m_bpAABBExpesnion = 0.2f;
-    //cInfo.m_gravity = cvVec2f::getZero();
-    m_world = new cvWorld(cInfo);
-
     m_shape = shared_ptr<cvPolygonShape> (
             cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
 

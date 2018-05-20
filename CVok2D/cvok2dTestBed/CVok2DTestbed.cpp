@@ -45,6 +45,7 @@ static void RenderUI()
     }
 
     int oldDemoIdx = g_currentDemoIdx;
+    int solverIter = g_currentTest->getSolverIteration();
     ImGui_ImplGlfwGL3_NewFrame();
     bool reset = false;
     // 1. show a simple window
@@ -58,6 +59,7 @@ static void RenderUI()
         // render options
         ImGui::Checkbox("Draw AABB", &g_dbgDraw->m_DbgDrawOpts.bDrawBroadphase);
         ImGui::Checkbox("Draw Manifold", &g_dbgDraw->m_DbgDrawOpts.bDrawManifoild);
+        ImGui::SliderInt("Solver Iter", &solverIter, 1, 100);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -66,6 +68,7 @@ static void RenderUI()
     {
         g_currentTest.reset(GetRegisteredTests()[g_currentDemoIdx].m_testFn());
     }
+    g_currentTest->setSolverIteration(solverIter);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)

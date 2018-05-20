@@ -51,12 +51,6 @@ shared_ptr<cvShape> makeTumblur(float size, float thickness)
 
 CompoundShape::CompoundShape()
 {    
-    cvWorldCInfo cInfo;
-    //cInfo.m_bpAABBExpesnion = 0.2f;
-    //cInfo.m_gravity = cvVec2f::getZero();
-    m_world = new cvWorld(cInfo);
-
-
     // adding a static plane
     {
         cvBodyCInfo bodyInfo;

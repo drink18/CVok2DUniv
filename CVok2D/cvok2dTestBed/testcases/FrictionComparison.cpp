@@ -11,7 +11,7 @@
 
 using namespace std;
 
-static void MakeTestSlopeAndObj(float y, cvWorld* world, float fric, float rollFric)
+static void MakeTestSlopeAndObj(float y, unique_ptr<cvWorld>& world, float fric, float rollFric)
 {
     auto platMat = make_shared<cvMaterial>();
     auto bodyMat = make_shared<cvMaterial>();
@@ -45,9 +45,6 @@ static void MakeTestSlopeAndObj(float y, cvWorld* world, float fric, float rollF
 
 FrictionComparison::FrictionComparison()
 {
-    cvWorldCInfo cInfo;
-    m_world = new cvWorld(cInfo);
-
     MakeTestSlopeAndObj(-20.0f, m_world, 0.8f, 0.0f);
     MakeTestSlopeAndObj(-10.0f, m_world, 0.6f, 0.0f);
     MakeTestSlopeAndObj(0.0f, m_world, 0.2f, 0.0f);

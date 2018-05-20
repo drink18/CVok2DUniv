@@ -9,9 +9,6 @@
 TestCollisionDispatch::TestCollisionDispatch()
 {
     cv2DInit();
-    cvWorldCInfo info;
-	info.m_bpAABBExpesnion = 0.5f;
-    m_world.reset(new cvWorld(info));
 
     {
         cvCircle* circle = new cvCircle(cvVec2f(0.0f, 0.0f), 1.0f);

@@ -11,9 +11,6 @@ using namespace std;
 
 TestFriction::TestFriction()
 {
-    cvWorldCInfo cInfo;
-    m_world = new cvWorld(cInfo);
-
     m_shape = shared_ptr<cvPolygonShape> (
             cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
 
@@ -31,7 +28,7 @@ TestFriction::TestFriction()
     }
 
     // boxes
-    for(int i = 0; i < 15; ++i)
+    for(int i = 0; i < 2; ++i)
     {
         for(int j = 0; j < 1; ++j)
         {

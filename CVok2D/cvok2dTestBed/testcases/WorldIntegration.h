@@ -14,7 +14,6 @@ public:
     virtual void tick(cvDebugDraw& gdbDraw, float dt) override;
 
 private:
-    cvWorld* m_world = nullptr;
     std::shared_ptr<cvConvexShape> m_shape;
     cvBodyId m_Id;
 };
