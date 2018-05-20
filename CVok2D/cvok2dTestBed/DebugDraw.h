@@ -21,7 +21,7 @@ struct Camera
 	Camera()
 	{
 		m_center.set(0.0f, 0.0f);
-		m_extent = 5.0f;
+		m_extent = 20.0f;
 		m_zoom = 1.0f;
 		m_width = 1280;
 		m_height = 800;
