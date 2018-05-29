@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cvok2d.h>
+#include <vector>
 
 struct GLRenderPoints;
 struct GLRenderLines;

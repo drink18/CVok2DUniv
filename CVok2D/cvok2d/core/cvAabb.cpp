@@ -1,4 +1,5 @@
 #include "cvAabb.h"
+#include <algorithm>
 
 void cvAabb::transform(const cvTransform& trans)
 {

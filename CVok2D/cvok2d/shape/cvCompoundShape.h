@@ -3,6 +3,7 @@
 #include "cvShape.h"
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 class cvCompoundShape: public cvShape
 {
