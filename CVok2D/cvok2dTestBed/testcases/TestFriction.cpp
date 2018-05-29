@@ -28,15 +28,19 @@ TestFriction::TestFriction()
     }
 
     // boxes
+    float hf = 1.3f;
     for(int i = 0; i < 2; ++i)
     {
         for(int j = 0; j < 1; ++j)
         {
+            auto shape = shared_ptr<cvPolygonShape> (
+            cvPolygonShape::createBox(cvVec2f(hf , hf), 0.05f));
             cvBodyCInfo bodyInfo;
             bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 
-                    2.2f * i - 4.5f);
-            bodyInfo.m_mass = 1.0f;
-            bodyInfo.m_shape = m_shape;
+                    (2 * hf) * i - 4.5f);
+            //bodyInfo.m_initTransform.m_Rotation = 0.1f;
+            bodyInfo.m_mass = 15.0f;
+            bodyInfo.m_shape = shape;
 
             auto id = m_world->createBody(bodyInfo, true);
             //m_world->setBodyLinearVelocity(id, cvVec2f(-10.5f, 0));

@@ -3,6 +3,7 @@
 #include <world/cvWorld.h>
 #include <collision/cvManifold.h>
 #include <algorithm>
+#include <iostream>
 #include <simulation/cvISimulationControl.h>
 
 
@@ -71,18 +72,18 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             cvVec2f na = m.m_normal;
             cvVec2f nb = -m.m_normal;
 
-            auto pa = pt.m_point;
+            auto pa = pt.m_point;// +  m.m_normal * pt.m_distance ;
             auto pb = pt.m_point;
 
             cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
             float rxnA = rA.cross(na);
             contact.JA = cvVec3f(na.x, na.y, rxnA);
-            contact.MA =  cvVec3f(invMA, invMA, invInertiaA);
+            contact.MA =  cvVec3f(invMA , invMA , invInertiaA);
 
             cvVec2f rB = pb - bodyB.getTransform().m_Translation;
             float rxnB = rB.cross(nb);
             contact.JB =  cvVec3f(nb.x, nb.y, rxnB);
-            contact.MB =  cvVec3f(invMB, invMB, invInertiaB);
+            contact.MB =  cvVec3f(invMB , invMB, invInertiaB);
 
             contact.bodyAId = sbIdA;
             contact.bodyBId = sbIdB;
@@ -91,7 +92,7 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             const float beta = 0.8f;
             if(pt.m_distance < 0)
             {
-                const float slop = 0.01f;
+                const float slop = 0.001f;
                 float pen = pt.m_distance + slop;
                 contact.posBias = pen * beta / stepInfo.m_dt;
             } 
@@ -124,9 +125,13 @@ void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold> &manifolds,
 
 void cvPGSSolver::solvePenetrations()
 {
-    for(auto& c : m_ContactContraints)
+    //for(auto& c : m_ContactContraints)
+    for(int i = 0; i < m_ContactContraints.size(); ++i)
     {
+        auto& c = m_ContactContraints[i];
         cvVec3f velA, velB;
+
+        bool bothDyn = c.bodyAId >= 0 && c.bodyBId >= 0;
 
         if(c.bodyAId >= 0)
         {
@@ -139,6 +144,10 @@ void cvPGSSolver::solvePenetrations()
             cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
             velB = bodyB.m_velocity;
         }
+
+        cvVec3f oldA, oldB;
+        oldA = velA;
+        oldB = velB;
 
         // eM
         float emA = c.JA.dot(c.MA * c.JA);
@@ -158,6 +167,15 @@ void cvPGSSolver::solvePenetrations()
 
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
+
+        const float eps = 1e-5f;
+        if(abs(velA.x - oldA.x) > eps
+                || abs(velB.x - oldB.x) > eps)
+            cvAssertMsg(false, "vel error");
+
+        float err = velA.dot(c.JA) + velB.dot(c.JB);
+        printf("c%d, re=%f, velA=%f, %f, %f, velB=%f,%f,%f\n", i, err,
+			velA.x, velA.y, velA.z, velB.x, velB.y, velB.z);
 
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;
@@ -196,6 +214,8 @@ void cvPGSSolver::solvePositionErr()
 
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
+
+        float err = velA.dot(c.JA) + velB.dot(c.JB);
 
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_posVelocity = velA;
@@ -265,12 +285,53 @@ void cvPGSSolver::solveFriction()
 
 void cvPGSSolver::solveContacts(int nIter)
 {
+    if(m_ContactContraints.size() == 0)
+        return;
+
+    printf("==================BEGIN==============\n");
     for(int i = 0; i < nIter; ++i)
         solvePenetrations();
+    printf("==================END==============\n");
+#if 0
     for(int i = 0; i < nIter; ++i)
         solveFriction();
+#endif
+
+#if 1
     for(int i = 0; i < nIter; ++i)
         solvePositionErr();
+#endif
+
+
+#if 0
+    // print out error per constraint
+    for(int i = 0; i < m_ContactContraints.size(); ++i)
+    {
+        auto& c = m_ContactContraints[i];
+        cvVec3f velA, velB;
+
+        if(c.bodyAId >= 0)
+        {
+            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
+            velA = bodyA.m_velocity;
+        }
+
+        if(c.bodyBId >= 0)
+        {
+            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
+            velB = bodyB.m_velocity;
+        }
+
+        float err = c.JA.dot(velA) + c.JB.dot(velB);
+        printf("c%d err = %f, velA=%f, %f, %f, velB =%f, %f, %f \n", i, err, velA.x, velA.y,
+                velA.z, velB.x, velB.y, velB.z);
+    }
+    for(int i = 0; i < m_solverBodies.size(); ++i)
+    {
+        auto& sbody = m_solverBodies[i];
+        printf("body %d, vel=%f, %f, %f\n", i, sbody.m_velocity.x, sbody.m_velocity.y, sbody.m_velocity.z);
+    }
+#endif
 }
 
 void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
@@ -285,7 +346,6 @@ void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
         motion.m_transform = sbody.m_transform;
         motion.m_linearVel.set(sbody.m_velocity.x, sbody.m_velocity.y);
         motion.m_angularVel = sbody.m_velocity.z;
-
 
         // applying position correction
         cvVec2f posCoorLinVel(sbody.m_posVelocity.x, sbody.m_posVelocity.y);

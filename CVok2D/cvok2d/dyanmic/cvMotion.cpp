@@ -25,15 +25,17 @@ void cvMotion::InitializeMotion(cvMotion& motion, cvMotion::MotionType mt, const
             invInertia = 1.0f / inertia;
         }
 
+#if 1
         if(cinfo.m_shape->getShapeType() == cvShape::ePolygon)
         {
-            auto& poly = static_cast<cvPolygonShape&>(*cinfo.m_shape);
-            const cvAabb& aabb = poly.getAabb();
-            float extX = aabb.m_Max.x - aabb.m_Min.x;
-            float extY = aabb.m_Max.y - aabb.m_Min.y;
-            float inertia = 1.0f / 12.0f * cinfo.m_mass * (extX * extX + extY * extY);
+            const cvAabb& aabb = cinfo.m_shape->getAabb();
+            float extX = std::abs(aabb.m_Max.x - aabb.m_Min.x);
+            float extY = std::abs(aabb.m_Max.y - aabb.m_Min.y);
+            float inertia = 1.0f * cinfo.m_mass * (extX * extX + extY * extY);
+            inertia /= 12;
             invInertia = 1.0f / inertia;
         }
+#endif
         motion.m_invMassAndInertia.set(invMass, invInertia);
     }
 }

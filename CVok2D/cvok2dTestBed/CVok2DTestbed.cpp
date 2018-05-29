@@ -36,6 +36,9 @@ static void error_callback(int error, const char* description)
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
 static ImVec4 clear_color = ImColor(114, 144, 154);
+static bool pause = false;
+static bool singleStep = false;
+
 static void RenderUI()
 {
     vector<const char*> testNames;
@@ -56,6 +59,10 @@ static void RenderUI()
         if(ImGui::Button("Reset"))
             reset = true;
 
+        if(ImGui::Button(">>"))
+            singleStep = true;
+
+        ImGui::Checkbox("Pause", &pause);
         // render options
         ImGui::Checkbox("Draw AABB", &g_dbgDraw->m_DbgDrawOpts.bDrawBroadphase);
         ImGui::Checkbox("Draw Manifold", &g_dbgDraw->m_DbgDrawOpts.bDrawManifoild);
@@ -156,17 +163,31 @@ int main(int, char**)
         dt = glfwGetTime() - lastTime;
         lastTime = glfwGetTime();
 
-        if (g_currentTest)
-            g_currentTest->tick(*pdbgDraw, 1.0f/ 60);
-
         glfwPollEvents();
 
-        glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
-        glViewport(0, 0, g_camera.m_width, g_camera.m_height);
+        bool run = false;
+        if(!pause)
+        {
+            run  = true;
+        }
+        else if(singleStep)
+        {
+            singleStep = false;
+            run  = true;
+        }
+
+        if(run)
+        {
+            if (g_currentTest)
+                g_currentTest->tick(*pdbgDraw, 1.0f/ 60);
+
+            glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
+            glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        pdbgDraw->Flush();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            pdbgDraw->Flush();
+        }
 
         RenderUI();
 

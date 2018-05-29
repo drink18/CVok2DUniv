@@ -17,7 +17,7 @@
                 "name": "(lldb) Launch test bed",
                 "type": "cppdbg",
                 "request": "launch",
-                "program": "${workspaceRoot}/build/cvok2dTestBed/cvok2dTestBed",
+                "program": "${workspaceRoot}/build/debug/cvok2dTestBed/cvok2dTestBed",
                 "args": [],
                 "stopAtEntry":false, 
                 "cwd": "${workspaceRoot}",
