@@ -377,7 +377,7 @@ TEST(cvBroadphase, sap_bug)
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(0, pairs.size());
 
-    broadPhase.updateOneNode(id, cvAabb(v + s2, v + s2));
+    broadPhase.updateOneNode(id, cvAabb(v - s2, v + s2));
 
     broadPhase.getAllPairs(pairs);
     EXPECT_EQ(1, pairs.size());

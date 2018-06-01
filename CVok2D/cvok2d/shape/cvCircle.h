@@ -22,6 +22,5 @@ public:
 
     virtual void updateAabb() override;
 
-    float getRadius() const {return m_radius;}
     cvVec2f getCenter() const {return m_vertices[0];};
 };

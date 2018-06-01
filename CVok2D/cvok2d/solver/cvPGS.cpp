@@ -168,12 +168,12 @@ void cvPGSSolver::solvePenetrations()
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
 
+#if 0
         const float eps = 1e-5f;
         if(abs(velA.x - oldA.x) > eps
                 || abs(velB.x - oldB.x) > eps)
             cvAssertMsg(false, "vel error");
 
-#if 0
         float err = velA.dot(c.JA) + velB.dot(c.JB);
         printf("c%d, re=%f, velA=%f, %f, %f, velB=%f,%f,%f\n", i, err,
 			velA.x, velA.y, velA.z, velB.x, velB.y, velB.z);
