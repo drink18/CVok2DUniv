@@ -47,13 +47,35 @@ TEST(cvAabb, overlaps)
 	cvAabb a3(cvVec2f(0.1f, 0.1f), cvVec2f(4, 3));
 	cvAabb a4(cvVec2f(-0.1f, -0.1f), cvVec2f(1, 2));
 
-	EXPECT_TRUE(a1.overlaps(a1));
 	EXPECT_TRUE(a1.overlaps(a2));
 	EXPECT_TRUE(a1.overlaps(a3));
 	EXPECT_TRUE(a1.overlaps(a4));
 }
 
-TEST(cvAabb, expansd)
+TEST(cvAabb, overlaps_self)
+{
+	cvAabb a1(cvVec2f(0, 0), cvVec2f(2, 3));
+
+	EXPECT_TRUE(a1.overlaps(a1));
+}
+
+TEST(cvAabb, overlaps_x_identical)
+{
+	cvAabb a1(cvVec2f(0, 0), cvVec2f(2, 3));
+	cvAabb a2(cvVec2f(0, -3), cvVec2f(2, 0));
+
+	EXPECT_FALSE(a1.overlaps(a2));
+}
+
+TEST(cvAabb, overlaps_y_identical)
+{
+	cvAabb a1(cvVec2f(0, 0), cvVec2f(2, 3));
+	cvAabb a2(cvVec2f(-2, 0), cvVec2f(0, 3));
+
+	EXPECT_FALSE(a1.overlaps(a2));
+}
+
+TEST(cvAabb, expand)
 {
 	cvAabb a1(cvVec2f(0, 0), cvVec2f(2, 3));
     cvVec2f exp(1, 2);
