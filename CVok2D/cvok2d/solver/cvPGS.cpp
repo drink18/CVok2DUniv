@@ -173,9 +173,11 @@ void cvPGSSolver::solvePenetrations()
                 || abs(velB.x - oldB.x) > eps)
             cvAssertMsg(false, "vel error");
 
+#if 0
         float err = velA.dot(c.JA) + velB.dot(c.JB);
         printf("c%d, re=%f, velA=%f, %f, %f, velB=%f,%f,%f\n", i, err,
 			velA.x, velA.y, velA.z, velB.x, velB.y, velB.z);
+#endif
 
         if(c.bodyAId >= 0)
             m_solverBodies[c.bodyAId].m_velocity = velA;
@@ -288,20 +290,15 @@ void cvPGSSolver::solveContacts(int nIter)
     if(m_ContactContraints.size() == 0)
         return;
 
-    printf("==================BEGIN==============\n");
+    //printf("==================BEGIN==============\n");
     for(int i = 0; i < nIter; ++i)
         solvePenetrations();
-    printf("==================END==============\n");
-#if 0
+    //printf("==================END==============\n");
     for(int i = 0; i < nIter; ++i)
         solveFriction();
-#endif
 
-#if 1
     for(int i = 0; i < nIter; ++i)
         solvePositionErr();
-#endif
-
 
 #if 0
     // print out error per constraint
