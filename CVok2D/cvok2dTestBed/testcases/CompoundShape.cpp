@@ -81,7 +81,7 @@ CompoundShape::CompoundShape()
         }
     }
 
-    if(true)
+    if(false)
     {
         // some boxes
         cvBodyCInfo bodyInfo;
@@ -98,18 +98,19 @@ CompoundShape::CompoundShape()
         }
     }
 
-    if(false)
+    if(true)
     {
         // some circle
+		const float r = 0.5f;
         cvBodyCInfo bodyInfo;
         bodyInfo.m_motionType = cvMotion::MotionType::Dynamic;
-        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), 0.25f);
+        bodyInfo.m_shape = make_shared<cvCircle>(cvVec2f(0, 0), r);
         // some dynamic stuff
         for(int j = 0; j < 3; ++j)
         {
             for(int i = 0; i < 5; ++i)
             {
-                bodyInfo.m_initTransform.m_Translation = cvVec2f(4.5f + i * 0.5f, 0.5f * j );
+                bodyInfo.m_initTransform.m_Translation = cvVec2f(4.5f + i * r * 2,  2 * r * j );
                 m_world->createBody(bodyInfo, true);
             }
         }
