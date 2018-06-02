@@ -66,8 +66,8 @@ namespace SAT
 
         SATResult res;
         res.numPt = 1;
-        res.point[0] = ptRes.point[0];
-        res.distance[0] = ptRes.distance[0] - circle.getRadius();
+        res.pts[0].point = ptRes.pts[0].point;
+        res.pts[0].distance = ptRes.pts[0].distance - circle.getRadius();
         res.normal = ptRes.normal;
         return res;
     }
@@ -121,16 +121,14 @@ namespace SAT
         // if we got here point is inside polygon
         res.penetrated = true;
         res.numPt = 1;
-        res.point[0] = ptL - deepestAxis * deepestPen;
-        res.distance[0] = deepestPen;
+		auto& rpt = res.pts[0];
+        rpt.point = ptL - deepestAxis * deepestPen;
+        rpt.distance = deepestPen;
         res.normal = deepestAxis;
-        res.ei0 = deepestPenEdge;
-        res.ei1 = (deepestPenEdge == nedge - 1) ? 0 : deepestPenEdge + 1;
-        res.ep0 = verts[res.ei0];
-        res.ep1 = verts[res.ei1];
-        res.point[0] = trans * res.point[0];
-        res.ep0 = trans * res.ep0;
-        res.ep1 = trans * res.ep1;
+		rpt.ei[0] = 0;
+		rpt.ei[1] = deepestPenEdge;
+
+		rpt.point = trans * rpt.point;
         trans.transformVector(res.normal);
 
         return res;
@@ -327,8 +325,9 @@ namespace SAT
             float d = (incEp[i] - refEp[0]).dot(sepNormal);
             //if(d < 0)
             {
-                res.point[res.numPt] = incEp[i] - sepNormal * d;
-                res.distance[res.numPt] = d;
+				auto& rpt = res.pts[res.numPt];
+                rpt.point = incEp[i] - sepNormal * d;
+				rpt.distance = d;
                 res.numPt++;
             }
         }
@@ -337,7 +336,8 @@ namespace SAT
         {
             for(int i = 0; i < res.numPt; ++i)
             {
-                res.point[i] = res.point[i] + sepNormal * res.distance[i];
+				auto& rpt = res.pts[i];
+                rpt.point += sepNormal * rpt.distance;
             }
             res.normal *= -1;
         }

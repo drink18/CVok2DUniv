@@ -39,6 +39,7 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
 
     pt.m_distance = len - ra - rb;
     pt.m_point = wldB + d * rb;
+	pt.m_feature.init(cvManifoldPtFeature::MF_Vertex, cvManifoldPtFeature::MF_Vertex, 0, 0);
 }
 
 
@@ -65,8 +66,8 @@ void __colCirclevsPoly(const cvCircle& circleA, const cvPolygonShape& polyB, con
         auto satRes = SAT::_circleToPolygon(circleA, polyB, matA, matB);
 
         manifold.m_normal = satRes.normal;
-        pt.m_point = satRes.point[0];
-        pt.m_distance = satRes.distance[0];
+        pt.m_point = satRes.pts[0].point;
+        pt.m_distance = satRes.pts[0].distance;
     }
 }
 
@@ -118,8 +119,8 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
         for(int i = 0; i < manifold.m_numPt; ++i)
         {
             cvManifoldPoint& pt = manifold.m_points[i];
-            pt.m_point = satRes.point[i];
-            pt.m_distance = satRes.distance[i];
+            pt.m_point = satRes.pts[i].point;
+            pt.m_distance = satRes.pts[i].distance;
         }
     }
 }

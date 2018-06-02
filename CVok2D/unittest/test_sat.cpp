@@ -39,29 +39,33 @@ TEST_F(TestSAT, pt2Box_in)
     cvMat33 iden; iden.setIdentity();
     cvVec2f pt(0.26f, 0.25f);
     auto res = _pointToPolygon(pt, *cvBox, iden);
+	auto rsp = res.pts[0];
     EXPECT_TRUE(res.penetrated);
-    EXPECT_EQ(cvVec2f(0.5f, 0.25f), res.point[0]);
+    EXPECT_EQ(cvVec2f(0.5f, 0.25f), rsp.point);
     EXPECT_EQ(cvVec2f(1.0f, 0), res.normal);
     EXPECT_EQ(1, res.numPt);
 
     pt.set(0.25f, 0.26f);
     res = _pointToPolygon(pt, *cvBox, iden);
+	rsp = res.pts[0];
     EXPECT_TRUE(res.penetrated);
-    EXPECT_EQ(cvVec2f(0.25f, 0.5f), res.point[0]);
+    EXPECT_EQ(cvVec2f(0.25f, 0.5f), rsp.point);
     EXPECT_EQ(cvVec2f(0, 1.0f), res.normal);
     EXPECT_EQ(1, res.numPt);
 
     pt.set(0.25f, -0.26f);
     res = _pointToPolygon(pt, *cvBox, iden);
+	rsp = res.pts[0];
     EXPECT_TRUE(res.penetrated);
-    EXPECT_EQ(cvVec2f(0.25f, -0.5f), res.point[0]);
+    EXPECT_EQ(cvVec2f(0.25f, -0.5f), rsp.point);
     EXPECT_EQ(cvVec2f(0, -1.0f), res.normal);
     EXPECT_EQ(1, res.numPt);
 
     pt.set(-0.26f, 0.25f);
     res = _pointToPolygon(pt, *cvBox, iden);
+	rsp = res.pts[0];
     EXPECT_TRUE(res.penetrated);
-    EXPECT_EQ(cvVec2f(-0.5f, 0.25f), res.point[0]);
+    EXPECT_EQ(cvVec2f(-0.5f, 0.25f), rsp.point);
     EXPECT_EQ(cvVec2f(-1.0f, 0), res.normal);
     EXPECT_EQ(1, res.numPt);
 }
@@ -76,23 +80,25 @@ TEST_F(TestSAT, polyToPoly)
 
     {
         auto res = _polyToPoly(*cvBox, *box, mat1, mat2);
-
+		auto rp0 = res.pts[0];
+		auto rp1 = res.pts[1];
         EXPECT_EQ(2, res.numPt);
-        EXPECT_EQ(cvVec2f(0.5f, 0.4f), res.point[0]);
-        EXPECT_NEAR(-0.1f, res.distance[0], CV_FLOAT_EPS);;
+        EXPECT_EQ(cvVec2f(0.5f, 0.4f), rp0.point);
+        EXPECT_NEAR(-0.1f, rp0.distance, CV_FLOAT_EPS);;
         EXPECT_EQ(cvVec2f(0, -1), res.normal);
-        EXPECT_EQ(cvVec2f(-0.5f, 0.4f), res.point[1]);
-        EXPECT_NEAR(-0.1f, res.distance[1], CV_FLOAT_EPS);;
+        EXPECT_EQ(cvVec2f(-0.5f, 0.4f), rp1.point);
+        EXPECT_NEAR(-0.1f, rp1.distance, CV_FLOAT_EPS);;
     }
 
     {
         auto res = _polyToPoly(*box, *cvBox, mat2, mat1);
 
+		auto rp1 = res.pts[1];
         EXPECT_EQ(2, res.numPt);
         //EXPECT_NEAR(-0.1f, res.distance[0], CV_FLOAT_EPS);;
         EXPECT_EQ(cvVec2f(0, 1), res.normal);
         //EXPECT_EQ(cvVec2f(-0.5f, 0.4f), res.point[1]);
-        EXPECT_NEAR(-0.1f, res.distance[1], CV_FLOAT_EPS);;
+        EXPECT_NEAR(-0.1f, rp1.distance, CV_FLOAT_EPS);;
     }
 }
 
@@ -108,12 +114,14 @@ TEST_F(TestSAT, polyToPoly_horizontal)
 
     {
         auto res = _polyToPoly(*m_poly, *m_poly1, mat1, mat2);
+		auto rp0 = res.pts[0];
+		auto rp1 = res.pts[1];
 
         EXPECT_EQ(2, res.numPt);
-        EXPECT_EQ(cvVec2f(15.2f, 4.2f), res.point[0]);
-        EXPECT_NEAR(-0.8f, res.distance[0], CV_FLOAT_EPS);;
-        EXPECT_EQ(cvVec2f(15.2f, 5.8f), res.point[1]);
-        EXPECT_NEAR(-0.8f, res.distance[1], CV_FLOAT_EPS);;
+        EXPECT_EQ(cvVec2f(15.2f, 4.2f), rp0.point);
+        EXPECT_NEAR(-0.8f, rp0.distance, CV_FLOAT_EPS);;
+        EXPECT_EQ(cvVec2f(15.2f, 5.8f), rp1.point);
+        EXPECT_NEAR(-0.8f, rp1.distance, CV_FLOAT_EPS);;
         EXPECT_EQ(cvVec2f(-1.0f, 0),  res.normal);
     }
 }

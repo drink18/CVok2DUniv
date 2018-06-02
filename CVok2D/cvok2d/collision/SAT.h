@@ -10,11 +10,17 @@ class cvConvexShape;
 
 namespace  SAT
 {
+	struct SATPt
+	{
+        cvVec2f point;
+        float distance;
+		int ei[2] = { 0, 0 }; //feature idx 
+	};
+
     struct SATResult
     {
         int numPt = 0;
-        cvVec2f point[2];
-        float distance[2];
+		SATPt pts[2];
         cvVec2f normal;
         int ei0;
         int ei1;

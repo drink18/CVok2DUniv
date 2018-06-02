@@ -18,10 +18,33 @@ public:
     cvShape* m_shapeB;
 };
 
+struct cvManifoldPtFeature
+{
+	enum FeatureType
+	{
+		MF_Vertex,
+		MF_Edge
+	};
+
+	FeatureType m_typeA = MF_Vertex;
+	FeatureType m_typeB = MF_Edge;
+	int m_featureA = 0;
+	int m_featureB = 0;
+
+	void init(FeatureType typeA, FeatureType typeB, int featureA, int featureB)
+	{
+		m_featureA = featureA;
+		m_featureB = featureB;
+		m_typeA = typeA;
+		m_typeB = typeB;
+	}
+};
+
 struct cvManifoldPoint
 {
     cvVec2f m_point;
-    float m_distance;
+	float m_distance = 0;
+	cvManifoldPtFeature m_feature;
 };
 
 // narrow phase collision detection result. 1 or more manifolds per narrow phase 
@@ -29,7 +52,6 @@ struct cvManifoldPoint
 struct cvManifold
 {
     static constexpr int MAX_MANIFOLD_POINT = 2;
-    bool m_reverted = false;
 
     cvBodyId m_bodyA;
     cvBodyId m_bodyB;
