@@ -13,8 +13,8 @@ class cvPolygonShape;
 
 struct cvDebugDrawOptions
 {
-    bool bDrawBroadphase = true;
-    bool bDrawManifoild = true;
+    bool bDrawBroadphase = false;
+    bool bDrawManifoild = false;
 };
 
 struct Camera
