@@ -33,13 +33,14 @@ TestFriction::TestFriction()
     {
         for (int j = 0; j < 1; ++j)
         {
-            auto shape = shared_ptr<cvPolygonShape>(
-                cvPolygonShape::createBox(cvVec2f(hf, hf), 0.05f));
+            //auto shape = shared_ptr<cvPolygonShape>(
+                //cvPolygonShape::createBox(cvVec2f(hf, hf), 0.05f));
+            auto shape = make_shared<cvCircle>(cvVec2f(0, 0), hf);
             cvBodyCInfo bodyInfo;
             bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j,
                 (2 * hf) * i - 4.5f);
             //bodyInfo.m_initTransform.m_Rotation = 0.1f;
-            bodyInfo.m_mass = 15.0f;
+            bodyInfo.m_mass = 1.0f + i;
             bodyInfo.m_shape = shape;
 
             auto id = m_world->createBody(bodyInfo, true);

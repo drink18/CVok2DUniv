@@ -68,6 +68,8 @@ struct cvManifoldPoint
 {
     cvVec2f m_point;
     float m_distance = 0;
+    float m_normalImpl = 0;
+    float m_tangentImpl = 0;
     cvManifoldPtFeature m_feature;
 };
 
@@ -87,4 +89,5 @@ struct cvManifold
     float m_friction = 0.2f;
     float m_restitution = 0.05f;
     float m_rollingFriction = 0.00f;
+
 };

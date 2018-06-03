@@ -25,6 +25,9 @@ struct cvContactConstraint
     float bias = 0;
     float posBias = 0;
 
+    cvManifold* m_manifold;
+    uint8_t m_maniPtIdx;
+
     float m_accumImpl = 0;
     float m_tangentImpl = 0;
     float m_posAccumImp = 0;

@@ -29,13 +29,15 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
     }
 }
 
-void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
+void cvPGSSolver::setupContactConstraints(const vector<cvManifold*> &manifolds,
                                           const cvWorld &world, const cvSimulationContext &simCtx,
                                           const cvStepInfo &stepInfo)
 {
     m_ContactContraints.clear();
-    for(auto& m : manifolds)
+    for(auto& mp : manifolds)
     {
+        auto& m = *mp;
+
         const cvBody& bodyA = world.getBody(m.m_bodyA);
         const cvBody& bodyB = world.getBody(m.m_bodyB);
 
@@ -62,39 +64,44 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
 
         for(int i = 0; i < m.m_numPt; ++i)
         {
-            cvContactConstraint contact;
+            cvContactConstraint constraint;
             const cvManifoldPoint& pt = m.m_points[i];
 
-            contact.m_friction = m.m_friction;
-            contact.m_restitution = m.m_restitution;
-            contact.m_rollingFriction = m.m_rollingFriction;
+            constraint.m_manifold = const_cast<cvManifold*>(&m);
+            constraint.m_maniPtIdx = i;
+            constraint.m_accumImpl = pt.m_normalImpl;
+            //constraint.m_tangentImpl = pt.m_tangentImpl;
+
+            constraint.m_friction = m.m_friction;
+            constraint.m_restitution = m.m_restitution;
+            constraint.m_rollingFriction = m.m_rollingFriction;
 
             cvVec2f na = m.m_normal;
             cvVec2f nb = -m.m_normal;
 
-            auto pa = pt.m_point;// +  m.m_normal * pt.m_distance ;
+            auto pa = pt.m_point +  m.m_normal * pt.m_distance ;
             auto pb = pt.m_point;
 
             cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
             float rxnA = rA.cross(na);
-            contact.JA = cvVec3f(na.x, na.y, rxnA);
-            contact.MA =  cvVec3f(invMA , invMA , invInertiaA);
+            constraint.JA = cvVec3f(na.x, na.y, rxnA);
+            constraint.MA =  cvVec3f(invMA , invMA , invInertiaA);
 
             cvVec2f rB = pb - bodyB.getTransform().m_Translation;
             float rxnB = rB.cross(nb);
-            contact.JB =  cvVec3f(nb.x, nb.y, rxnB);
-            contact.MB =  cvVec3f(invMB , invMB, invInertiaB);
+            constraint.JB =  cvVec3f(nb.x, nb.y, rxnB);
+            constraint.MB =  cvVec3f(invMB , invMB, invInertiaB);
 
-            contact.bodyAId = sbIdA;
-            contact.bodyBId = sbIdB;
+            constraint.bodyAId = sbIdA;
+            constraint.bodyBId = sbIdB;
 
-            contact.bias = 0;
+            constraint.bias = 0;
             const float beta = 0.8f;
             if(pt.m_distance < 0)
             {
                 const float slop = 0.001f;
                 float pen = pt.m_distance + slop;
-                contact.posBias = pen * beta / stepInfo.m_dt;
+                constraint.posBias = pen * beta / stepInfo.m_dt;
             } 
 
             // friction
@@ -102,21 +109,21 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold> &manifolds,
             cvVec2f ta = -t;
             cvVec2f tb = t;
 
-            contact.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
-            contact.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
+            constraint.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
+            constraint.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
 
-            contact.rJA = cvVec3f(1, 1, 1);
-            contact.rJA.normalize();
-            contact.rJB = cvVec3f(-1, -1, -1);
-            contact.rJB.normalize();
+            constraint.rJA = cvVec3f(1, 1, 1);
+            constraint.rJA.normalize();
+            constraint.rJB = cvVec3f(-1, -1, -1);
+            constraint.rJB.normalize();
 
             if(pt.m_distance < 0) 
-                m_ContactContraints.push_back(contact);
+                m_ContactContraints.push_back(constraint);
         }
     }
 }
 
-void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold> &manifolds,
+void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold*> &manifolds,
                                           const cvWorld &world, const cvSimulationContext &simCtx,
                                           const cvStepInfo &stepInfo)
 {
@@ -290,13 +297,16 @@ void cvPGSSolver::solveContacts(int nIter)
     if(m_ContactContraints.size() == 0)
         return;
 
+
     //printf("==================BEGIN==============\n");
     for(int i = 0; i < nIter; ++i)
         solvePenetrations();
     //printf("==================END==============\n");
+
+#if 0
     for(int i = 0; i < nIter; ++i)
         solveFriction();
-
+#endif
     for(int i = 0; i < nIter; ++i)
         solvePositionErr();
 
@@ -333,6 +343,14 @@ void cvPGSSolver::solveContacts(int nIter)
 
 void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
 {
+    // write back accumulated impulse to manifold
+    for (auto& c : m_ContactContraints)
+    {
+        auto& mp = c.m_manifold->m_points[c.m_maniPtIdx];
+        mp.m_normalImpl = c.m_accumImpl;
+        mp.m_tangentImpl = c.m_tangentImpl;
+    }
+
     cvMotionManager& motionMgr = world.accessMotionManager();
     auto& mIds = motionMgr.getAllocatedIds();
     for(auto& id : mIds)

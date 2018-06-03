@@ -52,7 +52,6 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
     m_bp->updateDirtyNodes(newPairs, delPairs);
 
     auto& npPairs = simCtx.m_NpPairs;
-    vector<cvManifold>& manifolds = simCtx.m_Manifolds;
 
     // remove disjoint pairs
     {
@@ -194,7 +193,7 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
     manifolds.clear();
     manifolds.reserve(npPairs.size());
     for (auto& np : npPairs)
-        manifolds.push_back(np.second);
+        manifolds.push_back(&np.second);
 }
 
 void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
