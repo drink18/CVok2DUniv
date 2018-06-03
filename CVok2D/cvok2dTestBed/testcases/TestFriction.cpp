@@ -11,8 +11,8 @@ using namespace std;
 
 TestFriction::TestFriction()
 {
-    m_shape = shared_ptr<cvPolygonShape> (
-            cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+    m_shape = shared_ptr<cvPolygonShape>(
+        cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
 
     // adding a static plane
     {
@@ -20,8 +20,8 @@ TestFriction::TestFriction()
         bodyInfo.m_motionType = cvMotion::MotionType::Static;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f, -15.0f);
 
-        bodyInfo.m_shape = shared_ptr<cvPolygonShape> (
-                cvPolygonShape::createBox(cvVec2f(40.0f, 0.5f), 0.05f));
+        bodyInfo.m_shape = shared_ptr<cvPolygonShape>(
+            cvPolygonShape::createBox(cvVec2f(40.0f, 0.5f), 0.05f));
 
         auto id = m_world->createBody(bodyInfo, true);
 
@@ -29,15 +29,15 @@ TestFriction::TestFriction()
 
     // boxes
     float hf = 1.3f;
-    for(int i = 0; i < 10; ++i)
+    for (int i = 0; i < 10; ++i)
     {
-        for(int j = 0; j < 1; ++j)
+        for (int j = 0; j < 1; ++j)
         {
-            auto shape = shared_ptr<cvPolygonShape> (
-            cvPolygonShape::createBox(cvVec2f(hf , hf), 0.05f));
+            auto shape = shared_ptr<cvPolygonShape>(
+                cvPolygonShape::createBox(cvVec2f(hf, hf), 0.05f));
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j, 
-                    (2 * hf) * i - 4.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.2f * j,
+                (2 * hf) * i - 4.5f);
             //bodyInfo.m_initTransform.m_Rotation = 0.1f;
             bodyInfo.m_mass = 15.0f;
             bodyInfo.m_shape = shape;
@@ -47,7 +47,7 @@ TestFriction::TestFriction()
         }
     }
 
-    for(int i = 0; i < 0; ++i)
+    for (int i = 0; i < 0; ++i)
     {
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f);
@@ -68,4 +68,4 @@ void TestFriction::tick(cvDebugDraw& debugDraw, float dt)
     debugDraw.DrawWorld(*m_world);
 }
 
-REGISTER_TEST("TestFriction", [](){return new TestFriction();});
+REGISTER_TEST("TestFriction", []() {return new TestFriction(); });

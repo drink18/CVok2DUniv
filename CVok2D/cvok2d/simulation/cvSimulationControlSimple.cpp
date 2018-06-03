@@ -7,8 +7,8 @@
 #include <vector>
 
 using namespace std;
-cvSimulationControlSimple::cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx, 
-        cvWorld* world)
+cvSimulationControlSimple::cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx,
+    cvWorld* world)
     :m_bp(bp), m_world(world)
 {
     m_solver = new cvPGSSolver();
@@ -20,13 +20,13 @@ void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationCon
     //applying gravity here?
     // for now mark all bodies dirty
     auto iter = bodyMgr.getBodyIter();
-    while(iter.isValid())
+    while (iter.isValid())
     {
         auto& body = bodyMgr.getBody(*iter);
-        if(body.isDynamic())
+        if (body.isDynamic())
         {
             cvMotion& motion = m_world->accessBodyMotion(body.getBodyId());
-            if(motion.getInvMass() != 0.0f)
+            if (motion.getInvMass() != 0.0f)
             {
                 motion.m_linearVel += m_world->getCInfo().m_gravity * stepInfo.m_dt;
             }
@@ -40,7 +40,7 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
     cvBodyManager& bodyMgr = m_world->accessBodyManager();
     // for now mark all bodies dirty
     auto iter = bodyMgr.getBodyIter();
-    while(iter.isValid())
+    while (iter.isValid())
     {
         auto& body = bodyMgr.getBody(*iter);
         m_bp->markBodyDirty(body);
@@ -51,38 +51,23 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
     vector<cvBroadphase::BPPair> delPairs;
     m_bp->updateDirtyNodes(newPairs, delPairs);
 
-    for(auto& p : newPairs)
-    {
-        unique_ptr<cvCollisionAgent> ag(new cvCollisionAgent());
-        auto node0 = m_bp->getBPNode(p.m_h1);
-        auto node1 = m_bp->getBPNode(p.m_h2);
-        ag->m_bodyIds[0] = node0->m_bodyId;
-        ag->m_bodyIds[1] = node1->m_bodyId;
+    auto& npPairs = simCtx.m_NpPairs;
+    vector<cvManifold>& manifolds = simCtx.m_Manifolds;
 
-        simCtx.m_colAgents.push_back(std::move(ag));
-    }
-
-    for(int i = delPairs.size() - 1; i >=0; --i)
+    // remove disjoint pairs
     {
-        auto& p = delPairs[i];
-        auto node0 = m_bp->getBPNode(p.m_h1);
-        auto node1 = m_bp->getBPNode(p.m_h2);
-        auto& agents = simCtx.m_colAgents;
-        for(int j = agents.size() - 1; j >= 0; --j)
+        for (auto& p : delPairs)
         {
-            auto& agent = agents[j];
-            if(node0->m_bodyId == agent->m_bodyIds[0] && node1->m_bodyId == agent->m_bodyIds[1])
-                agents.erase(agents.cbegin() + j);
+            cvNPPair np;
+            auto node0 = m_bp->getBPNode(p.m_h1);
+            auto node1 = m_bp->getBPNode(p.m_h2);
+            np.m_bodyA = node0->m_bodyId;
+            np.m_bodyB = node1->m_bodyId;
+            npPairs.erase(np);
         }
     }
-
-    vector<cvBroadphase::BPPair> allPairs;
-    vector<cvNPPair>& npPairs = simCtx.m_NpPairs;
-    vector<cvManifold>& manifolds = simCtx.m_Manifolds;
-    npPairs.clear();
-    manifolds.clear();
-    m_bp->getAllPairs(allPairs);
-    for(auto& p : allPairs)
+    // add new pairs
+    for (auto& p : newPairs)
     {
         auto node0 = m_bp->getBPNode(p.m_h1);
         auto node1 = m_bp->getBPNode(p.m_h2);
@@ -90,7 +75,7 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
         const cvBody& bodyA = m_world->getBody(node0->m_bodyId);
         const cvBody& bodyB = m_world->getBody(node1->m_bodyId);
 
-        if(bodyA.isStatic() && bodyB.isStatic())
+        if (bodyA.isStatic() && bodyB.isStatic())
             continue; //skip static pair
 
         const cvShape& shapeA = *bodyA.getShape();
@@ -100,95 +85,116 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
         bodyA.getTransform().toMat33(matA);
         bodyB.getTransform().toMat33(matB);
 
-        if(shapeA.getShapeType() == cvShape::eCompoundShape &&
-                shapeB.getShapeType() == cvShape::eCompoundShape)
+        if (shapeA.getShapeType() == cvShape::eCompoundShape &&
+            shapeB.getShapeType() == cvShape::eCompoundShape)
         {
             continue;
         }
-        else if(shapeA.getShapeType() == cvShape::eCompoundShape)
+        else if (shapeA.getShapeType() == cvShape::eCompoundShape)
         {
             const cvCompoundShape& comp = static_cast<const cvCompoundShape&>(shapeA);
             auto& subShapes = comp.getSubshapes();
-            for(auto& s : subShapes)
+            for (int i = 0; i < subShapes.size(); ++i)
             {
-                cvMat33 subMat;
-                s.m_transform.toMat33(subMat);
-                generateNPPair(simCtx, bodyA, bodyB, *s.m_shape, shapeB, subMat * matA, matB);
+                generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, i, 0);
             }
         }
-        else if(shapeB.getShapeType() == cvShape::eCompoundShape)
+        else if (shapeB.getShapeType() == cvShape::eCompoundShape)
         {
             const cvCompoundShape& comp = static_cast<const cvCompoundShape&>(shapeB);
             auto& subShapes = comp.getSubshapes();
-            for(auto& s : subShapes)
+            for (int i = 0; i < subShapes.size(); ++i)
             {
-                cvMat33 subMat;
-                s.m_transform.toMat33(subMat);
-                generateNPPair(simCtx, bodyA, bodyB, shapeA, *s.m_shape, matA, subMat * matB);
+                generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, 0, i);
             }
         }
         else
         {
-            generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, matA,  matB);
+            generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, 0, 0);
         }
     }
 }
 
 void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
-        const cvBody& bodyA, const cvBody& bodyB, 
-        const cvShape& shapeA, const cvShape& shapeB,
-        const cvMat33& matA, const cvMat33& matB)
+    const cvBody& bodyA, const cvBody& bodyB,
+    const cvShape& shapeA, const cvShape& shapeB,
+    cvShapeKey keyA, cvShapeKey keyB)
 {
-    vector<cvNPPair>& npPairs = simCtx.m_NpPairs;
-    vector<cvManifold>& manifolds = simCtx.m_Manifolds;
+    unordered_map<cvNPPair, cvManifold>& npPairs = simCtx.m_NpPairs;
 
-    npPairs.resize(npPairs.size() + 1);
-    cvNPPair& np = npPairs.back();
+    cvNPPair np;
 
     np.m_bodyA = bodyA.getBodyId();
     np.m_bodyB = bodyB.getBodyId();
-    np.m_transA = matA;
-    np.m_transB = matB;
-    np.m_shapeA = const_cast<cvShape*>(&shapeA);
-    np.m_shapeB = const_cast<cvShape*>(&shapeB);
+    np.m_shapeKeyA = keyA;
+    np.m_shapeKeyB = keyB;
 
-    manifolds.resize(manifolds.size() + 1);
-    cvManifold& manifold = manifolds.back();
+    cvManifold manifold;
     manifold.m_bodyA = np.m_bodyA;
     manifold.m_bodyB = np.m_bodyB;
     manifold.m_numPt = 0;
-    if(bodyA.getMaterial() && bodyB.getMaterial())
+    if (bodyA.getMaterial() && bodyB.getMaterial())
     {
         manifold.m_friction = cvMaterial::CombineFirction(*bodyA.getMaterial(), *bodyB.getMaterial());
         manifold.m_rollingFriction = cvMaterial::CombineRollingFriction(*bodyA.getMaterial(), *bodyB.getMaterial());
     }
-    else if(bodyA.getMaterial())
+    else if (bodyA.getMaterial())
     {
         manifold.m_friction = bodyA.getMaterial()->m_friction;
         manifold.m_rollingFriction = bodyA.getMaterial()->m_rollingFriction;
     }
-    else if(bodyB.getMaterial())
+    else if (bodyB.getMaterial())
     {
         manifold.m_friction = bodyB.getMaterial()->m_friction;
         manifold.m_rollingFriction = bodyB.getMaterial()->m_rollingFriction;
+    }
+    npPairs[np] = manifold;
+}
+
+void extractSubShapeIfCompound(cvShape*& shape, cvShapeKey shapeKey, cvMat33& mat)
+{
+    if (shape->getShapeType() == cvShape::eCompoundShape)
+    {
+        cvMat33 subMat;
+        auto* comp = static_cast<cvCompoundShape*>(shape);
+        comp->getSubshapes()[shapeKey].m_transform.toMat33(subMat);
+        mat = subMat * mat;
+        shape = comp->getSubshapes()[shapeKey].m_shape.get();
     }
 }
 
 void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
 {
     auto& npPairs = simCtx.m_NpPairs;
-    auto& manifolds = simCtx.m_Manifolds;
-    cvAssertMsg(npPairs.size() == manifolds.size(), "pair count and manifold count should match");
-    for(int i = 0; i < npPairs.size(); ++i)
+    for (auto& np : npPairs)
     {
-        auto& p = npPairs[i];
-        auto* shapeA = p.m_shapeA;
-        auto* shapeB = p.m_shapeB;
+        auto& p = np.first;
+        auto& manifold = np.second;
+
+        const cvBody& bodyA = m_world->getBody(p.m_bodyA);
+        const cvBody& bodyB = m_world->getBody(p.m_bodyB);
+
+        auto* shapeA = bodyA.getShape().get();
+        auto* shapeB = bodyB.getShape().get();
+
+
+        cvMat33 matA, matB;
+        bodyA.getTransform().toMat33(matA);
+        bodyB.getTransform().toMat33(matB);
+
+        extractSubShapeIfCompound(shapeA, p.m_shapeKeyA, matA);
+        extractSubShapeIfCompound(shapeB, p.m_shapeKeyB, matB);
 
         auto fn = cvGetCollisionFn(shapeA->getShapeType(), shapeB->getShapeType());
 
-        fn(*shapeA, *shapeB, p.m_transA, p.m_transB, manifolds[i]);
+        fn(*shapeA, *shapeB, matA, matB, manifold);
     }
+
+    auto& manifolds = simCtx.m_Manifolds;
+    manifolds.clear();
+    manifolds.reserve(npPairs.size());
+    for (auto& np : npPairs)
+        manifolds.push_back(np.second);
 }
 
 void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
@@ -197,16 +203,16 @@ void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
 
 void cvSimulationControlSimple::integrate(float dt)
 {
-	cvBodyManager& bodyMgr = m_world->accessBodyManager();
-	cvMotionManager& motionMgr = m_world->accessMotionManager();
-    for(auto iter = bodyMgr.getBodyIter();iter.isValid(); ++iter)
+    cvBodyManager& bodyMgr = m_world->accessBodyManager();
+    cvMotionManager& motionMgr = m_world->accessMotionManager();
+    for (auto iter = bodyMgr.getBodyIter(); iter.isValid(); ++iter)
     {
         cvBody& body = bodyMgr.accessBody(*iter);
-        if(body.isStatic())
+        if (body.isStatic())
             continue;
 
         cvMotion& motion = motionMgr.accessMotion(body.getMotionId());
-        cvTransform& xform = motion.m_transform; 
+        cvTransform& xform = motion.m_transform;
 
         xform.m_Rotation += motion.m_angularVel * dt;
         xform.m_Translation += motion.m_linearVel * dt;
@@ -227,12 +233,12 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStep
 
 void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
 {
-	updateBP(simCtx);
-	preCollide(stepInfo, simCtx);
-	narrowPhase(simCtx);
-	postCollide(simCtx);
+    updateBP(simCtx);
+    preCollide(stepInfo, simCtx);
+    narrowPhase(simCtx);
+    postCollide(simCtx);
 
     solve(simCtx, stepInfo);
 
-	integrate(stepInfo.m_dt);
+    integrate(stepInfo.m_dt);
 }

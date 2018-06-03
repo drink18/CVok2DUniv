@@ -2,6 +2,9 @@
 
 #include <world/cvBody.h>
 #include <core/cvMath.h>
+#include <core/cvHashUtils.h>
+
+typedef uint16_t cvShapeKey;
 
 // pair that contains all data need to perform NP collision detection
 // on a broadphase pair. From each broadphase pair we generate a NP Pair 
@@ -11,40 +14,61 @@ class cvNPPair
 public:
     cvBodyId m_bodyA;
     cvBodyId m_bodyB;
-    cvMat33 m_transA;
-    cvMat33 m_transB;
 
-    cvShape* m_shapeA;
-    cvShape* m_shapeB;
+    cvShapeKey m_shapeKeyA;
+    cvShapeKey m_shapeKeyB;
+
+    size_t getHash() const
+    {
+        size_t h = 0;
+        cvHash::hash_combine(h, m_bodyA.getVal(), m_bodyB.getVal(), m_shapeKeyA, m_shapeKeyB);
+        return h;
+    }
+
+    bool operator==(const cvNPPair& other) const
+    {
+        return getHash() == other.getHash();
+    }
 };
+
+namespace std
+{
+    template<> struct hash<cvNPPair>
+    {
+        size_t operator()(const cvNPPair& p) const
+        {
+            return p.getHash();
+        }
+    };
+}
 
 struct cvManifoldPtFeature
 {
-	enum FeatureType
-	{
-		MF_Vertex,
-		MF_Edge
-	};
+    enum FeatureType
+    {
+        MF_Vertex,
+        MF_Edge
+    };
 
-	FeatureType m_typeA = MF_Vertex;
-	FeatureType m_typeB = MF_Edge;
-	int m_featureA = 0;
-	int m_featureB = 0;
+    FeatureType m_typeA = MF_Vertex;
+    FeatureType m_typeB = MF_Edge;
+    int m_featureA = 0;
+    int m_featureB = 0;
 
-	void init(FeatureType typeA, FeatureType typeB, int featureA, int featureB)
-	{
-		m_featureA = featureA;
-		m_featureB = featureB;
-		m_typeA = typeA;
-		m_typeB = typeB;
-	}
+    void init(FeatureType typeA, FeatureType typeB, int featureA, int featureB)
+    {
+        m_featureA = featureA;
+        m_featureB = featureB;
+        m_typeA = typeA;
+        m_typeB = typeB;
+    }
 };
 
 struct cvManifoldPoint
 {
     cvVec2f m_point;
-	float m_distance = 0;
-	cvManifoldPtFeature m_feature;
+    float m_distance = 0;
+    cvManifoldPtFeature m_feature;
 };
 
 // narrow phase collision detection result. 1 or more manifolds per narrow phase 

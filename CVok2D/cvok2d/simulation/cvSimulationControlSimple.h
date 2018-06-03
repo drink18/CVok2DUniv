@@ -24,7 +24,7 @@ public:
 
 private:
     void generateNPPair(cvSimulationContext& simCtx, const cvBody& bodyA, const cvBody& bodyB, 
-            const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA, const cvMat33& matB);
+            const cvShape& shapeA, const cvShape& shapeB, cvShapeKey keyA, cvShapeKey keyB);
 private:
     cvBroadphase* m_bp;
     cvWorld* m_world;
