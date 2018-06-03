@@ -25,7 +25,6 @@ void cvMotion::InitializeMotion(cvMotion& motion, cvMotion::MotionType mt, const
             invInertia = 1.0f / inertia;
         }
 
-#if 1
         if(cinfo.m_shape->getShapeType() == cvShape::ePolygon)
         {
             const cvAabb& aabb = cinfo.m_shape->getAabb();
@@ -35,7 +34,6 @@ void cvMotion::InitializeMotion(cvMotion& motion, cvMotion::MotionType mt, const
             inertia /= 12;
             invInertia = 1.0f / inertia;
         }
-#endif
         motion.m_invMassAndInertia.set(invMass, invInertia);
     }
 }
