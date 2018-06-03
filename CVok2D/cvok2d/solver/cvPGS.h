@@ -29,8 +29,8 @@ public:
     std::vector<cvContactConstraint> m_ContactContraints;
 
 protected:
-    void solvePenetrations();
+    void solvePenetrations(bool warmStart);
     void solvePositionErr();
-    void solveFriction();
+    void solveFriction(bool warmStart);
     void solveRollingFriction();
 };

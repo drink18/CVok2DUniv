@@ -130,7 +130,7 @@ void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold*> &manifolds
 }
 
 
-void cvPGSSolver::solvePenetrations()
+void cvPGSSolver::solvePenetrations(bool warmStart)
 {
     //for(auto& c : m_ContactContraints)
     for(int i = 0; i < m_ContactContraints.size(); ++i)
@@ -166,11 +166,20 @@ void cvPGSSolver::solvePenetrations()
 
         float lambda = -(c.bias + v) / em;
 
-        float oldImp = c.m_accumImpl;
-        c.m_accumImpl += lambda;
-        c.m_accumImpl = std::max(0.0f, c.m_accumImpl);
+        if(warmStart)
+        {
+            lambda = c.m_accumImpl;
+            //printf("warm start with %f \n", c.m_accumImpl);
+        }
 
-        lambda = c.m_accumImpl - oldImp;
+        else
+        {
+            float oldImp = c.m_accumImpl;
+            c.m_accumImpl += lambda;
+            c.m_accumImpl = std::max(0.0f, c.m_accumImpl);
+
+            lambda = c.m_accumImpl - oldImp;
+        }
 
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
@@ -234,7 +243,7 @@ void cvPGSSolver::solvePositionErr()
     }
 }
 
-void cvPGSSolver::solveFriction()
+void cvPGSSolver::solveFriction(bool warmStart)
 {
     for(auto& c : m_ContactContraints)
     {
@@ -262,15 +271,21 @@ void cvPGSSolver::solveFriction()
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        float miu = c.m_friction;
-
-        float oldImp = c.m_tangentImpl;
-        c.m_tangentImpl += lambda;
-        lambda = c.m_tangentImpl;
-        lambda = std::max(-c.m_accumImpl * miu, lambda);
-        lambda = std::min(c.m_accumImpl * miu, lambda);
-        c.m_tangentImpl = lambda;
-        lambda = c.m_tangentImpl - oldImp;
+        if(warmStart)
+        {
+            lambda = c.m_tangentImpl;
+        }
+        else
+        {
+            float miu = c.m_friction;
+            float oldImp = c.m_tangentImpl;
+            c.m_tangentImpl += lambda;
+            lambda = c.m_tangentImpl;
+            lambda = std::max(-c.m_accumImpl * miu, lambda);
+            lambda = std::min(c.m_accumImpl * miu, lambda);
+            c.m_tangentImpl = lambda;
+            lambda = c.m_tangentImpl - oldImp;
+        }
 
         velA += c.tJA * c.MA * lambda;
         velB += c.tJB * c.MB * lambda;
@@ -297,16 +312,18 @@ void cvPGSSolver::solveContacts(int nIter)
     if(m_ContactContraints.size() == 0)
         return;
 
+#if 1
+    solveFriction(true);
+    for(int i = 0; i < nIter; ++i)
+        solveFriction(false);
+#endif
 
     //printf("==================BEGIN==============\n");
+    solvePenetrations(true);
     for(int i = 0; i < nIter; ++i)
-        solvePenetrations();
+        solvePenetrations(false);
     //printf("==================END==============\n");
 
-#if 0
-    for(int i = 0; i < nIter; ++i)
-        solveFriction();
-#endif
     for(int i = 0; i < nIter; ++i)
         solvePositionErr();
 
