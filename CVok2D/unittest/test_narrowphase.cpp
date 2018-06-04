@@ -52,5 +52,4 @@ TEST_F(NPTest, testManifoldPointGen)
     m_sc->narrowPhase(*m_ctx);
 
     EXPECT_EQ(1, m_ctx->m_Manifolds.size());
-    EXPECT_EQ(1, m_ctx->m_Manifolds[0]->m_numPt);
 }

@@ -39,7 +39,7 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
 
     pt.m_distance = len - ra - rb;
     pt.m_point = wldB + d * rb;
-	pt.m_feature.init(cvManifoldPtFeature::MF_Vertex, cvManifoldPtFeature::MF_Vertex, 0, 0);
+	//pt.m_feature.init(cvManifoldPtFeature::MF_Vertex, cvManifoldPtFeature::MF_Vertex, 0, 0);
 }
 
 

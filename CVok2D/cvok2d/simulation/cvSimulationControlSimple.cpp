@@ -2,6 +2,7 @@
 #include <collision/cvCollisionDispatch.h>
 #include <shape/cvCompoundShape.h>
 #include <solver/cvPGS.h>
+#include <solver/cvSolverManifold.h>
 #include <world/cvMaterial.h>
 #include <world/cvWorld.h>
 #include <vector>
@@ -57,11 +58,26 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
     {
         for (auto& p : delPairs)
         {
-            cvNPPair np;
             auto node0 = m_bp->getBPNode(p.m_h1);
             auto node1 = m_bp->getBPNode(p.m_h2);
-            np.m_bodyA = node0->m_bodyId;
-            np.m_bodyB = node1->m_bodyId;
+            cvNPPair np(node0->m_bodyId, node1->m_bodyId);
+
+            const cvBody& bodyA = m_world->getBody(node0->m_bodyId);
+            const cvBody& bodyB = m_world->getBody(node1->m_bodyId);
+
+            if (bodyA.isStatic() && bodyB.isStatic())
+                continue; //skip static pair
+
+#if 0
+            np.m_shapeKeyA = 0;
+            np.m_shapeKeyB = 0;
+            if(npPairs.find(np) == npPairs.end())
+            {
+                printf("failed to find pair, bidA=%d, bidB=%d, skA=%d, skB=%d\n",
+                        np.m_bodyA.getVal(), np.m_bodyB.getVal(), np.m_shapeKeyA, np.m_shapeKeyB);
+                //cvAssert(false);
+            }
+#endif 
             npPairs.erase(np);
         }
     }
@@ -119,35 +135,8 @@ void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
     const cvShape& shapeA, const cvShape& shapeB,
     cvShapeKey keyA, cvShapeKey keyB)
 {
-    unordered_map<cvNPPair, cvManifold>& npPairs = simCtx.m_NpPairs;
-
-    cvNPPair np;
-
-    np.m_bodyA = bodyA.getBodyId();
-    np.m_bodyB = bodyB.getBodyId();
-    np.m_shapeKeyA = keyA;
-    np.m_shapeKeyB = keyB;
-
-    cvManifold manifold;
-    manifold.m_bodyA = np.m_bodyA;
-    manifold.m_bodyB = np.m_bodyB;
-    manifold.m_numPt = 0;
-    if (bodyA.getMaterial() && bodyB.getMaterial())
-    {
-        manifold.m_friction = cvMaterial::CombineFirction(*bodyA.getMaterial(), *bodyB.getMaterial());
-        manifold.m_rollingFriction = cvMaterial::CombineRollingFriction(*bodyA.getMaterial(), *bodyB.getMaterial());
-    }
-    else if (bodyA.getMaterial())
-    {
-        manifold.m_friction = bodyA.getMaterial()->m_friction;
-        manifold.m_rollingFriction = bodyA.getMaterial()->m_rollingFriction;
-    }
-    else if (bodyB.getMaterial())
-    {
-        manifold.m_friction = bodyB.getMaterial()->m_friction;
-        manifold.m_rollingFriction = bodyB.getMaterial()->m_rollingFriction;
-    }
-    npPairs[np] = manifold;
+    cvNPPair np(bodyA.getBodyId(), bodyB.getBodyId());
+    simCtx.m_NpPairs.insert(np);
 }
 
 void extractSubShapeIfCompound(cvShape*& shape, cvShapeKey shapeKey, cvMat33& mat)
@@ -165,35 +154,38 @@ void extractSubShapeIfCompound(cvShape*& shape, cvShapeKey shapeKey, cvMat33& ma
 void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
 {
     auto& npPairs = simCtx.m_NpPairs;
-    for (auto& np : npPairs)
+    //for (cvNPPair& np : npPairs)
+    //
+    //
+    for(auto& cnp : npPairs)
     {
-        auto& p = np.first;
-        auto& manifold = np.second;
-
-        const cvBody& bodyA = m_world->getBody(p.m_bodyA);
-        const cvBody& bodyB = m_world->getBody(p.m_bodyB);
-
-        auto* shapeA = bodyA.getShape().get();
-        auto* shapeB = bodyB.getShape().get();
-
-
-        cvMat33 matA, matB;
-        bodyA.getTransform().toMat33(matA);
-        bodyB.getTransform().toMat33(matB);
-
-        extractSubShapeIfCompound(shapeA, p.m_shapeKeyA, matA);
-        extractSubShapeIfCompound(shapeB, p.m_shapeKeyB, matB);
-
-        auto fn = cvGetCollisionFn(shapeA->getShapeType(), shapeB->getShapeType());
-
-        fn(*shapeA, *shapeB, matA, matB, manifold);
+        auto& np = const_cast<cvNPPair&>(cnp);
+        np.EvaluateManifolds(*m_world);
     }
 
-    auto& manifolds = simCtx.m_Manifolds;
-    manifolds.clear();
-    manifolds.reserve(npPairs.size());
-    for (auto& np : npPairs)
-        manifolds.push_back(&np.second);
+    // populate solve manifold
+    simCtx.m_Manifolds.clear(); 
+    uint32_t mCount = 0;
+    for(auto& np : npPairs)
+    {
+        for(auto& m : np.m_manifolds)
+        {
+            cvSolverManifold sm;
+            sm.m_bodyA = m.m_bodyA;
+            sm.m_bodyB = m.m_bodyB;
+            sm.m_normal = m.m_normal;
+            sm.m_numPt = m.m_numPt;
+            for(int i = 0; i < sm.m_numPt; ++i)
+            {
+                sm.m_points[i] = m.m_points[i];
+            }
+            sm.m_friction = m.m_friction;
+            sm.m_restitution = m.m_restitution;
+            sm.m_rollingFriction = m.m_rollingFriction;
+
+            simCtx.m_Manifolds.push_back(sm);
+        }
+    }
 }
 
 void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
@@ -228,6 +220,22 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStep
 
     m_solver->solveContacts(simCtx.m_solverIterCount);
     m_solver->finishSolver(*m_world, stepInfo);
+
+    //retrieve cached impulse from solver manifold
+    size_t mCount = 0;
+    for(auto& p : simCtx.m_NpPairs)
+    {
+        for(auto& cm : p.m_manifolds)
+        {
+            auto& m = const_cast<cvManifold&>(cm);
+            for(int i = 0; i < m.m_numPt; ++i)
+            {
+                m.m_points[i].m_normalImpl = simCtx.m_Manifolds[mCount].m_points[i].m_normalImpl;
+                m.m_points[i].m_tangentImpl = simCtx.m_Manifolds[mCount].m_points[i].m_tangentImpl;
+            }
+            mCount++;
+        }
+    }
 }
 
 void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx)

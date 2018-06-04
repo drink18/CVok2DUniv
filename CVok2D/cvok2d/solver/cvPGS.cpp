@@ -29,15 +29,13 @@ void cvPGSSolver::setupSolverBodies(cvWorld& world)
     }
 }
 
-void cvPGSSolver::setupContactConstraints(const vector<cvManifold*> &manifolds,
+void cvPGSSolver::setupContactConstraints(const vector<cvSolverManifold> &manifolds,
                                           const cvWorld &world, const cvSimulationContext &simCtx,
                                           const cvStepInfo &stepInfo)
 {
     m_ContactContraints.clear();
-    for(auto& mp : manifolds)
+    for(auto& m : manifolds)
     {
-        auto& m = *mp;
-
         const cvBody& bodyA = world.getBody(m.m_bodyA);
         const cvBody& bodyB = world.getBody(m.m_bodyB);
 
@@ -67,7 +65,7 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold*> &manifolds,
             cvContactConstraint constraint;
             const cvManifoldPoint& pt = m.m_points[i];
 
-            constraint.m_manifold = const_cast<cvManifold*>(&m);
+            constraint.m_manifold = const_cast<cvSolverManifold*>(&m);
             constraint.m_maniPtIdx = i;
             constraint.m_accumImpl = pt.m_normalImpl;
             //constraint.m_tangentImpl = pt.m_tangentImpl;
@@ -99,7 +97,7 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold*> &manifolds,
             const float beta = 0.8f;
             if(pt.m_distance < 0)
             {
-                const float slop = 0.001f;
+                const float slop = 0.01f;
                 float pen = pt.m_distance + slop;
                 constraint.posBias = pen * beta / stepInfo.m_dt;
             } 
@@ -123,7 +121,7 @@ void cvPGSSolver::setupContactConstraints(const vector<cvManifold*> &manifolds,
     }
 }
 
-void cvPGSSolver::setupFrictionConstraints( const vector<cvManifold*> &manifolds,
+void cvPGSSolver::setupFrictionConstraints( const vector<cvSolverManifold> &manifolds,
                                           const cvWorld &world, const cvSimulationContext &simCtx,
                                           const cvStepInfo &stepInfo)
 {
@@ -137,8 +135,6 @@ void cvPGSSolver::solvePenetrations(bool warmStart)
     {
         auto& c = m_ContactContraints[i];
         cvVec3f velA, velB;
-
-        bool bothDyn = c.bodyAId >= 0 && c.bodyBId >= 0;
 
         if(c.bodyAId >= 0)
         {

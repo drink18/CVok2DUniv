@@ -23,9 +23,8 @@ void cvDebugDraw::DrawWorld(const cvWorld& world)
         {
             auto& simCtx = world.getSimContext();
             auto& manifolds = simCtx.m_Manifolds;
-            for(auto& mp : manifolds)
+            for(auto& m : manifolds)
             {
-                auto& m = *mp;
                 for(int i = 0; i < m.m_numPt; ++i)
                 {
                     const cvManifoldPoint& p = m.m_points[i];

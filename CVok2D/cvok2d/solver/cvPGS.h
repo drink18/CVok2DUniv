@@ -15,11 +15,11 @@ public:
 
     void solveContacts(int nIter);
     void setupSolverBodies(cvWorld& world);
-    void setupContactConstraints(const std::vector<cvManifold*> &manifolds,
+    void setupContactConstraints(const std::vector<cvSolverManifold> &manifolds,
                                  const cvWorld &world, const cvSimulationContext &simCtx,
                                  const cvStepInfo &stepInfo);
 
-    void setupFrictionConstraints(const std::vector<cvManifold*> &manifolds,
+    void setupFrictionConstraints(const std::vector<cvSolverManifold> &manifolds,
                                  const cvWorld &world, const cvSimulationContext &simCtx,
                                  const cvStepInfo &stepInfo);
 

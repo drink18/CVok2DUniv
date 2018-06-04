@@ -58,7 +58,7 @@ Stacks::Stacks()
         for(int j = 0; j < 5; ++j)
         {
             cvBodyCInfo bodyInfo;
-            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.1f * j, 2.1f * i - 8.5f);
+            bodyInfo.m_initTransform.m_Translation = cvVec2f(5.0f + 2.1f * j, 2.1f * i - 20.5f);
             bodyInfo.m_mass = 1.0f;
             bodyInfo.m_shape = m_shape;
 
@@ -66,7 +66,7 @@ Stacks::Stacks()
         }
     }
 
-    for(int i = 0; i < 1; ++i)
+    for(int i = 0; i < 0; ++i)
     {
         cvBodyCInfo bodyInfo;
         bodyInfo.m_initTransform.m_Translation = cvVec2f(-17.0f + i * 0.1f, i * 2.0f - 0.5f);
