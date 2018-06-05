@@ -308,14 +308,15 @@ void cvPGSSolver::solveContacts(int nIter)
     if(m_ContactContraints.size() == 0)
         return;
 
-#if 1
     solveFriction(true);
+    solvePenetrations(true);
+
+#if 1
     for(int i = 0; i < nIter; ++i)
         solveFriction(false);
 #endif
 
     //printf("==================BEGIN==============\n");
-    solvePenetrations(true);
     for(int i = 0; i < nIter; ++i)
         solvePenetrations(false);
     //printf("==================END==============\n");

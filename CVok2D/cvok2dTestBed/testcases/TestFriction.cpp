@@ -29,7 +29,7 @@ TestFriction::TestFriction()
 
     // boxes
     float hf = 1.3f;
-    for (int i = 0; i < 1; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         for (int j = 0; j < 1; ++j)
         {

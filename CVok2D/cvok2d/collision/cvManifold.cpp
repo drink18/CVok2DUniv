@@ -42,15 +42,48 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
     extractShapePairs(bodyA, pairsA);
     extractShapePairs(bodyB, pairsB);
 
-    for(auto &spA : pairsA)
+
+    for(int a = 0; a < pairsA.size(); ++a)
     {
-        for(auto& spB : pairsB)
+        auto& spA = pairsA[a];
+        for(int b = 0; b < pairsB.size(); ++b)
         {
-            m_manifolds.push_back(cvManifold());
-            auto& m = m_manifolds.back();
+            auto& spB = pairsB[b];
+
+            cvManifold nm;
+            nm.m_bodyA = m_bodyA;
+            nm.m_bodyB = m_bodyB;
+            nm.m_shapeKeyA = a;
+            nm.m_shapeKeyB = b;
 
             auto fn = cvGetCollisionFn(spA.first.getShapeType(), spB.first.getShapeType());
-            fn(spA.first, spB.first, spA.second, spB.second, m);
+            fn(spA.first, spB.first, spA.second, spB.second, nm);
+
+            bool hasMatch = false;
+            for (auto& m : m_manifolds)
+            {
+                if (m.matchManifold(nm))
+                {
+                    for (int i = 0; i < nm.m_numPt; ++i)
+                    {
+                        auto& p = m.m_points[i];
+                        auto& np = nm.m_points[i];
+                        np.m_normalImpl = p.m_normalImpl;
+                        np.m_tangentImpl = p.m_tangentImpl;
+                    }
+                    hasMatch = true;
+                    m = nm; //copy over
+                }
+            }
+            // new manifold
+            if(!hasMatch)
+                m_manifolds.push_back(nm);
         }
     }
+}
+
+bool cvManifold::matchManifold(const cvManifold& m)
+{
+    // no need to match body id, as they come from narrow phase pair hence guarenteed to be identical
+    return (m_shapeKeyA == m.m_shapeKeyA && m_shapeKeyB == m_shapeKeyB);
 }

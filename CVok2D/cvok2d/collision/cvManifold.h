@@ -37,13 +37,12 @@ struct cvManifold
 
     cvBodyId m_bodyA;
     cvBodyId m_bodyB;
+    cvShapeKey   m_shapeKeyA;
+    cvShapeKey   m_shapeKeyB;
 
     cvManifoldPoint m_points[MAX_MANIFOLD_POINT];
     cvVec2f m_normal;
     int m_numPt = 0; //number of point in manfild
-
-    cvShapeKey m_shapeKeyA;
-    cvShapeKey m_shapeKeyB;
 
     float m_friction = 0.2f;
     float m_restitution = 0.05f;
@@ -51,6 +50,8 @@ struct cvManifold
 
     uint32_t solveManifoldIdx = 0;
     cvManifoldPtFeature m_feature;
+
+    bool matchManifold(const cvManifold& m);
 };
 
 // pair that contains all data need to perform NP collision detection
