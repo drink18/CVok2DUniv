@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <collision/cvManifold.h>
+#include <collision/cvNarrowPhase.h>
 
 #include <memory>
 #include <unordered_set>
