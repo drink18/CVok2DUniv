@@ -43,7 +43,6 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
     extractShapePairs(bodyA, pairsA);
     extractShapePairs(bodyB, pairsB);
 
-
     for(int a = 0; a < pairsA.size(); ++a)
     {
         auto& spA = pairsA[a];
@@ -52,8 +51,7 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
             auto& spB = pairsB[b];
 
             cvManifold nm;
-            nm.m_bodyA = m_bodyA;
-            nm.m_bodyB = m_bodyB;
+            nm.init(bodyA, bodyB);
             nm.m_shapeKeyA = a;
             nm.m_shapeKeyB = b;
 
@@ -73,6 +71,7 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
                         np.m_tangentImpl = p.m_tangentImpl;
                     }
                     hasMatch = true;
+                    //TODO: have to do a matching by point
                     m = nm; //copy over
                 }
             }

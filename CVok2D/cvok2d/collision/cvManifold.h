@@ -52,6 +52,7 @@ struct cvManifold
     cvManifoldPtFeature m_feature;
 
     bool matchManifold(const cvManifold& m);
+    void init(const cvBody& bodyA, const cvBody& bodyB);
 };
 
 
