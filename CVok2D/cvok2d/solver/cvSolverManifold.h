@@ -15,7 +15,6 @@ struct cvManifoldPoint
 
 struct cvSolverManifold
 {
-
     static constexpr int MAX_MANIFOLD_POINT = 2;
 
     cvBodyId m_bodyA;

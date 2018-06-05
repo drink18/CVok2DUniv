@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include "cvCollisionAgent.h"
 #include <collision/cvManifold.h>
+#include <collision/cvNarrowPhase.h>
 #include <solver/cvSolverManifold.h>
 #include <memory>
 
