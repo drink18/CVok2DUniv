@@ -115,7 +115,6 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
 
     // populate solve manifold
     simCtx.m_Manifolds.clear(); 
-    uint32_t mCount = 0;
     for(auto& np : npPairs)
     {
         for(auto& m : np.m_manifolds)

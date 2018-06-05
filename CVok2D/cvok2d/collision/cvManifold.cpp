@@ -11,15 +11,15 @@
 bool cvManifold::matchManifold(const cvManifold& m)
 {
     // no need to match body id, as they come from narrow phase pair hence guarenteed to be identical
-    return (m_shapeKeyA == m.m_shapeKeyA && m_shapeKeyB == m_shapeKeyB);
+    return (m_shapeKeyA == m.m_shapeKeyA && m.m_shapeKeyB == m_shapeKeyB);
 }
 
 void cvManifold::init(const cvBody& bodyA, const cvBody& bodyB)
 {
     m_bodyA = bodyA.getBodyId();
     m_bodyB = bodyB.getBodyId();
-    auto& matA = bodyA.getMaterial();
-    auto& matB = bodyB.getMaterial();
+    auto matA = bodyA.getMaterial();
+    auto matB = bodyB.getMaterial();
     if (matA != nullptr && matB != nullptr)
     {
         m_friction = cvMaterial::CombineFirction(*matA, *matB);
