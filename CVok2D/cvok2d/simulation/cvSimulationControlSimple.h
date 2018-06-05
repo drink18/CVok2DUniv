@@ -23,8 +23,7 @@ public:
     virtual void simulate(cvStepInfo& stepInfo, cvSimulationContext& simCtx) override;
 
 private:
-    void generateNPPair(cvSimulationContext& simCtx, const cvBody& bodyA, const cvBody& bodyB, 
-            const cvShape& shapeA, const cvShape& shapeB, cvShapeKey keyA, cvShapeKey keyB);
+    void generateNPPair(cvSimulationContext& simCtx, const cvBody& bodyA, const cvBody& bodyB);
 private:
     cvBroadphase* m_bp;
     cvWorld* m_world;

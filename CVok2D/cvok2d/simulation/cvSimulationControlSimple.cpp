@@ -93,70 +93,20 @@ void cvSimulationControlSimple::updateBP(cvSimulationContext& simCtx)
         if (bodyA.isStatic() && bodyB.isStatic())
             continue; //skip static pair
 
-        const cvShape& shapeA = *bodyA.getShape();
-        const cvShape& shapeB = *bodyB.getShape();
-
-        cvMat33 matA, matB;
-        bodyA.getTransform().toMat33(matA);
-        bodyB.getTransform().toMat33(matB);
-
-        if (shapeA.getShapeType() == cvShape::eCompoundShape &&
-            shapeB.getShapeType() == cvShape::eCompoundShape)
-        {
-            continue;
-        }
-        else if (shapeA.getShapeType() == cvShape::eCompoundShape)
-        {
-            const cvCompoundShape& comp = static_cast<const cvCompoundShape&>(shapeA);
-            auto& subShapes = comp.getSubshapes();
-            for (int i = 0; i < subShapes.size(); ++i)
-            {
-                generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, i, 0);
-            }
-        }
-        else if (shapeB.getShapeType() == cvShape::eCompoundShape)
-        {
-            const cvCompoundShape& comp = static_cast<const cvCompoundShape&>(shapeB);
-            auto& subShapes = comp.getSubshapes();
-            for (int i = 0; i < subShapes.size(); ++i)
-            {
-                generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, 0, i);
-            }
-        }
-        else
-        {
-            generateNPPair(simCtx, bodyA, bodyB, shapeA, shapeB, 0, 0);
-        }
+        generateNPPair(simCtx, bodyA, bodyB);
     }
 }
 
 void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
-    const cvBody& bodyA, const cvBody& bodyB,
-    const cvShape& shapeA, const cvShape& shapeB,
-    cvShapeKey keyA, cvShapeKey keyB)
+    const cvBody& bodyA, const cvBody& bodyB)
 {
     cvNPPair np(bodyA.getBodyId(), bodyB.getBodyId());
     simCtx.m_NpPairs.insert(np);
 }
 
-void extractSubShapeIfCompound(cvShape*& shape, cvShapeKey shapeKey, cvMat33& mat)
-{
-    if (shape->getShapeType() == cvShape::eCompoundShape)
-    {
-        cvMat33 subMat;
-        auto* comp = static_cast<cvCompoundShape*>(shape);
-        comp->getSubshapes()[shapeKey].m_transform.toMat33(subMat);
-        mat = subMat * mat;
-        shape = comp->getSubshapes()[shapeKey].m_shape.get();
-    }
-}
-
 void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
 {
     auto& npPairs = simCtx.m_NpPairs;
-    //for (cvNPPair& np : npPairs)
-    //
-    //
     for(auto& cnp : npPairs)
     {
         auto& np = const_cast<cvNPPair&>(cnp);
