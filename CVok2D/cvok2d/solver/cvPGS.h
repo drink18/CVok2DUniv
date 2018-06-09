@@ -8,29 +8,20 @@ class cvWorld;
 struct cvStepInfo;
 struct cvSimulationContext;
 
+struct cvSimulationContext;
+
 class cvPGSSolver
 {
 public:
     void solve();
 
-    void solveContacts(int nIter);
-    void setupSolverBodies(cvWorld& world);
-    void setupContactConstraints(const std::vector<cvSolverManifold> &manifolds,
-                                 const cvWorld &world, const cvSimulationContext &simCtx,
-                                 const cvStepInfo &stepInfo);
+    void solveContacts(cvSimulationContext& ctx);
 
-    void setupFrictionConstraints(const std::vector<cvSolverManifold> &manifolds,
-                                 const cvWorld &world, const cvSimulationContext &simCtx,
-                                 const cvStepInfo &stepInfo);
-
-    void finishSolver(cvWorld& world, const cvStepInfo &stepInfo);
-
-    std::vector<cvSolverBody> m_solverBodies;
-    std::vector<cvContactConstraint> m_ContactContraints;
+    void finishSolver(cvSimulationContext& ctx, cvWorld& world, const cvStepInfo &stepInfo);
 
 protected:
-    void solvePenetrations(bool warmStart);
-    void solvePositionErr();
-    void solveFriction(bool warmStart);
-    void solveRollingFriction();
+    void solvePenetrations(cvSimulationContext& ctx);
+    void solvePositionErr(cvSimulationContext& ctx);
+    void solveFriction(cvSimulationContext& ctx);
+    void solveRollingFriction(cvSimulationContext& ctx);
 };

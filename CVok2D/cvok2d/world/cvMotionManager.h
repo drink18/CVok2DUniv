@@ -20,6 +20,8 @@ public:
 
     const std::unordered_set<cvMotionId>& getAllocatedIds() const {return  m_allocated;}
 
+    const cvMotion m_staticMotion;
+
 private:
     cvFreeList<cvMotion, cvMotionId> m_motionBuffer;
     std::unordered_set<cvMotionId> m_allocated;

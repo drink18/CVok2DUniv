@@ -104,7 +104,19 @@ void cvSimulationControlSimple::generateNPPair(cvSimulationContext& simCtx,
     simCtx.m_NpPairs.insert(np);
 }
 
-void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
+uint32_t getBodySolverId(cvWorld& world, cvBodyId id)
+{
+    auto& bodyA = world.getBody(id);
+    cvMotionManager& motionMgr = world.accessMotionManager();
+    if (bodyA.isDynamic())
+    {
+        auto& motion = motionMgr.getMotion(bodyA.getMotionId());
+        return motion.solverBodyId;
+    }
+    return 0;
+}
+
+void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
 {
     auto& npPairs = simCtx.m_NpPairs;
     for(auto& cnp : npPairs)
@@ -113,27 +125,107 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx)
         np.EvaluateManifolds(*m_world);
     }
 
-    // populate solve manifold
-    simCtx.m_Manifolds.clear(); 
-    uint32_t mCount = 0;
-    for(auto& np : npPairs)
+    // prepare solver bodies
     {
-        for(auto& m : np.m_manifolds)
+        auto& solverBodies = simCtx.m_solverBodies;
+        cvMotionManager& motionMgr = m_world->accessMotionManager();
+        motionMgr.refreshSolverId();
+        auto& mIds = motionMgr.getAllocatedIds();
+        solverBodies.clear();
+        solverBodies.reserve(mIds.size() + 1);
+        solverBodies.resize(mIds.size() + 1);
+        for (auto& id : mIds)
         {
-            cvSolverManifold sm;
-            sm.m_bodyA = m.m_bodyA;
-            sm.m_bodyB = m.m_bodyB;
-            sm.m_normal = m.m_normal;
-            sm.m_numPt = m.m_numPt;
-            for(int i = 0; i < sm.m_numPt; ++i)
-            {
-                sm.m_points[i] = m.m_points[i];
-            }
-            sm.m_friction = m.m_friction;
-            sm.m_restitution = m.m_restitution;
-            sm.m_rollingFriction = m.m_rollingFriction;
+            auto& motion = motionMgr.getMotion(id);
+            int sid = motion.solverBodyId;
+            auto& sbody = solverBodies[sid];
+            sbody.m_transform = motion.m_transform;
+            sbody.m_velocity = cvVec3f(motion.m_linearVel.x, motion.m_linearVel.y, motion.m_angularVel);
+            sbody.m_posVelocity = cvVec3f(0, 0, 0);
+        }
+    }
 
-            simCtx.m_Manifolds.push_back(sm);
+    cvMotionManager& motionMgr = m_world->accessMotionManager();
+    // populate constraints
+    auto& contacts = simCtx.m_contactContraints;
+    contacts.clear();
+    size_t numPair = npPairs.size();
+    for (auto& np : npPairs)
+    {
+        for (auto& m : np.m_manifolds)
+        {
+            auto& bodyA = m_world->getBody(m.m_bodyA);
+            auto& bodyB = m_world->getBody(m.m_bodyB);
+
+            auto& motionA = bodyA.isStatic() ? motionMgr.m_staticMotion : motionMgr.getMotion(bodyA.getMotionId());
+            auto& motionB = bodyB.isStatic() ? motionMgr.m_staticMotion : motionMgr.getMotion(bodyB.getMotionId());
+
+            float invMA = motionA.getInvMass();
+            float invInertiaA = motionA.getInvInertia();
+            float invMB = motionB.getInvMass();
+            float invInertiaB = motionB.getInvInertia();
+
+
+            for (int i = 0; i < m.m_numPt; ++i)
+            {
+                auto& pt = m.m_points[i];
+                cvContactConstraint c;
+                c.bodyAId = getBodySolverId(*m_world, m.m_bodyA);
+                c.bodyBId = getBodySolverId(*m_world, m.m_bodyB);
+                c.m_friction = m.m_friction;
+                c.m_restitution = m.m_friction;
+                c.m_rollingFriction = m.m_rollingFriction;
+
+
+                //setup penetration 
+                c.m_accumImpl = pt.m_normalImpl;
+                c.m_tangentImpl = 0; // pt.m_tangentImpl;
+
+                c.m_friction = m.m_friction;
+                c.m_restitution = m.m_restitution;
+                c.m_rollingFriction = m.m_rollingFriction;
+
+                cvVec2f na = m.m_normal;
+                cvVec2f nb = -m.m_normal;
+
+                auto pa = pt.m_point + m.m_normal * pt.m_distance;
+                auto pb = pt.m_point;
+
+                cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
+                float rxnA = rA.cross(na);
+                c.JA = cvVec3f(na.x, na.y, rxnA);
+                c.MA = cvVec3f(invMA, invMA, invInertiaA);
+
+                cvVec2f rB = pb - bodyB.getTransform().m_Translation;
+                float rxnB = rB.cross(nb);
+                c.JB = cvVec3f(nb.x, nb.y, rxnB);
+                c.MB = cvVec3f(invMB, invMB, invInertiaB);
+
+                c.bias = 0;
+                const float beta = 0.8f;
+                if (pt.m_distance < 0)
+                {
+                    const float slop = 0.01f;
+                    float pen = pt.m_distance + slop;
+                    c.posBias = pen * beta / stepInfo.m_dt;
+                }
+
+                // setup fricition
+                cvVec2f t = m.m_normal.computePerpendicular();
+                cvVec2f ta = -t;
+                cvVec2f tb = t;
+
+                c.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
+                c.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
+
+                c.rJA = cvVec3f(1, 1, 1);
+                c.rJA.normalize();
+                c.rJB = cvVec3f(-1, -1, -1);
+                c.rJB.normalize();
+
+                if(pt.m_distance < 0)
+                    contacts.push_back(c);
+            }
         }
     }
 }
@@ -164,12 +256,8 @@ void cvSimulationControlSimple::integrate(float dt)
 
 void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStepInfo& stepInfo)
 {
-    m_solver->setupSolverBodies(*m_world);
-    m_solver->setupContactConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
-    m_solver->setupFrictionConstraints(simCtx.m_Manifolds, *m_world, simCtx, stepInfo);
-
-    m_solver->solveContacts(simCtx.m_solverIterCount);
-    m_solver->finishSolver(*m_world, stepInfo);
+    m_solver->solveContacts(simCtx);
+    m_solver->finishSolver(simCtx, *m_world, stepInfo);
 
     //retrieve cached impulse from solver manifold
     size_t mCount = 0;
@@ -180,10 +268,14 @@ void  cvSimulationControlSimple::solve(cvSimulationContext& simCtx, const cvStep
             auto& m = const_cast<cvManifold&>(cm);
             for(int i = 0; i < m.m_numPt; ++i)
             {
-                m.m_points[i].m_normalImpl = simCtx.m_Manifolds[mCount].m_points[i].m_normalImpl;
-                m.m_points[i].m_tangentImpl = simCtx.m_Manifolds[mCount].m_points[i].m_tangentImpl;
+                auto& pt = m.m_points[i];
+                if (pt.m_distance < 0)
+                {
+                    pt.m_normalImpl = simCtx.m_contactContraints[mCount].m_accumImpl;
+                    pt.m_tangentImpl = simCtx.m_contactContraints[mCount].m_tangentImpl;
+                    mCount++;
+                }
             }
-            mCount++;
         }
     }
 }
@@ -192,7 +284,7 @@ void cvSimulationControlSimple::simulate(cvStepInfo& stepInfo, cvSimulationConte
 {
     updateBP(simCtx);
     preCollide(stepInfo, simCtx);
-    narrowPhase(simCtx);
+    narrowPhase(simCtx, stepInfo);
     postCollide(simCtx);
 
     solve(simCtx, stepInfo);

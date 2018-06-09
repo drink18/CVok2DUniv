@@ -57,6 +57,7 @@ public:
     bool isFlagSet(Flags f) const {return m_flags & f;}
 
     std::shared_ptr<cvMaterial> getMaterial() const {return m_material;}
+    
 private:
     cvBodyId m_id;
     uint32_t m_flags;
@@ -67,6 +68,10 @@ private:
 
     cvBroadphaseHandle m_broadphaseId = cvBroadphaseHandle::invalid();
     cvMotionId m_motionId = cvMotionId::invalid();
+
+    uint32_t m_solverBodyId;
+
+    friend class cvSimulationControlSimple;
 };
 
 inline void PrintTo(const cvBodyId& id, ::std::ostream* os)

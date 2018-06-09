@@ -6,147 +6,18 @@
 #include <iostream>
 #include <simulation/cvISimulationControl.h>
 
-
-
 using namespace std;
-
-void cvPGSSolver::setupSolverBodies(cvWorld& world)
+void cvPGSSolver::solvePenetrations(cvSimulationContext& ctx)
 {
-    cvMotionManager& motionMgr = world.accessMotionManager();
-    motionMgr.refreshSolverId();
-    auto& mIds = motionMgr.getAllocatedIds();
-    m_solverBodies.reserve(mIds.size());
-    m_solverBodies.resize(mIds.size());
-    for(auto& id : mIds)
+    auto& contacts = ctx.m_contactContraints;
+    auto& bodies = ctx.m_solverBodies;
+
+    for(int i = 0; i < contacts.size(); ++i)
     {
-        auto& motion = motionMgr.getMotion(id);
-        int sid = motion.solverBodyId;
-        auto& sbody = m_solverBodies[sid];
-        sbody.m_transform = motion.m_transform;
-        sbody.m_accumImpl = 0;
-        sbody.m_velocity = cvVec3f(motion.m_linearVel.x, motion.m_linearVel.y, motion.m_angularVel);
-        sbody.m_posVelocity = cvVec3f(0, 0, 0) ;
-    }
-}
-
-void cvPGSSolver::setupContactConstraints(const vector<cvSolverManifold> &manifolds,
-                                          const cvWorld &world, const cvSimulationContext &simCtx,
-                                          const cvStepInfo &stepInfo)
-{
-    m_ContactContraints.clear();
-    for(auto& m : manifolds)
-    {
-        const cvBody& bodyA = world.getBody(m.m_bodyA);
-        const cvBody& bodyB = world.getBody(m.m_bodyB);
-
-        float invMA = 0, invInertiaA = 0;
-        float invMB =0, invInertiaB = 0;
-
-        int sbIdA = -1, sbIdB = -1;
-
-        if(bodyA.getMotionId().isValid())
-        {
-            const cvMotion& motionA = world.getBodyMotion(m.m_bodyA);
-            invMA = motionA.getInvMass();
-            invInertiaA = motionA.getInvInertia();
-            sbIdA = motionA.solverBodyId;
-        }
-
-        if(bodyB.getMotionId().isValid())
-        {
-            const cvMotion& motionB = world.getBodyMotion(m.m_bodyB);
-            invMB = motionB.getInvMass();
-            invInertiaB = motionB.getInvInertia();
-            sbIdB = motionB.solverBodyId;
-        }
-
-        for(int i = 0; i < m.m_numPt; ++i)
-        {
-            cvContactConstraint constraint;
-            const cvManifoldPoint& pt = m.m_points[i];
-
-            constraint.m_manifold = const_cast<cvSolverManifold*>(&m);
-            constraint.m_maniPtIdx = i;
-            constraint.m_accumImpl = pt.m_normalImpl;
-            //constraint.m_tangentImpl = pt.m_tangentImpl;
-
-            constraint.m_friction = m.m_friction;
-            constraint.m_restitution = m.m_restitution;
-            constraint.m_rollingFriction = m.m_rollingFriction;
-
-            cvVec2f na = m.m_normal;
-            cvVec2f nb = -m.m_normal;
-
-            auto pa = pt.m_point +  m.m_normal * pt.m_distance ;
-            auto pb = pt.m_point;
-
-            cvVec2f rA = pa - bodyA.getTransform().m_Translation; //this is wrong, should use COM
-            float rxnA = rA.cross(na);
-            constraint.JA = cvVec3f(na.x, na.y, rxnA);
-            constraint.MA =  cvVec3f(invMA , invMA , invInertiaA);
-
-            cvVec2f rB = pb - bodyB.getTransform().m_Translation;
-            float rxnB = rB.cross(nb);
-            constraint.JB =  cvVec3f(nb.x, nb.y, rxnB);
-            constraint.MB =  cvVec3f(invMB , invMB, invInertiaB);
-
-            constraint.bodyAId = sbIdA;
-            constraint.bodyBId = sbIdB;
-
-            constraint.bias = 0;
-            const float beta = 0.8f;
-            if(pt.m_distance < 0)
-            {
-                const float slop = 0.01f;
-                float pen = pt.m_distance + slop;
-                constraint.posBias = pen * beta / stepInfo.m_dt;
-            } 
-
-            // friction
-            cvVec2f t = m.m_normal.computePerpendicular();
-            cvVec2f ta = -t;
-            cvVec2f tb = t;
-
-            constraint.tJA = cvVec3f(ta.x, ta.y, rA.cross(ta));
-            constraint.tJB = cvVec3f(tb.x, tb.y, rB.cross(tb));
-
-            constraint.rJA = cvVec3f(1, 1, 1);
-            constraint.rJA.normalize();
-            constraint.rJB = cvVec3f(-1, -1, -1);
-            constraint.rJB.normalize();
-
-            if(pt.m_distance < 0) 
-                m_ContactContraints.push_back(constraint);
-        }
-    }
-}
-
-void cvPGSSolver::setupFrictionConstraints( const vector<cvSolverManifold> &manifolds,
-                                          const cvWorld &world, const cvSimulationContext &simCtx,
-                                          const cvStepInfo &stepInfo)
-{
-}
-
-
-void cvPGSSolver::solvePenetrations(bool warmStart)
-{
-    //for(auto& c : m_ContactContraints)
-    for(int i = 0; i < m_ContactContraints.size(); ++i)
-    {
-        auto& c = m_ContactContraints[i];
+        auto& c = contacts[i];
         cvVec3f velA, velB;
-
-        if(c.bodyAId >= 0)
-        {
-            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
-            velA = bodyA.m_velocity;
-        }
-
-        if(c.bodyBId >= 0)
-        {
-            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
-            velB = bodyB.m_velocity;
-        }
+        velA = bodies[c.bodyAId].m_velocity;
+        velB = bodies[c.bodyBId].m_velocity;
 
         cvVec3f oldA, oldB;
         oldA = velA;
@@ -162,13 +33,6 @@ void cvPGSSolver::solvePenetrations(bool warmStart)
 
         float lambda = -(c.bias + v) / em;
 
-        if(warmStart)
-        {
-            lambda = c.m_accumImpl;
-            //printf("warm start with %f \n", c.m_accumImpl);
-        }
-
-        else
         {
             float oldImp = c.m_accumImpl;
             c.m_accumImpl += lambda;
@@ -191,31 +55,21 @@ void cvPGSSolver::solvePenetrations(bool warmStart)
 			velA.x, velA.y, velA.z, velB.x, velB.y, velB.z);
 #endif
 
-        if(c.bodyAId >= 0)
-            m_solverBodies[c.bodyAId].m_velocity = velA;
-
-        if(c.bodyBId >= 0)
-            m_solverBodies[c.bodyBId].m_velocity = velB;
+        bodies[c.bodyAId].m_velocity = velA;
+        bodies[c.bodyBId].m_velocity = velB;
     }
 }
 
-void cvPGSSolver::solvePositionErr()
+void cvPGSSolver::solvePositionErr(cvSimulationContext& ctx)
 {
-    for(auto& c : m_ContactContraints)
+    auto& contacts = ctx.m_contactContraints;
+    auto& bodies = ctx.m_solverBodies;
+
+    for(auto& c : contacts)
     {
         cvVec3f velA, velB;
-
-        if(c.bodyAId >= 0)
-        {
-            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
-            velA = bodyA.m_posVelocity;
-        }
-
-        if(c.bodyBId >= 0)
-        {
-            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
-            velB = bodyB.m_posVelocity;
-        }
+        velA = bodies[c.bodyAId].m_posVelocity;
+        velB = bodies[c.bodyBId].m_posVelocity;
 
         // eM
         float emA = c.JA.dot(c.MA * c.JA);
@@ -231,47 +85,30 @@ void cvPGSSolver::solvePositionErr()
 
         float err = velA.dot(c.JA) + velB.dot(c.JB);
 
-        if(c.bodyAId >= 0)
-            m_solverBodies[c.bodyAId].m_posVelocity = velA;
-
-        if(c.bodyBId >= 0)
-            m_solverBodies[c.bodyBId].m_posVelocity = velB;
+        bodies[c.bodyAId].m_posVelocity = velA;
+        bodies[c.bodyBId].m_posVelocity = velB;
     }
 }
 
-void cvPGSSolver::solveFriction(bool warmStart)
+void cvPGSSolver::solveFriction(cvSimulationContext& ctx)
 {
-    for(auto& c : m_ContactContraints)
+    auto& contacts = ctx.m_contactContraints;
+    auto& bodies = ctx.m_solverBodies;
+    for(auto& c : contacts)
     {
         cvVec3f velA, velB;
-
-        if(c.bodyAId >= 0)
-        {
-            cvSolverBody& bodyA = m_solverBodies[c.bodyAId];
-            velA = bodyA.m_velocity;
-        }
-
-        if(c.bodyBId >= 0)
-        {
-            cvSolverBody& bodyB = m_solverBodies[c.bodyBId];
-            velB = bodyB.m_velocity;
-        }
+        velA = bodies[c.bodyAId].m_velocity;
+        velB = bodies[c.bodyBId].m_velocity;
 
         // eM
         float emA = c.tJA.dot(c.MA * c.tJA);
         float emB = c.tJB.dot(c.MB * c.tJB);
         float em = emA + emB;
 
-
         // relative vel
         float v = velA.dot(c.tJA) + velB.dot(c.tJB);
         float lambda = -(c.bias + v) / em;
 
-        if(warmStart)
-        {
-            lambda = c.m_tangentImpl;
-        }
-        else
         {
             float miu = c.m_friction;
             float oldImp = c.m_tangentImpl;
@@ -286,7 +123,7 @@ void cvPGSSolver::solveFriction(bool warmStart)
         velA += c.tJA * c.MA * lambda;
         velB += c.tJB * c.MB * lambda;
 
-        // rolling frition
+        // rolling friction
         float rv = velA.dot(c.rJA) + velB.dot(c.rJB);
         float rlambda = -rv / em;
         rlambda = min(max(-c.m_accumImpl * c.m_rollingFriction, rlambda), 
@@ -294,35 +131,48 @@ void cvPGSSolver::solveFriction(bool warmStart)
         velA += c.rJA * c.MA * rlambda;
         velB += c.rJB * c.MB * rlambda;
 
-
-        if(c.bodyAId >= 0)
-            m_solverBodies[c.bodyAId].m_velocity = velA;
-
-        if(c.bodyBId >= 0)
-            m_solverBodies[c.bodyBId].m_velocity = velB;
+        bodies[c.bodyAId].m_velocity = velA;
+        bodies[c.bodyBId].m_velocity = velB;
     }
 }
 
-void cvPGSSolver::solveContacts(int nIter)
+void cvPGSSolver::solveContacts(cvSimulationContext& ctx)
 {
-    if(m_ContactContraints.size() == 0)
-        return;
+    auto& contacts = ctx.m_contactContraints;
+    auto& bodies = ctx.m_solverBodies;
 
-    solveFriction(true);
-    solvePenetrations(true);
+    // warm start
+    for (auto& c : contacts)
+    {
+        cvVec3f& velA = bodies[c.bodyAId].m_velocity;
+        cvVec3f& velB = bodies[c.bodyBId].m_velocity;
 
-#if 1
-    for(int i = 0; i < nIter; ++i)
-        solveFriction(false);
-#endif
+        // eM
+        float emA = c.JA.dot(c.MA * c.JA);
+        float emB = c.JB.dot(c.MB * c.JB);
+        float em = emA + emB;
 
-    //printf("==================BEGIN==============\n");
-    for(int i = 0; i < nIter; ++i)
-        solvePenetrations(false);
-    //printf("==================END==============\n");
+        velA += c.JA * c.MA * c.m_accumImpl;
+        velB += c.JB * c.MB * c.m_accumImpl;
 
-    for(int i = 0; i < nIter; ++i)
-        solvePositionErr();
+        bodies[c.bodyAId].m_velocity = velA;
+        bodies[c.bodyBId].m_velocity = velB;
+
+        velA += c.tJA * c.MA * c.m_tangentImpl;
+        velB += c.tJB * c.MB * c.m_tangentImpl;
+
+        bodies[c.bodyAId].m_velocity = velA;
+        bodies[c.bodyBId].m_velocity = velB;
+    }
+
+    for(uint32_t i = 0; i < ctx.m_solverIterCount; ++i)
+        solveFriction(ctx);
+
+    for(uint32_t i = 0; i < ctx.m_solverIterCount; ++i)
+        solvePenetrations(ctx);
+
+    for(uint32_t i = 0; i < ctx.m_solverIterCount; ++i)
+        solvePositionErr(ctx);
 
 #if 0
     // print out error per constraint
@@ -355,15 +205,10 @@ void cvPGSSolver::solveContacts(int nIter)
 #endif
 }
 
-void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
+void cvPGSSolver::finishSolver(cvSimulationContext& ctx, cvWorld& world, const cvStepInfo& stepInfo)
 {
-    // write back accumulated impulse to manifold
-    for (auto& c : m_ContactContraints)
-    {
-        auto& mp = c.m_manifold->m_points[c.m_maniPtIdx];
-        mp.m_normalImpl = c.m_accumImpl;
-        mp.m_tangentImpl = c.m_tangentImpl;
-    }
+    auto& contacts = ctx.m_contactContraints;
+    auto& bodies = ctx.m_solverBodies;
 
     cvMotionManager& motionMgr = world.accessMotionManager();
     auto& mIds = motionMgr.getAllocatedIds();
@@ -371,7 +216,7 @@ void cvPGSSolver::finishSolver(cvWorld& world, const cvStepInfo &stepInfo)
     {
         auto& motion = motionMgr.accessMotion(id);
         int sid = motion.solverBodyId;
-        auto& sbody = m_solverBodies[sid];
+        auto& sbody = bodies[sid];
         motion.m_transform = sbody.m_transform;
         motion.m_linearVel.set(sbody.m_velocity.x, sbody.m_velocity.y);
         motion.m_angularVel = sbody.m_velocity.z;

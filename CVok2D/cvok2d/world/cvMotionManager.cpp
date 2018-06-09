@@ -44,7 +44,7 @@ void cvMotionManager::removeMotion(cvMotionId id)
 
 void cvMotionManager::refreshSolverId()
 {
-    int i = 0;
+    int i = 1; // starting from 1 because solver body Id 0 is for all static bodies
     for(const auto& id : m_allocated)
     {
         cvMotion& m = accessMotion(id);

@@ -19,6 +19,8 @@ struct cvSolverManifold
 
     cvBodyId m_bodyA;
     cvBodyId m_bodyB;
+    uint32_t m_solverBodyA;
+    uint32_t m_solverBodyB;
 
     cvManifoldPoint m_points[MAX_MANIFOLD_POINT];
     cvVec2f m_normal;

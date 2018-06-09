@@ -6,6 +6,8 @@
 #include <collision/cvManifold.h>
 #include <collision/cvNarrowPhase.h>
 #include <solver/cvSolverManifold.h>
+#include <solver/cvSolverBody.h>
+#include <solver/cvConstraint.h>
 #include <memory>
 
 struct cvSimulationContext
@@ -14,5 +16,7 @@ struct cvSimulationContext
     std::vector<std::unique_ptr<cvCollisionAgent>> m_colAgents;
     NPPairs m_NpPairs;
     std::vector<cvSolverManifold> m_Manifolds;
+    std::vector<cvSolverBody> m_solverBodies;
+    std::vector<cvContactConstraint> m_contactContraints;
     uint32_t m_solverIterCount = 6;
 };

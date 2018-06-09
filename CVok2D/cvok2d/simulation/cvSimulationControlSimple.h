@@ -16,7 +16,7 @@ public:
 
     void preCollide(cvStepInfo& stepInfo, cvSimulationContext& simCtx);
     void updateBP(cvSimulationContext& simCtx); //generate collison agent for narrow phase
-    void narrowPhase(cvSimulationContext& simCtx);
+    void narrowPhase(cvSimulationContext& simCtx, const cvStepInfo& stepInfo);
     void postCollide(cvSimulationContext& simCtx);
     void integrate(float dt);
     void solve(cvSimulationContext& simCtx, const cvStepInfo& stepInfo);
