@@ -19,10 +19,6 @@ void cvPGSSolver::solvePenetrations(cvSimulationContext& ctx)
         velA = bodies[c.bodyAId].m_velocity;
         velB = bodies[c.bodyBId].m_velocity;
 
-        cvVec3f oldA, oldB;
-        oldA = velA;
-        oldB = velB;
-
         // eM
         float emA = c.JA.dot(c.MA * c.JA);
         float emB = c.JB.dot(c.MB * c.JB);
