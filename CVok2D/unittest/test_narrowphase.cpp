@@ -45,12 +45,3 @@ TEST_F(NPTest, testNPPair)
     m_sc->updateBP(*m_ctx);
     EXPECT_EQ(1, m_ctx->m_NpPairs.size());
 }
-
-TEST_F(NPTest, testManifoldPointGen)
-{
-    cvStepInfo si;
-    m_sc->updateBP(*m_ctx);
-    m_sc->narrowPhase(*m_ctx, si);
-
-    EXPECT_EQ(1, m_ctx->m_Manifolds.size());
-}

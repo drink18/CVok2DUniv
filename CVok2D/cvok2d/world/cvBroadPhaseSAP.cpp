@@ -141,9 +141,7 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
 		NodeEndPoint& ep = endPoints[i];
 		int nextPt = i + direction;
 		NodeEndPoint& nextEp = endPoints[nextPt];
-
-
-
+ 
 		if (((direction == -1 && nextEp.m_Val > ep.m_Val)
 			|| (direction == 1 && nextEp.m_Val < ep.m_Val)
             ) )
@@ -153,7 +151,7 @@ void cvBroadphaseSAP::moveEndPoint(int axis, int endPtIdx, int direction)
             {
                 if (direction == 1)
                 {
-                    if (nextEp.getIsMin() && ep.getIsMax())
+                    if (ep.getIsMax() && nextEp.getIsMin())
                     {
                         // add new pair (nextEp, ep)
                         addPair(nextEp, ep);
