@@ -23,7 +23,7 @@ namespace  SAT
 
     struct SATResult
     {
-        int numPt = 0;
+        uint8_t numPt = 0;
 		SATPt pts[2];
         cvVec2f normal;
         bool penetrated = false;

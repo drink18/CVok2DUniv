@@ -175,7 +175,6 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx, const c
                 c.m_restitution = m.m_friction;
                 c.m_rollingFriction = m.m_rollingFriction;
 
-
                 //setup penetration 
                 c.m_accumImpl = pt.m_normalImpl;
                 c.m_tangentImpl = pt.m_tangentImpl;
