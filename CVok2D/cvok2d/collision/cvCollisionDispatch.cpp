@@ -39,7 +39,8 @@ void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMa
 
     pt.m_distance = len - ra - rb;
     pt.m_point = wldB + d * rb;
-	//pt.m_feature.init(cvManifoldPtFeature::MF_Vertex, cvManifoldPtFeature::MF_Vertex, 0, 0);
+    pt.m_featureTypes[0] = pt.m_featureTypes[1] = cvCol::MF_Vertex;
+    pt.m_featureIds[0] = pt.m_featureIds[1] = 0;
 }
 
 
@@ -68,6 +69,11 @@ void __colCirclevsPoly(const cvCircle& circleA, const cvPolygonShape& polyB, con
         manifold.m_normal = satRes.normal;
         pt.m_point = satRes.pts[0].point;
         pt.m_distance = satRes.pts[0].distance;
+
+        pt.m_featureTypes[0] = satRes.pts[0].featureTypes[0];
+        pt.m_featureTypes[1] = satRes.pts[0].featureTypes[1];
+        pt.m_featureIds[0] = satRes.pts[0].featureIds[0];
+        pt.m_featureIds[1] = satRes.pts[0].featureIds[1];
     }
 }
 

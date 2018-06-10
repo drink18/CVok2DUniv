@@ -125,6 +125,10 @@ namespace SAT
         rpt.point = ptL - deepestAxis * deepestPen;
         rpt.distance = deepestPen;
         res.normal = deepestAxis;
+        rpt.featureTypes[0] = cvCol::MF_Vertex;
+        rpt.featureTypes[1] = cvCol::MF_Edge;
+        rpt.featureIds[0] = 0;
+        rpt.featureIds[1] = (uint8_t)deepestPenEdge;
 
 		rpt.point = trans * rpt.point;
         trans.transformVector(res.normal);
