@@ -3,6 +3,7 @@
 #include <core/cvMath.h>
 #include "cvQuery.h"
 #include "cvDistance.h"
+#include <collision/cvCollisionDef.h>
 #include <memory>
 
 class cvShape;
@@ -35,10 +36,12 @@ namespace GJK
             GJK_OVERLAP
         };
 
-        Result result;
+        Result result = GJK_OVERLAP;
         cvVec2f closetPt;
         cvVec2f normal;
         float distance;
+        cvCol::cvFeatureType featureType;
+        cvCol::cvFeatureId featureId;
     };
 
     struct cvPointQueryInput
