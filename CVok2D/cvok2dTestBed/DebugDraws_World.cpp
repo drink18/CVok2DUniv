@@ -22,13 +22,15 @@ void cvDebugDraw::DrawWorld(const cvWorld& world)
         if(m_DbgDrawOpts.bDrawManifoild)
         {
             auto& simCtx = world.getSimContext();
-            auto& manifolds = simCtx.m_Manifolds;
-            for(auto& m : manifolds)
+            for (auto& np : simCtx.m_NpPairs)
             {
-                for(int i = 0; i < m.m_numPt; ++i)
+                for (auto& m : np.m_manifolds)
                 {
-                    const cvManifoldPoint& p = m.m_points[i];
-                    AddLine(p.m_point, p.m_point + m.m_normal * p.m_distance, cvColorf::Green);
+                    for (int i = 0; i < m.m_numPt; ++i)
+                    {
+                        const cvManifoldPoint& p = m.m_points[i];
+                        AddLine(p.m_point, p.m_point + m.m_normal * p.m_distance, cvColorf::Green);
+                    }
                 }
             }
         }
