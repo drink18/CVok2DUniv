@@ -121,6 +121,10 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
             cvManifoldPoint& pt = manifold.m_points[i];
             pt.m_point = satRes.pts[i].point;
             pt.m_distance = satRes.pts[i].distance;
+            pt.m_featureTypes[0] = satRes.pts[i].featureTypes[0];
+            pt.m_featureTypes[1] = satRes.pts[i].featureTypes[1];
+            pt.m_featureIds[0] = satRes.pts[i].featureIds[0];
+            pt.m_featureIds[1] = satRes.pts[i].featureIds[1];
         }
     }
 }

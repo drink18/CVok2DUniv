@@ -3,6 +3,7 @@
 #include <core/cvMath.h>
 #include "cvDistance.h"
 #include "cvQuery.h"
+#include <collision/cvCollisionDef.h>
 
 class cvCircle;
 class cvPolygonShape;
@@ -10,11 +11,14 @@ class cvConvexShape;
 
 namespace  SAT
 {
+    using namespace cvCol;
+
 	struct SATPt
 	{
         cvVec2f point;
         float distance;
-		int ei[2] = { 0, 0 }; //feature idx 
+        cvFeatureType featureTypes[2];
+        cvFeatureId featureIds[2];
 	};
 
     struct SATResult
@@ -22,10 +26,6 @@ namespace  SAT
         int numPt = 0;
 		SATPt pts[2];
         cvVec2f normal;
-        int ei0;
-        int ei1;
-        cvVec2f ep0;
-        cvVec2f ep1;
         bool penetrated = false;
     };
 

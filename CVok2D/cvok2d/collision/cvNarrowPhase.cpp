@@ -58,6 +58,7 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
             auto fn = cvGetCollisionFn(spA.first.getShapeType(), spB.first.getShapeType());
             fn(spA.first, spB.first, spA.second, spB.second, nm);
 
+
             bool hasMatch = false;
             for (auto& m : m_manifolds)
             {
@@ -65,14 +66,22 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
                 {
                     for (int i = 0; i < nm.m_numPt; ++i)
                     {
-                        auto& p = m.m_points[i];
                         auto& np = nm.m_points[i];
-                        np.m_normalImpl = p.m_normalImpl;
-                        np.m_tangentImpl = p.m_tangentImpl;
+
+                        // try to match points in old manifold
+                        for (int j = 0; j < m.m_numPt; ++j)
+                        {
+                            auto& p = m.m_points[j];
+                            if (p.matchPoint(np.m_featureTypes, np.m_featureIds))
+                            {
+                                np.m_normalImpl = p.m_normalImpl;
+                                np.m_tangentImpl = p.m_tangentImpl;
+                                break;
+                            }
+                        }
                     }
-                    hasMatch = true;
-                    //TODO: have to do a matching by point
                     m = nm; //copy over
+                    hasMatch = true;
                 }
             }
             // new manifold

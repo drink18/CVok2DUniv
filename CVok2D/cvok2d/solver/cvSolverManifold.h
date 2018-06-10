@@ -3,14 +3,19 @@
 #include <world/cvBody.h>
 #include <core/cvMath.h>
 #include <core/cvHashUtils.h>
+#include <collision/cvCollisionDef.h>
 
 
 struct cvManifoldPoint
 {
     cvVec2f m_point;
+    cvCol::cvFeatureId m_featureIds[2];
+    cvCol::cvFeatureType m_featureTypes[2];
     float m_distance = 0;
     float m_normalImpl = 0;
     float m_tangentImpl = 0;
+
+    bool matchPoint(cvCol::cvFeatureType types[2], cvCol::cvFeatureId ids[2]);
 };
 
 struct cvSolverManifold

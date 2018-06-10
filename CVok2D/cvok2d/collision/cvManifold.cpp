@@ -7,6 +7,13 @@
 #include <shape/cvCompoundShape.h>
 #include <collision/cvCollisionDispatch.h>
 
+bool cvManifoldPoint::matchPoint(cvCol::cvFeatureType types[2], cvCol::cvFeatureId ids[2])
+{
+    return ((types[0] == m_featureTypes[0] && types[1] == m_featureTypes[1])
+        || (types[1] == m_featureTypes[0] && types[0] == m_featureTypes[1]))
+        && ((ids[0] == m_featureIds[0] && ids[1] == m_featureIds[1])
+            || (ids[1] == m_featureIds[0] && ids[0] == m_featureIds[1]));
+}
 
 bool cvManifold::matchManifold(const cvManifold& m)
 {
