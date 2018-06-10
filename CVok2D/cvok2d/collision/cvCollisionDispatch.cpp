@@ -9,6 +9,7 @@
 #include <collision/cvManifold.h>
 
 
+static bool NoGJK = true;
 
 void _colCirclevsCircle(const cvShape& shapeA, const cvShape& shapeB, const cvMat33& matA,
         const cvMat33& matB, cvManifold& manifold)
@@ -53,16 +54,21 @@ void __colCirclevsPoly(const cvCircle& circleA, const cvPolygonShape& polyB, con
     manifold.m_numPt = 1;
 
     auto wldCetner = matA * circleA.getCenter();
-    cvPointQueryInput input(wldCetner, polyB, matB);
-    GJKResult res = cvPointToConvexShape(input);
+    GJKResult gjkRes;
     cvManifoldPoint& pt = manifold.m_points[0];
-    if(res.result == GJKResult::GJK_GOOD)
+    if (!NoGJK)
     {
-        manifold.m_normal = res.normal;
-        pt.m_distance = res.distance - r;
-        pt.m_point = res.closetPt;
+        cvPointQueryInput input(wldCetner, polyB, matB);
+        gjkRes = cvPointToConvexShape(input);
+        if (gjkRes.result == GJKResult::GJK_GOOD)
+        {
+            manifold.m_normal = gjkRes.normal;
+            pt.m_distance = gjkRes.distance - r;
+            pt.m_point = gjkRes.closetPt;
+        }
     }
-    else
+
+    if (gjkRes.result != GJKResult::GJK_GOOD)
     {
         auto satRes = SAT::_circleToPolygon(circleA, polyB, matA, matB);
 
@@ -105,18 +111,23 @@ void _colPolyvsPoly(const cvShape& shapeA, const cvShape& shapeB, const cvMat33&
     auto& polyA = static_cast<const cvPolygonShape&>(shapeA);
     auto& polyB = static_cast<const cvPolygonShape&>(shapeB);
     cvShapeQueryInput input(polyA, polyB, matA, matB);
-    auto res = cvGJKConvexToConvex(input);
+    cvConvex2ConvexGJKResult gjkRes;
 
-    manifold.m_numPt = 0;
-    if(res.m_succeed)
+    if (!NoGJK)
     {
-        manifold.m_numPt = 1;
-        manifold.m_normal = res.m_seperation;
-        cvManifoldPoint& pt = manifold.m_points[0];
-        pt.m_point = res.m_pB;
-        pt.m_distance = res.m_distance;
+        gjkRes = cvGJKConvexToConvex(input);
+        manifold.m_numPt = 0;
+        if (gjkRes.m_succeed)
+        {
+            manifold.m_numPt = 1;
+            manifold.m_normal = gjkRes.m_seperation;
+            cvManifoldPoint& pt = manifold.m_points[0];
+            pt.m_point = gjkRes.m_pB;
+            pt.m_distance = gjkRes.m_distance;
+        }
     }
-    else
+
+    if(!gjkRes.m_succeed)
     {
         // need to run SAT or EPA
         auto satRes = SAT::_polyToPoly(polyA, polyB, matA, matB);
