@@ -8,14 +8,14 @@
 #include <vector>
 
 using namespace std;
-cvSimulationControlSimple::cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* simCtx,
+cvSimulationControlSimple::cvSimulationControlSimple(cvBroadphase* bp, cvSimulationContext* /*simCtx*/,
     cvWorld* world)
     :m_bp(bp), m_world(world)
 {
     m_solver = new cvPGSSolver();
 }
 
-void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationContext& simCtx)
+void cvSimulationControlSimple::preCollide(cvStepInfo& stepInfo, cvSimulationContext& /*simCtx*/)
 {
     cvBodyManager& bodyMgr = m_world->accessBodyManager();
     //applying gravity here?
@@ -149,7 +149,6 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx, const c
     // populate constraints
     auto& contacts = simCtx.m_contactContraints;
     contacts.clear();
-    size_t numPair = npPairs.size();
     for (auto& np : npPairs)
     {
         for (auto& m : np.m_manifolds)
@@ -230,7 +229,7 @@ void cvSimulationControlSimple::narrowPhase(cvSimulationContext& simCtx, const c
     }
 }
 
-void cvSimulationControlSimple::postCollide(cvSimulationContext& simCtx)
+void cvSimulationControlSimple::postCollide(cvSimulationContext& /*simCtx*/)
 {
 }
 

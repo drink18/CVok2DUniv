@@ -2,7 +2,7 @@
 
 namespace cvHash
 {
-	inline void hash_combine(std::size_t& seed) { }
+	inline void hash_combine(std::size_t& ) { }
 
 	template <typename T, typename... Rest>
 	inline void hash_combine(std::size_t& seed, const T& v, Rest... rest) {

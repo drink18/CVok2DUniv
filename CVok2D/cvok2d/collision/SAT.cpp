@@ -9,7 +9,7 @@ namespace SAT
 {
     using namespace std;
 
-    int _prevEdge(int n, int edgeCnt)
+    size_t _prevEdge(size_t n, size_t edgeCnt)
     {
         if(n == 0)
         {
@@ -19,7 +19,7 @@ namespace SAT
         return n - 1;
     }
 
-    int _nextEdge(int n, int edgeCnt)
+    size_t _nextEdge(size_t n, size_t edgeCnt)
     {
         return (n + 1) % edgeCnt;
     }
@@ -98,10 +98,10 @@ namespace SAT
 
         for (int i = 1; i < nedge; ++i)
         {
-            int nei = _nextEdge(i, nedge);
+            size_t nei = _nextEdge(i, nedge);
             e = (verts[nei] - verts[i]).getNormalized();
             midEdge = (verts[nei] + verts[i]) / 2;
-            cvVec2f sap2 = e.computePerpendicular();
+            sap2 = e.computePerpendicular();
 
             float pen = _getPointPeneOnAxis(ptL, sap2, midEdge, poly);
             if (pen > deepestPen)
@@ -168,10 +168,10 @@ namespace SAT
         cvMat33 invB; transB.getInvert(invB);
         cvMat33 a2b = transA * invB;
         auto& verts = refShape.getVertices();
-        int edgeCount = refShape.getVertices().size();
+        size_t edgeCount = refShape.getVertices().size();
         for(int i = 0; i < edgeCount; ++i)
         {
-            int nei = _nextEdge(i, edgeCount);
+            size_t nei = _nextEdge(i, edgeCount);
 
             //edge normal
             cvVec2f ep0 = verts[i];
@@ -245,8 +245,8 @@ namespace SAT
             return res;
 
         int refEdgeIdx;
-        int neEdgeIdx0; //neighbour of ref edge
-        int neEdgeIdx1; //neighbour of ref edge
+        size_t neEdgeIdx0; //neighbour of ref edge
+        size_t neEdgeIdx1; //neighbour of ref edge
         int incidentEdgeIdx;
 
         cvVec2f sepNormal;

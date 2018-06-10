@@ -79,8 +79,6 @@ void cvPGSSolver::solvePositionErr(cvSimulationContext& ctx)
         velA += c.JA * c.MA * lambda;
         velB += c.JB * c.MB * lambda;
 
-        float err = velA.dot(c.JA) + velB.dot(c.JB);
-
         bodies[c.bodyAId].m_posVelocity = velA;
         bodies[c.bodyBId].m_posVelocity = velB;
     }
@@ -143,11 +141,6 @@ void cvPGSSolver::solveContacts(cvSimulationContext& ctx)
         cvVec3f& velA = bodies[c.bodyAId].m_velocity;
         cvVec3f& velB = bodies[c.bodyBId].m_velocity;
 
-        // eM
-        float emA = c.JA.dot(c.MA * c.JA);
-        float emB = c.JB.dot(c.MB * c.JB);
-        float em = emA + emB;
-
         velA += c.JA * c.MA * c.m_accumImpl;
         velB += c.JB * c.MB * c.m_accumImpl;
 
@@ -203,7 +196,6 @@ void cvPGSSolver::solveContacts(cvSimulationContext& ctx)
 
 void cvPGSSolver::finishSolver(cvSimulationContext& ctx, cvWorld& world, const cvStepInfo& stepInfo)
 {
-    auto& contacts = ctx.m_contactContraints;
     auto& bodies = ctx.m_solverBodies;
 
     cvMotionManager& motionMgr = world.accessMotionManager();

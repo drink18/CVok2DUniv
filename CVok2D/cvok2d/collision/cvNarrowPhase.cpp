@@ -52,8 +52,8 @@ void cvNPPair::EvaluateManifolds(cvWorld& world)
 
             cvManifold nm;
             nm.init(bodyA, bodyB);
-            nm.m_shapeKeyA = a;
-            nm.m_shapeKeyB = b;
+            nm.m_shapeKeyA = (uint16_t)a;
+            nm.m_shapeKeyB = (uint16_t)b;
 
             auto fn = cvGetCollisionFn(spA.first.getShapeType(), spB.first.getShapeType());
             fn(spA.first, spB.first, spA.second, spB.second, nm);
