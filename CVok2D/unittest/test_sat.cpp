@@ -22,7 +22,6 @@ public:
     virtual void TearDown()
     {}
 
-
     unique_ptr<cvPolygonShape> cvBox;
 };
 
@@ -123,5 +122,71 @@ TEST_F(TestSAT, polyToPoly_horizontal)
         EXPECT_EQ(cvVec2f(15.2f, 5.8f), rp1.point);
         EXPECT_NEAR(-0.8f, rp1.distance, CV_FLOAT_EPS);;
         EXPECT_EQ(cvVec2f(-1.0f, 0),  res.normal);
+    }
+}
+
+TEST_F(TestSAT, polyToPoly_Feature)
+{
+
+    auto m_poly = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+    auto m_poly1 = shared_ptr<cvPolygonShape>(cvPolygonShape::createBox(cvVec2f(1.0f, 1.0f), 0.05f));
+
+    cvMat33 mat1; mat1.setIdentity();
+    mat1.setTranslation(cvVec2f(15.0f, 5.0f));
+    cvMat33 mat2; mat2.setIdentity();
+    cvTransform trans;
+    trans.m_Translation = cvVec2f(17.0f, 5.0f);
+    {
+        trans.m_Rotation = DEG2RAD(44);
+        trans.toMat33(mat2);
+        auto res = _polyToPoly(*m_poly, *m_poly1, mat1, mat2);
+		auto rp0 = res.pts[0];
+		auto rp1 = res.pts[1];
+
+        EXPECT_EQ(2, res.numPt);
+        EXPECT_EQ(cvCol::MF_Edge, rp0.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Edge, rp1.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp0.featureTypes[1]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp1.featureTypes[1]);
+        EXPECT_EQ(1, rp0.featureIds[0]);
+        EXPECT_EQ(3, rp0.featureIds[1]);
+        EXPECT_EQ(1, rp1.featureIds[0]);
+        EXPECT_EQ(0, rp1.featureIds[1]);
+    }
+
+    {
+        trans.m_Rotation = DEG2RAD(48);
+        trans.toMat33(mat2);
+        auto res = _polyToPoly(*m_poly, *m_poly1, mat1, mat2);
+		auto rp0 = res.pts[0];
+		auto rp1 = res.pts[1];
+
+        EXPECT_EQ(2, res.numPt);
+        EXPECT_EQ(cvCol::MF_Edge, rp0.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Edge, rp1.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp0.featureTypes[1]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp1.featureTypes[1]);
+        EXPECT_EQ(1, rp0.featureIds[0]);
+        EXPECT_EQ(3, rp0.featureIds[1]);
+        EXPECT_EQ(1, rp1.featureIds[0]);
+        EXPECT_EQ(2, rp1.featureIds[1]);
+    }
+
+    {
+        trans.m_Rotation = DEG2RAD(91);
+        trans.toMat33(mat2);
+        auto res = _polyToPoly(*m_poly, *m_poly1, mat1, mat2);
+		auto rp0 = res.pts[0];
+		auto rp1 = res.pts[1];
+
+        EXPECT_EQ(2, res.numPt);
+        EXPECT_EQ(cvCol::MF_Edge, rp0.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Edge, rp1.featureTypes[0]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp0.featureTypes[1]);
+        EXPECT_EQ(cvCol::MF_Vertex, rp1.featureTypes[1]);
+        EXPECT_EQ(1, rp0.featureIds[0]);
+        EXPECT_EQ(2, rp0.featureIds[1]);
+        EXPECT_EQ(1, rp1.featureIds[0]);
+        EXPECT_EQ(3, rp1.featureIds[1]);
     }
 }

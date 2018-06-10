@@ -125,8 +125,6 @@ namespace SAT
         rpt.point = ptL - deepestAxis * deepestPen;
         rpt.distance = deepestPen;
         res.normal = deepestAxis;
-		rpt.ei[0] = 0;
-		rpt.ei[1] = deepestPenEdge;
 
 		rpt.point = trans * rpt.point;
         trans.transformVector(res.normal);
@@ -245,13 +243,13 @@ namespace SAT
             return res;
 
         int refEdgeIdx;
-        int neEdgeIdx0; //neighbour of ref edge
-        int neEdgeIdx1; //neighbour of ref edge
+        int neEdgeIdx0; //neighbor of ref edge
+        int neEdgeIdx1; //neighbor of ref edge
         int incidentEdgeIdx;
 
         cvVec2f sepNormal;
 
-        // incident edeg point
+        // incident edge point
         cvVec2f incEp[2];
         cvVec2f refEp[2];
         //neighbor edge pt on ref shape
@@ -288,6 +286,8 @@ namespace SAT
             refEdgeIdx = minEdgeIdxB;
         }
 
+        const bool aIsInc = &shapeA == incShape;
+
         // compute incident edge, and neihbough edges 
         neEdgeIdx0 = _prevEdge(refEdgeIdx, (*refShape).getVertices().size());
         neEdgeIdx1 = _nextEdge(refEdgeIdx, (*refShape).getVertices().size());
@@ -319,19 +319,38 @@ namespace SAT
 
         res.numPt = 0;
         res.normal = sepNormal;
-        // find out edge points below ref plane
         for(int i = 0; i < 2; ++i)
         {
             float d = (incEp[i] - refEp[0]).dot(sepNormal);
-            //if(d < 0)
             {
 				auto& rpt = res.pts[res.numPt];
                 rpt.point = incEp[i] - sepNormal * d;
 				rpt.distance = d;
+                rpt.featureTypes[0] = aIsInc ? cvCol::MF_Vertex : cvCol::MF_Edge;
+                rpt.featureTypes[1] = aIsInc ? cvCol::MF_Edge : cvCol::MF_Vertex;
+                if (aIsInc)
+                {
+                    rpt.featureIds[0] = i == 0 ? incidentEdgeIdx : _nextEdge(incidentEdgeIdx, incVert.size());
+                    rpt.featureIds[1] = refEdgeIdx;
+                }
+                else
+                {
+                    rpt.featureIds[0] = refEdgeIdx;
+                    rpt.featureIds[1] = i == 0 ? incidentEdgeIdx : _nextEdge(incidentEdgeIdx, incVert.size());
+                }
                 res.numPt++;
             }
         }
+        
+        // make sure first pt is always the deepest penetrated
+        if (res.numPt > 1)
+        {
+            if(res.pts[0].distance > res.pts[1].distance)
+                swap(res.pts[0], res.pts[1]);
 
+        }
+
+        // shape B is incident
         if(reverted)
         {
             for(int i = 0; i < res.numPt; ++i)

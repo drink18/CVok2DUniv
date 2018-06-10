@@ -4,23 +4,19 @@
 #include <core/cvMath.h>
 #include <core/cvHashUtils.h>
 #include <solver/cvSolverManifold.h>
+#include <collision/cvCollisionDef.h>
 
 typedef uint16_t cvShapeKey;
 
 struct cvManifoldPtFeature
 {
-    enum FeatureType
-    {
-        MF_Vertex,
-        MF_Edge
-    };
+    cvCol::cvFeatureType m_typeA = cvCol::MF_Vertex;
+    cvCol::cvFeatureType m_typeB = cvCol::MF_Edge;
+    cvCol::cvFeatureId m_featureA = 0;
+    cvCol::cvFeatureId m_featureB = 0;
 
-    FeatureType m_typeA = MF_Vertex;
-    FeatureType m_typeB = MF_Edge;
-    int m_featureA = 0;
-    int m_featureB = 0;
-
-    void init(FeatureType typeA, FeatureType typeB, int featureA, int featureB)
+    void init(cvCol::cvFeatureType typeA, cvCol::cvFeatureType typeB, 
+            cvCol::cvFeatureId featureA, cvCol::cvFeatureId featureB)
     {
         m_featureA = featureA;
         m_featureB = featureB;
