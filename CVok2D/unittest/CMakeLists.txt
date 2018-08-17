@@ -6,7 +6,7 @@ file(GLOB_RECURSE FILES *.cpp *.h *.c)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/cvok2d)
-include_directories(${CMAKE_SOURCE_DIR}/extern/googletest/include/gtest)
+include_directories(${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include)
 
 add_executable(${PROJECT_NAME} ${FILES})
 target_link_libraries(${PROJECT_NAME} CVok2D)
