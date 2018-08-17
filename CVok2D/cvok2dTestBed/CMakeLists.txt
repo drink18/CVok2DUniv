@@ -13,6 +13,14 @@ include_directories(${CMAKE_SOURCE_DIR}/cvok2dTestBed)
 include_directories(${CMAKE_SOURCE_DIR}/cvok2dTestBed/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/cvok2dTestBed/gl3w)
 
+
+if(WIN32)
+    ADD_LIBRARY(brofiler STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(brofiler PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/extern/Brofiler-1.1.1/ProfilerCore64.lib)
+    include_directories(${CMAKE_SOURCE_DIR}/extern/Brofiler-1.1.1)
+endif(WIN32)
+
+
 include_directories(${GLFW_DIR}/include)
 
 if(APPLE)
@@ -29,3 +37,11 @@ target_link_libraries(${PROJECT_NAME} CVok2D)
 target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 target_link_libraries(${PROJECT_NAME} glew)
 target_link_libraries(${PROJECT_NAME} glfw)
+target_link_libraries(${PROJECT_NAME} brofiler)
+
+if(WIN32)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${CMAKE_SOURCE_DIR}/extern/Brofiler-1.1.1/ProfilerCore64.dll"
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>)
+endif(WIN32)

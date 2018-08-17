@@ -10,6 +10,8 @@
 #include "imgui_gl3/imgui_impl_glfw_gl3.h"
 #include <GLFW/glfw3.h>
 
+#include <Brofiler.h>
+
 #include "DebugDraw.h"
 #include "testcases/TestBase.h"
 #include "testcases/BasicTest.h"
@@ -160,6 +162,7 @@ int main(int, char**)
     // main loop
     while (!glfwWindowShouldClose(window))
     {
+        BROFILER_FRAME("MainLoop")
         dt = glfwGetTime() - lastTime;
         lastTime = glfwGetTime();
 
@@ -179,14 +182,20 @@ int main(int, char**)
         if(run)
         {
             if (g_currentTest)
-                g_currentTest->tick(*pdbgDraw, 1.0f/ 60);
+            {
+                BROFILER_CATEGORY("PhysicsLoop", Profiler::Color::Orchid)
+                    g_currentTest->tick(*pdbgDraw, 1.0f / 60);
+            }
 
             glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
             glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            pdbgDraw->Flush();
+            {
+                BROFILER_CATEGORY("PhysicsDebugDraw", Profiler::Color::Aquamarine)
+                pdbgDraw->Flush();
+            }
         }
 
         RenderUI();
