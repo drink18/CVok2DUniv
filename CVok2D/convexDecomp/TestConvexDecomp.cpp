@@ -175,6 +175,12 @@ void RenderPolygon()
 		// pick best cw
 		auto cw = _pickCW(l, hullLoop, bridges);
 		g_dbgDraw->AddPoint(l.Vertices[cw.ptIndex], 20, cvColorf::Purple);
+
+
+		// find best cut point
+		int cutPointIdx = _findBestCutPt(l, hullLoop, bridges, cw);
+		g_dbgDraw->AddLine(l.Vertices[cutPointIdx], l.Vertices[cw.ptIndex], cvColorf::Green);
+		g_dbgDraw->AddPoint(l.Vertices[cutPointIdx], 20, cvColorf::Green);
 	}
 }
 

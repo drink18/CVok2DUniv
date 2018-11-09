@@ -196,6 +196,7 @@ namespace acd
 				{
 					bestScore = d;
 					bestPtIdx = ni;
+					bestPocketIdx = ip;
 				}
 			}
 		}
@@ -203,8 +204,61 @@ namespace acd
 		cw.Concavity = bestScore;
 		cw.ptIndex = bestPtIdx;
 		cw.loopIndex = 0;
+		cw.pocketIdx = bestPocketIdx;
 
 		return cw;
+	}
 
+	bool isValidCutPt(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets,
+		int curPocketIdx, int cwpIdx, int hullPtIdx)
+	{
+		auto& vts = loop.Vertices;
+		auto& hull = h.getPtIndices();
+		auto& curPocket = pockets[curPocketIdx];
+		cvVec2f cwPt = vts[cwpIdx];
+
+
+		//for (int i = 0; i < hull.size(); ++i)
+		{
+			int curHullIdx = hullPtIdx;
+			cvVec2f curHullVtx = vts[curHullIdx];
+
+			// ignore bridge
+			if (curHullIdx == curPocket.idx0 || curHullIdx == curPocket.idx1)
+				return false;
+
+			//float dl = DistToLine(cwPt, vts[loop.prevIdx(cwpIdx)], curHullVtx);
+			//float dr = DistToLine(vts[loop.nextIdx(cwpIdx)], cwPt, curHullVtx);
+
+			//if (dl < 0 || dr < 0)
+			//	return false;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	int _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
+		const WitnessPt& cwp)
+	{
+		auto& pocket = pockets[cwp.pocketIdx];
+
+		// find a point on hull that forms a line with witness point, that does not intersect with
+		// other pockets
+		auto& hullIndices = hull.getPtIndices();
+		int i0 = min(pocket.idx0, pocket.idx1);
+		int i1 = max(pocket.idx0, pocket.idx1);
+
+		for(int ih = i0 + 1; ih < i1; ++ih)
+		{
+			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, ih))
+			{
+				return ih;
+			}
+		}
+
+		cvAssert(false);
+		return 0;
 	}
 }

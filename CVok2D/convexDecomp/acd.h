@@ -55,9 +55,13 @@ namespace acd
 		float Concavity;
         int loopIndex;
         int ptIndex; //index of witness point in loop
+		int pocketIdx;
     };
 	
 	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop);
 	HullLoop _quickHull(const Loop& loop);
 	WitnessPt _pickCW(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockes);
+	int _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
+						const WitnessPt& cwp);
+
 }
