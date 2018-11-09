@@ -1,4 +1,6 @@
 #include "acd.h"
+#include <algorithm>
+
 namespace acd
 {
 	static float Vec2Cross(cvVec2f v1, cvVec2f v2)
@@ -23,7 +25,7 @@ namespace acd
 	}
 
 	void _quickHull(const vector<cvVec2f>& origPoints, int idxP0, int idxP1, vector<int>& available, vector<int>& hullLoop);
-	vector<int> _quickHull(Loop loop)
+	vector<int> _quickHull(const Loop& loop)
 	{
 		auto hullLoop = vector<int>();
 
@@ -73,6 +75,7 @@ namespace acd
 		_quickHull(loop.Vertices, minIdx, maxIdx, upper, hullLoop);
 		_quickHull(loop.Vertices, maxIdx, minIdx, lower, hullLoop);
 
+		sort(hullLoop.begin(), hullLoop.end());
 		return hullLoop;
 	}
 
@@ -121,5 +124,49 @@ namespace acd
 
 		_quickHull(origPoints, idxP0, bestIdx, available, hullLoop);
 		_quickHull(origPoints, bestIdx, idxP1, available, hullLoop);
+	}
+
+	vector<Bridge> _findAllPockets(const vector<int>& hull, const Loop& loop)
+	{
+		vector<Bridge> bridge;
+		const int DEC = 0;
+		const int ACC = 1;
+		int order = hull[1] - hull[0] > 0 ? ACC : DEC;
+
+		int prevIdx = hull[0];
+		for (int i = 1; i <= hull.size(); ++i)
+		{
+			int curIdx = hull[i % hull.size()];
+			if (!loop.AreNeighbour(prevIdx, curIdx))
+			{
+				Bridge b;
+				b.idx0 = prevIdx;
+				b.idx1 = curIdx;
+				if (prevIdx > curIdx)
+				{
+					int i0 = loop.nextIdx(prevIdx);
+					int i1 = loop.prevIdx(curIdx);
+					for (int j = i0; j <=  i1; j++)
+					{
+						b.notches.push_back(j);
+					}
+				}
+				else
+				{ 
+					int i0 = min(prevIdx, curIdx);
+					int i1 = max(prevIdx, curIdx);
+					for (int j = i0 + 1; j < i1; j++)
+					{
+						b.notches.push_back(j);
+					}
+				}
+				cvAssert(b.notches.size() > 0);
+				bridge.push_back(b);
+			}
+			prevIdx = curIdx;
+
+		}
+
+		return bridge;
 	}
 }

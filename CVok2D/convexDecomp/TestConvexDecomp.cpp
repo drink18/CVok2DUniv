@@ -155,6 +155,21 @@ void RenderPolygon()
 			}
 			g_dbgDraw->AddLine(l.Vertices[res[0]], l.Vertices[prev], cvColorf::Red);
 		}
+
+		auto bridges = _findAllPockets(res, l);
+		for(auto& b : bridges)
+		{
+			g_dbgDraw->AddLine(l.Vertices[b.idx0], l.Vertices[b.idx1], cvColorf::Yellow);
+			auto prevIdx = b.notches[0];
+			g_dbgDraw->AddLine(l.Vertices[b.idx0], l.Vertices[prevIdx], cvColorf::Blue);
+			for (int j = 1; j < b.notches.size(); j++)
+			{
+				int curIdx = b.notches[j];
+				g_dbgDraw->AddLine(l.Vertices[curIdx], l.Vertices[prevIdx], cvColorf::Blue);
+				prevIdx = curIdx;
+			}
+			g_dbgDraw->AddLine(l.Vertices[prevIdx], l.Vertices[b.idx1], cvColorf::Blue);
+		}
 	}
 }
 

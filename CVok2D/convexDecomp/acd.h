@@ -10,6 +10,9 @@ namespace acd
     {
 	public:
 		vector<cvVec2f> Vertices;
+		bool AreNeighbour(int idx0, int idx1) const;
+		int prevIdx(int idx) const { return idx == 0 ? Vertices.size() - 1 : idx - 1; }
+		int nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
 	};
 
     class Polygon
@@ -24,7 +27,7 @@ namespace acd
 	public:
 		int idx0;
         int idx1;
-       vector<cvVec2f> notches;
+       vector<int> notches;
 	};
 
     struct ConvexHull
@@ -52,5 +55,6 @@ namespace acd
         }
     };
 	
-	vector<int> _quickHull(Loop loop);
+	vector<Bridge> _findAllPockets(const vector<int>& hull, const Loop& loop);
+	vector<int> _quickHull(const Loop& loop);
 }
