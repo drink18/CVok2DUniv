@@ -45,16 +45,9 @@ namespace acd
         Loop loop;
         int loopIndex;
         int ptIndex; //index of witness point in loop
-
-        WitnessPt(float _concavity, Loop _loop, int _loopIndex, int _ptIndex)
-        {
-            Concavity = _concavity;
-            loop = _loop;
-            loopIndex = _loopIndex;
-            ptIndex = _ptIndex;
-        }
     };
 	
 	vector<Bridge> _findAllPockets(const vector<int>& hull, const Loop& loop);
 	vector<int> _quickHull(const Loop& loop);
+	WitnessPt _pickCW(const Loop& loop, const vector<int>& hull, const vector<Bridge>& pockes);
 }

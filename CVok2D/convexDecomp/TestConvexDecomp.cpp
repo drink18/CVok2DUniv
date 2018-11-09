@@ -170,6 +170,10 @@ void RenderPolygon()
 			}
 			g_dbgDraw->AddLine(l.Vertices[prevIdx], l.Vertices[b.idx1], cvColorf::Blue);
 		}
+
+		// pick best cw
+		auto cw = _pickCW(l, res, bridges);
+		g_dbgDraw->AddPoint(l.Vertices[cw.ptIndex], 20, cvColorf::Purple);
 	}
 }
 

@@ -167,4 +167,36 @@ namespace acd
 
 		return bridge;
 	}
+	
+	WitnessPt _pickCW(const Loop& loop, const vector<int>& hull, const vector<Bridge>& pockets)
+	{
+		WitnessPt cw;
+
+		float bestScore = 1e20f;
+		int bestPocketIdx = -1;
+		int bestPtIdx = -1;
+
+		for (int ip= 0; ip < pockets.size(); ++ip)
+		{
+			auto& p = pockets[ip];
+			auto& b0 = loop.Vertices[p.idx0];
+			auto& b1 = loop.Vertices[p.idx1];
+			for (int i = 0; i < p.notches.size(); ++i)
+			{
+				auto& ni = p.notches[i];
+				float d = abs(DistToLine(b0, b1, loop.Vertices[ni]));
+				if (d < bestScore)
+				{
+					bestScore = d;
+					bestPtIdx = ni;
+				}
+			}
+		}
+
+		cw.Concavity = bestScore;
+		cw.ptIndex = bestPtIdx;
+
+		return cw;
+
+	}
 }
