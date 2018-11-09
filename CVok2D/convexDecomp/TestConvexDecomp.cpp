@@ -143,20 +143,21 @@ void RenderPolygon()
 	{
 		Loop l;
 		l.Vertices = polygonPoints;
-		auto res = _quickHull(l);
-		if (res.size() > 0)
+		auto hullLoop = _quickHull(l);
+		auto& resPt = hullLoop.getPtIndices();
+		if (resPt.size() > 0)
 		{
-			auto prev = res[0];
-			for (int i = 1; i < res.size(); ++i)
+			auto prev = resPt[0];
+			for (int i = 1; i < resPt.size(); ++i)
 			{
-				auto cur = res[i];
+				auto cur = resPt[i];
 				g_dbgDraw->AddLine(l.Vertices[cur], l.Vertices[prev], cvColorf::Red);
 				prev = cur;
 			}
-			g_dbgDraw->AddLine(l.Vertices[res[0]], l.Vertices[prev], cvColorf::Red);
+			g_dbgDraw->AddLine(l.Vertices[resPt[0]], l.Vertices[prev], cvColorf::Red);
 		}
 
-		auto bridges = _findAllPockets(res, l);
+		auto bridges = _findAllPockets(hullLoop, l);
 		for(auto& b : bridges)
 		{
 			g_dbgDraw->AddLine(l.Vertices[b.idx0], l.Vertices[b.idx1], cvColorf::Yellow);
@@ -172,7 +173,7 @@ void RenderPolygon()
 		}
 
 		// pick best cw
-		auto cw = _pickCW(l, res, bridges);
+		auto cw = _pickCW(l, hullLoop, bridges);
 		g_dbgDraw->AddPoint(l.Vertices[cw.ptIndex], 20, cvColorf::Purple);
 	}
 }

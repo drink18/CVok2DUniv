@@ -2,6 +2,7 @@
 #include <core/cvColor.h>
 #include <core/cvMath.h>
 #include <vector>
+#include <algorithm>
 
 namespace acd
 {
@@ -11,8 +12,18 @@ namespace acd
 	public:
 		vector<cvVec2f> Vertices;
 		bool AreNeighbour(int idx0, int idx1) const;
-		int prevIdx(int idx) const { return idx == 0 ? Vertices.size() - 1 : idx - 1; }
-		int nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
+		size_t prevIdx(int idx) const { return idx == 0 ? Vertices.size() - 1 : idx - 1; }
+		size_t nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
+	};
+	class HullLoop
+	{
+	private:
+		vector<int> ptIndicies;
+	public:
+		void addIndex(int idx) { ptIndicies.push_back(idx); }
+		void sort() { std::sort(ptIndicies.begin(), ptIndicies.end()); }
+		void insertAfterIdx(int after, int idx);
+		const vector<int>& getPtIndices() const { return ptIndicies; }
 	};
 
     class Polygon
@@ -42,12 +53,11 @@ namespace acd
     {
 	public:
 		float Concavity;
-        Loop loop;
         int loopIndex;
         int ptIndex; //index of witness point in loop
     };
 	
-	vector<Bridge> _findAllPockets(const vector<int>& hull, const Loop& loop);
-	vector<int> _quickHull(const Loop& loop);
-	WitnessPt _pickCW(const Loop& loop, const vector<int>& hull, const vector<Bridge>& pockes);
+	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop);
+	HullLoop _quickHull(const Loop& loop);
+	WitnessPt _pickCW(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockes);
 }

@@ -24,10 +24,11 @@ namespace acd
 			|| (p0p1p <= 0 && pp1p2 <= 0 && p0pp2 <= 0);
 	}
 
-	void _quickHull(const vector<cvVec2f>& origPoints, int idxP0, int idxP1, vector<int>& available, vector<int>& hullLoop);
-	vector<int> _quickHull(const Loop& loop)
+	void _quickHull(const vector<cvVec2f>& origPoints, int idxP0, int idxP1, 
+		vector<int>& available, HullLoop& hullLoop);
+	HullLoop _quickHull(const Loop& loop)
 	{
-		auto hullLoop = vector<int>();
+		HullLoop hullLoop;
 
 		auto minX = 1e10f;
 		auto maxX = -1e10f;
@@ -69,17 +70,19 @@ namespace acd
 				lower.push_back(i);
 
 		}
-		hullLoop.push_back(minIdx);
-		hullLoop.push_back(maxIdx);
+
+		hullLoop.addIndex(minIdx);
+		hullLoop.addIndex(maxIdx);
 
 		_quickHull(loop.Vertices, minIdx, maxIdx, upper, hullLoop);
 		_quickHull(loop.Vertices, maxIdx, minIdx, lower, hullLoop);
 
-		sort(hullLoop.begin(), hullLoop.end());
+		hullLoop.sort();
 		return hullLoop;
 	}
 
-	void _quickHull(const vector<cvVec2f>& origPoints, int idxP0, int idxP1, vector<int>& available, vector<int>& hullLoop)
+	void _quickHull(const vector<cvVec2f>& origPoints, int idxP0, int idxP1, vector<int>& available, 
+			HullLoop& hullLoop)
 	{
 		if (available.size() == 0)
 			return;
@@ -108,7 +111,8 @@ namespace acd
 
 
 		//hullLoop.Add(bestIdx);
-		hullLoop.insert(find(hullLoop.begin(), hullLoop.end(), idxP1) + 1, bestIdx);
+		hullLoop.insertAfterIdx(idxP1, bestIdx);
+		//hullLoop.insert(find(hullLoop.begin(), hullLoop.end(), idxP1) + 1, bestIdx);
 		available.erase(find(available.begin(), available.end(), bestIdx));
 
 		vector<int> removedPts;
@@ -126,11 +130,13 @@ namespace acd
 		_quickHull(origPoints, bestIdx, idxP1, available, hullLoop);
 	}
 
-	vector<Bridge> _findAllPockets(const vector<int>& hull, const Loop& loop)
+	vector<Bridge> _findAllPockets(const HullLoop& h, const Loop& loop)
 	{
 		vector<Bridge> bridge;
 		const int DEC = 0;
 		const int ACC = 1;
+
+		auto& hull = h.getPtIndices();
 		int order = hull[1] - hull[0] > 0 ? ACC : DEC;
 
 		int prevIdx = hull[0];
@@ -168,11 +174,12 @@ namespace acd
 		return bridge;
 	}
 	
-	WitnessPt _pickCW(const Loop& loop, const vector<int>& hull, const vector<Bridge>& pockets)
+	WitnessPt _pickCW(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
 	{
 		WitnessPt cw;
+		auto& hull = h.getPtIndices();
 
-		float bestScore = 1e20f;
+		float bestScore = -1e20f;
 		int bestPocketIdx = -1;
 		int bestPtIdx = -1;
 
@@ -185,7 +192,7 @@ namespace acd
 			{
 				auto& ni = p.notches[i];
 				float d = abs(DistToLine(b0, b1, loop.Vertices[ni]));
-				if (d < bestScore)
+				if (d > bestScore)
 				{
 					bestScore = d;
 					bestPtIdx = ni;
@@ -195,6 +202,7 @@ namespace acd
 
 		cw.Concavity = bestScore;
 		cw.ptIndex = bestPtIdx;
+		cw.loopIndex = 0;
 
 		return cw;
 
