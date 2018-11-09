@@ -153,9 +153,7 @@ namespace acd
 				}
 				else
 				{ 
-					int i0 = min(prevIdx, curIdx);
-					int i1 = max(prevIdx, curIdx);
-					for (int j = i0 + 1; j < i1; j++)
+					for (int j = prevIdx + 1; j < curIdx; j++)
 					{
 						b.notches.push_back(j);
 					}
