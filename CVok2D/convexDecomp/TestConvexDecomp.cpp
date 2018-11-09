@@ -65,7 +65,7 @@ static void RenderUI()
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     curPos.set((float)xpos, (float)ypos);
-	curPos = g_camera.ConvertScreenToWorld(cvVec2f(xpos, ypos));
+	curPos = g_camera.ConvertScreenToWorld(cvVec2f((float)xpos, (float)ypos));
     if (rightBtnDown)
     {
         cvVec2f delta = curPos - lastCursorPos;
@@ -75,7 +75,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
     }
 
     lastCursorPos.set((float)xpos, (float)ypos);
-	lastCursorPos = g_camera.ConvertScreenToWorld(cvVec2f(xpos, ypos));
+	lastCursorPos = g_camera.ConvertScreenToWorld(cvVec2f((float)xpos, (float)ypos));
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -112,7 +112,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 
 static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    g_camera.m_zoom += yoffset;
+    g_camera.m_zoom += (float)yoffset;
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
 }
 
@@ -199,13 +199,13 @@ int main(int, char**)
         return 1;
     }
 
-    float lastTime = glfwGetTime();
+    float lastTime = (float)glfwGetTime();
     float dt ;
     // main loop
     while (!glfwWindowShouldClose(window))
     {
-        dt = glfwGetTime() - lastTime;
-        lastTime = glfwGetTime();
+        dt = (float)glfwGetTime() - lastTime;
+        lastTime = (float)glfwGetTime();
 
         glfwPollEvents();
 

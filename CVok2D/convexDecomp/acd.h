@@ -34,6 +34,23 @@ namespace acd
         Loop origLoop;
         vector<int> hullIndex;
 	};
+
+    struct WitnessPt
+    {
+	public:
+		float Concavity;
+        Loop loop;
+        int loopIndex;
+        int ptIndex; //index of witness point in loop
+
+        WitnessPt(float _concavity, Loop _loop, int _loopIndex, int _ptIndex)
+        {
+            Concavity = _concavity;
+            loop = _loop;
+            loopIndex = _loopIndex;
+            ptIndex = _ptIndex;
+        }
+    };
 	
 	vector<int> _quickHull(Loop loop);
 }
