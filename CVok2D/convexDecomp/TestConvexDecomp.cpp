@@ -9,8 +9,10 @@
 #include <algorithm>
 
 #include "DebugDraw.h"
+#include "acd.h"
 
 using namespace std;
+using namespace acd;
 
 Camera g_camera;
 cvDebugDraw* g_dbgDraw = nullptr;
@@ -31,6 +33,10 @@ static void error_callback(int error, const char* description)
 static ImVec4 clear_color = ImColor(114, 144, 154);
 static bool pause = false;
 static bool singleStep = false;
+
+static bool addPoints = false;
+
+vector<cvVec2f> polygonPoints;
 
 static void RenderUI()
 {
@@ -59,6 +65,7 @@ static void RenderUI()
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     curPos.set((float)xpos, (float)ypos);
+	curPos = g_camera.ConvertScreenToWorld(cvVec2f(xpos, ypos));
     if (rightBtnDown)
     {
         cvVec2f delta = curPos - lastCursorPos;
@@ -68,16 +75,35 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
     }
 
     lastCursorPos.set((float)xpos, (float)ypos);
+	lastCursorPos = g_camera.ConvertScreenToWorld(cvVec2f(xpos, ypos));
 }
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (button == GLFW_MOUSE_BUTTON_LEFT)
+	{
+		if (action == GLFW_PRESS)
+		{
+			if (!addPoints)
+			{
+				polygonPoints.clear();
+				addPoints = true;
+			}
+
+			polygonPoints.push_back(curPos);
+		}
+	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
     {
         if (action == GLFW_PRESS)
         {
             rightBtnDown = true;
             dragStartPos = curPos;
+
+			if (addPoints)
+			{
+				addPoints = false;
+			}
         }
         else if (action == GLFW_RELEASE)
             rightBtnDown = false;
@@ -88,6 +114,48 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     g_camera.m_zoom += yoffset;
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
+}
+
+void RenderPolygon()
+{
+	if (polygonPoints.size() > 0)
+	{
+		auto prev = polygonPoints[0];
+		for (int i = 0; i < polygonPoints.size(); ++i)
+		{
+			auto cur = polygonPoints[i];
+			g_dbgDraw->AddLine(cur, prev, cvColorf::Green);
+			prev = cur;
+		}
+		if (addPoints)
+		{
+			g_dbgDraw->AddLine(prev, curPos, cvColorf::Green);
+			g_dbgDraw->AddLine(polygonPoints[0], curPos, cvColorf::Yellow);
+		}
+		else
+		{
+			g_dbgDraw->AddLine(prev, polygonPoints[0], cvColorf::Green);
+		}
+	}
+
+
+	if (!addPoints && polygonPoints.size() > 0)
+	{
+		Loop l;
+		l.Vertices = polygonPoints;
+		auto res = _quickHull(l);
+		if (res.size() > 0)
+		{
+			auto prev = res[0];
+			for (int i = 1; i < res.size(); ++i)
+			{
+				auto cur = res[i];
+				g_dbgDraw->AddLine(l.Vertices[cur], l.Vertices[prev], cvColorf::Red);
+				prev = cur;
+			}
+			g_dbgDraw->AddLine(l.Vertices[res[0]], l.Vertices[prev], cvColorf::Red);
+		}
+	}
 }
 
 int main(int, char**)
@@ -152,12 +220,12 @@ int main(int, char**)
             run  = true;
         }
 
-        if(run)
-        {
+		if (run)
+		{
+			glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
+			glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
-            glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
-            glViewport(0, 0, g_camera.m_width, g_camera.m_height);
-
+			RenderPolygon();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             {
