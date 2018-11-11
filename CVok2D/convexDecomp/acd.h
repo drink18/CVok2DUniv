@@ -10,14 +10,34 @@ namespace acd
 	using namespace std;
 
 	typedef IndexBase<int> HullIdx;
+	typedef IndexBase<size_t> PolyVertIdx;
 
     class Loop
     {
 	public:
-		vector<cvVec2f> Vertices;
-		bool AreNeighbour(int idx0, int idx1) const;
-		size_t prevIdx(int idx) const { return idx == 0 ? Vertices.size() - 1 : idx - 1; }
-		size_t nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
+		Loop() { }
+		Loop(const vector<cvVec2f>& vtx) :_vertices(vtx) { }
+		bool AreNeighbour(const PolyVertIdx& idx0, const PolyVertIdx& idx1) const
+		{
+			return AreNeighbour(idx0.val(), idx1.val());
+		}
+		PolyVertIdx prevIdx(const PolyVertIdx& idx) const { return PolyVertIdx(prevIdx(idx.val())); }
+		PolyVertIdx nextIdx(const PolyVertIdx& idx) const { return PolyVertIdx(nextIdx(idx.val())); }
+		cvVec2f operator[](const PolyVertIdx& idx)const { return _vertices[idx.val()]; }
+		size_t ptCount() const { return _vertices.size(); }
+		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); }
+
+		typedef vector<cvVec2f>::iterator iterator;
+		typedef vector<cvVec2f>::const_iterator const_iterator;
+		iterator begin() { return _vertices.begin(); }
+		const_iterator cbegin() const { return _vertices.begin(); }
+		iterator end() { return _vertices.end(); }
+		const_iterator cend() const { return _vertices.end(); }
+	private:
+		vector<cvVec2f> _vertices;
+		bool AreNeighbour(size_t idx0, size_t idx1) const;
+		size_t prevIdx(size_t idx) const { return idx == 0 ? _vertices.size() - 1 : idx - 1; }
+		size_t nextIdx(size_t idx) const { return (idx + 1) % _vertices.size(); }
 	};
 
 	// a collection of indices into original polygon
@@ -25,17 +45,25 @@ namespace acd
 	class HullLoop
 	{
 	private:
-		vector<int> ptIndicies; //index into original polygon
+		vector<PolyVertIdx> ptIndicies; //index into original polygon
 	public:
 		// operator overload
-		size_t operator[](const HullIdx& idx) const { return polyIdx(idx); };
-		void addIndex(int idx) { ptIndicies.push_back(idx); }
+		PolyVertIdx operator[](const HullIdx& idx) const { return polyIdx(idx); };
+		void addIndex(PolyVertIdx idx) { ptIndicies.push_back(idx); }
 		void sort() { std::sort(ptIndicies.begin(), ptIndicies.end()); }
-		void insertAfterIdx(int after, int idx);
+		void insertAfterIdx(PolyVertIdx after, PolyVertIdx idx);
 		//const vector<int>& getPtIndices() const { return ptIndicies; }
 		size_t pointCount() const { return ptIndicies.size(); }
+
+	public:
+		typedef vector<PolyVertIdx>::iterator iterator;
+		typedef vector<PolyVertIdx>::const_iterator const_iterator;
+		iterator begin() { return ptIndicies.begin(); }
+		const_iterator cbegin() const { return ptIndicies.begin(); }
+		iterator end() { return ptIndicies.end(); }
+		const_iterator cend() const { return ptIndicies.end(); }
 	private:
-		size_t polyIdx(const HullIdx& hi) const { return ptIndicies[hi.val()]; }
+		PolyVertIdx polyIdx(const HullIdx& hi) const { return ptIndicies[hi.val()]; }
 	};
 
     class Polygon
@@ -57,7 +85,7 @@ namespace acd
 		HullIdx idx0;
 		HullIdx idx1;
 		// indices of notches in original polygon 
-		vector<int> notches;
+		vector<PolyVertIdx> notches;
 	};
 
     struct ConvexHull
@@ -72,16 +100,17 @@ namespace acd
     struct WitnessPt
     {
 	public:
+		WitnessPt(): ptIndex(-1) {}
 		float Concavity;
         int loopIndex;
-        int ptIndex; //index of witness point in original polygon
+        PolyVertIdx ptIndex; //index of witness point in original polygon
 		int pocketIdx;
     };
 	
 	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop);
 	HullLoop _quickHull(const Loop& loop);
 	WitnessPt _pickCW(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockes);
-	int _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
+	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
 						const WitnessPt& cwp);
 
 	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp, 

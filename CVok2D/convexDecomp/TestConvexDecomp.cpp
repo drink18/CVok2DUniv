@@ -101,10 +101,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 		{
 
 			if(addPoints)
-				polygones[0].loops[0].Vertices.push_back(curPos);
+				polygones[0].loops[0].AddVertex(curPos);
 		}
 	}
-    if (button == GLFW_MOUSE_BUTTON_RIGHT )
+    if (button == GLFW_MOUSE_BUTTON_RIGHT )
     {
         if (action == GLFW_PRESS)
         {
@@ -133,24 +133,22 @@ void RenderPolygon()
 	{
 		for (auto poly : polygones)
 		{
-			auto& polyVerts = poly.loops[0].Vertices;
-			if (polyVerts.empty()) continue;
+			auto& polyVerts = poly.loops[0];
+			if (polyVerts.ptCount() == 0) continue;
 				
-			auto prev = polyVerts[0];
-			for (int i = 0; i < polyVerts.size(); ++i)
+			for(auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1);  iter++)
 			{
-				auto cur = polyVerts[i];
-				g_dbgDraw->AddLine(cur, prev, cvColorf::Green);
-				prev = cur;
+				g_dbgDraw->AddLine(*iter, *(iter + 1), cvColorf::Green);
 			}
+
 			if (addPoints)
 			{
-				g_dbgDraw->AddLine(prev, curPos, cvColorf::Green);
-				g_dbgDraw->AddLine(polyVerts[0], curPos, cvColorf::Yellow);
+				g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
+				g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, cvColorf::Green);
 			}
 			else
 			{
-				g_dbgDraw->AddLine(prev, polyVerts[0], cvColorf::Green);
+				g_dbgDraw->AddLine(*(polyVerts.end() - 1), *polyVerts.begin(), cvColorf::Green);
 			}
 		}
 	}
@@ -161,56 +159,54 @@ void ResolveSingleStep()
 {
 	if (!addPoints && polygones.size() > 0)
 	{
-		Loop l;
-		auto& polyVerts = polygones[0].loops[0].Vertices;
-		l.Vertices = polyVerts;
-		auto hullLoop = _quickHull(l);
+		auto& polyVerts = polygones[0].loops[0];
+		Loop polyLoop(polyVerts);
+		auto hullLoop = _quickHull(polyLoop);
 		if (hullLoop.pointCount() > 0)
 		{
 			auto prev = hullLoop[HullIdx(0)];
 			for (int i = 1; i < hullLoop.pointCount(); ++i)
 			{
 				auto cur = hullLoop[HullIdx(i)];
-				g_dbgDraw->AddLine(l.Vertices[cur], l.Vertices[prev], cvColorf::Red);
+				g_dbgDraw->AddLine(polyLoop[cur], polyLoop[prev], cvColorf::Red);
 				prev = cur;
 			}
-			g_dbgDraw->AddLine(
-				l.Vertices[
-					hullLoop[HullIdx(0)]
-				],
-				l.Vertices[prev], cvColorf::Red);
+			g_dbgDraw->AddLine( polyLoop[hullLoop[HullIdx(0)]], polyLoop[prev], cvColorf::Red);
 		}
 
-		auto bridges = _findAllPockets(hullLoop, l);
+		auto bridges = _findAllPockets(hullLoop, polyLoop);
 		for(auto& b : bridges)
 		{
 			auto hullB0 = b.idx0;
 			auto hullB1 = b.idx1;
-			int b0Idx = hullLoop[hullB0];
-			int b1Idx = hullLoop[hullB1];
+			PolyVertIdx b0Idx = hullLoop[hullB0];
+			PolyVertIdx b1Idx = hullLoop[hullB1];
 			// draw bridge
-			g_dbgDraw->AddLine(l.Vertices[b0Idx], l.Vertices[b1Idx], cvColorf::Yellow);
+			g_dbgDraw->AddLine(polyLoop[b0Idx], polyLoop[b1Idx], cvColorf::Yellow);
 
 			auto prevIdx = b.notches[0];
-			g_dbgDraw->AddLine(l.Vertices[b0Idx], l.Vertices[prevIdx], cvColorf::Blue);
+			g_dbgDraw->AddLine(polyLoop[b0Idx], polyLoop[prevIdx], cvColorf::Blue);
 			for (int j = 1; j < b.notches.size(); j++)
 			{
-				int curIdx = b.notches[j];
-				g_dbgDraw->AddLine(l.Vertices[curIdx], l.Vertices[prevIdx], cvColorf::Blue);
+				PolyVertIdx curIdx = b.notches[j];
+				g_dbgDraw->AddLine(polyLoop[curIdx], polyLoop[prevIdx], cvColorf::Blue);
 				prevIdx = curIdx;
 			}
-			g_dbgDraw->AddLine(l.Vertices[prevIdx], l.Vertices[b1Idx], cvColorf::Blue);
+			g_dbgDraw->AddLine(polyLoop[prevIdx], polyLoop[b1Idx], cvColorf::Blue);
 		}
 
-		// pick best cw
-		auto cw = _pickCW(l, hullLoop, bridges);
-		g_dbgDraw->AddPoint(l.Vertices[cw.ptIndex], 20, cvColorf::Purple);
+		if (bridges.size())
+		{
+			// pick best cw
+			auto cw = _pickCW(polyLoop, hullLoop, bridges);
+			g_dbgDraw->AddPoint(polyLoop[cw.ptIndex], 20, cvColorf::Purple);
 
 
-		// find best cut point
-		int cutPointIdx = _findBestCutPt(l, hullLoop, bridges, cw);
-		g_dbgDraw->AddLine(l.Vertices[cutPointIdx], l.Vertices[cw.ptIndex], cvColorf::Green);
-		g_dbgDraw->AddPoint(l.Vertices[cutPointIdx], 20, cvColorf::Green);
+			// find best cut point
+			PolyVertIdx cutPointIdx = _findBestCutPt(polyLoop, hullLoop, bridges, cw);
+			g_dbgDraw->AddLine(polyLoop[cutPointIdx], polyLoop[cw.ptIndex], cvColorf::Green);
+			g_dbgDraw->AddPoint(polyLoop[cutPointIdx], 20, cvColorf::Green);
+		}
 	}
 }
 
