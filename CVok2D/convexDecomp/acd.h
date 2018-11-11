@@ -3,25 +3,27 @@
 #include <core/cvMath.h>
 #include <vector>
 #include <algorithm>
+#include "acd_base.h"
 
 namespace acd
 {
 	using namespace std;
 
-	struct HullIdx 
-	{ 
-	public:
-		int idx; 
+	typedef IndexBase<int> HullIdx;
+	//struct HullIdx 
+	//{ 
+	//public:
+	//	int idx; 
 
-	public:
-		HullIdx(int i) : idx(i) {}
-		bool operator==(const HullIdx& o) const
-		{
-			return o.idx == idx;
-		}
-		bool operator<(const HullIdx& o) const { return idx < o.idx; }
-		void operator=(const HullIdx& o) { idx = o.idx; }
-	};
+	//public:
+	//	HullIdx(int i) : idx(i) {}
+	//	bool operator==(const HullIdx& o) const
+	//	{
+	//		return o.idx == idx;
+	//	}
+	//	bool operator<(const HullIdx& o) const { return idx < o.idx; }
+	//	void operator=(const HullIdx& o) { idx = o.idx; }
+	//};
 
     class Loop
     {
@@ -47,7 +49,7 @@ namespace acd
 		//const vector<int>& getPtIndices() const { return ptIndicies; }
 		size_t pointCount() const { return ptIndicies.size(); }
 	private:
-		size_t polyIdx(const HullIdx& hi) const { return ptIndicies[hi.idx]; }
+		size_t polyIdx(const HullIdx& hi) const { return ptIndicies[hi.val()]; }
 	};
 
     class Polygon
