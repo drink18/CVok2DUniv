@@ -10,20 +10,6 @@ namespace acd
 	using namespace std;
 
 	typedef IndexBase<int> HullIdx;
-	//struct HullIdx 
-	//{ 
-	//public:
-	//	int idx; 
-
-	//public:
-	//	HullIdx(int i) : idx(i) {}
-	//	bool operator==(const HullIdx& o) const
-	//	{
-	//		return o.idx == idx;
-	//	}
-	//	bool operator<(const HullIdx& o) const { return idx < o.idx; }
-	//	void operator=(const HullIdx& o) { idx = o.idx; }
-	//};
 
     class Loop
     {
