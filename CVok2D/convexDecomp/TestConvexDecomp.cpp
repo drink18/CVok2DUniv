@@ -14,10 +14,11 @@
 using namespace std;
 using namespace acd;
 
+//forward decl
+void ResolveSingleStep();
+
 Camera g_camera;
 cvDebugDraw* g_dbgDraw = nullptr;
-int g_currentDemoIdx = 0;
-
 cvDebugDraw* GetDebugDraw() { return g_dbgDraw; }
 
 static bool rightBtnDown = false;
@@ -33,29 +34,40 @@ static void error_callback(int error, const char* description)
 static ImVec4 clear_color = ImColor(114, 144, 154);
 static bool pause = false;
 static bool singleStep = false;
+static bool guiclick = false;
 
 static bool addPoints = false;
 
-vector<cvVec2f> polygonPoints;
+typedef acd::Polygon Poly;
+vector<Poly> polygones;
 
 static void RenderUI()
 {
     ImGui_ImplGlfwGL3_NewFrame();
-    bool reset = false;
     // 1. show a simple window
     {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
-        if(ImGui::Button("Reset"))
-            reset = true;
+		if (ImGui::Button("Reset"))
+		{
+			if (!addPoints)
+			{
+				polygones.clear();
+				polygones.push_back(Poly());
+				addPoints = true;
+			}
+		}
+
+		if (ImGui::Button("Resolve once"))
+		{
+			ResolveSingleStep();
+			guiclick = true;
+		}
 
         if(ImGui::Button(">>"))
             singleStep = true;
 
         ImGui::Checkbox("Pause", &pause);
-        // render options
-        ImGui::Checkbox("Draw AABB", &g_dbgDraw->m_DbgDrawOpts.bDrawBroadphase);
-        ImGui::Checkbox("Draw Manifold", &g_dbgDraw->m_DbgDrawOpts.bDrawManifoild);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -80,17 +92,16 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
+	if (guiclick)
+		return;
+
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		if (action == GLFW_PRESS)
 		{
-			if (!addPoints)
-			{
-				polygonPoints.clear();
-				addPoints = true;
-			}
 
-			polygonPoints.push_back(curPos);
+			if(addPoints)
+				polygones[0].loops[0].Vertices.push_back(curPos);
 		}
 	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
@@ -118,31 +129,41 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 
 void RenderPolygon()
 {
-	if (polygonPoints.size() > 0)
+	if (polygones.size() > 0)
 	{
-		auto prev = polygonPoints[0];
-		for (int i = 0; i < polygonPoints.size(); ++i)
+		for (auto poly : polygones)
 		{
-			auto cur = polygonPoints[i];
-			g_dbgDraw->AddLine(cur, prev, cvColorf::Green);
-			prev = cur;
-		}
-		if (addPoints)
-		{
-			g_dbgDraw->AddLine(prev, curPos, cvColorf::Green);
-			g_dbgDraw->AddLine(polygonPoints[0], curPos, cvColorf::Yellow);
-		}
-		else
-		{
-			g_dbgDraw->AddLine(prev, polygonPoints[0], cvColorf::Green);
+			auto& polyVerts = poly.loops[0].Vertices;
+			if (polyVerts.empty()) continue;
+				
+			auto prev = polyVerts[0];
+			for (int i = 0; i < polyVerts.size(); ++i)
+			{
+				auto cur = polyVerts[i];
+				g_dbgDraw->AddLine(cur, prev, cvColorf::Green);
+				prev = cur;
+			}
+			if (addPoints)
+			{
+				g_dbgDraw->AddLine(prev, curPos, cvColorf::Green);
+				g_dbgDraw->AddLine(polyVerts[0], curPos, cvColorf::Yellow);
+			}
+			else
+			{
+				g_dbgDraw->AddLine(prev, polyVerts[0], cvColorf::Green);
+			}
 		}
 	}
+}
 
 
-	if (!addPoints && polygonPoints.size() > 0)
+void ResolveSingleStep()
+{
+	if (!addPoints && polygones.size() > 0)
 	{
 		Loop l;
-		l.Vertices = polygonPoints;
+		auto& polyVerts = polygones[0].loops[0].Vertices;
+		l.Vertices = polyVerts;
 		auto hullLoop = _quickHull(l);
 		auto& resPt = hullLoop.getPtIndices();
 		if (resPt.size() > 0)
@@ -160,16 +181,22 @@ void RenderPolygon()
 		auto bridges = _findAllPockets(hullLoop, l);
 		for(auto& b : bridges)
 		{
-			g_dbgDraw->AddLine(l.Vertices[b.idx0], l.Vertices[b.idx1], cvColorf::Yellow);
+			auto hullB0 = b.idx0;
+			auto hullB1 = b.idx1;
+			int b0Idx = hullLoop.polyIdx(hullB0);
+			int b1Idx = hullLoop.polyIdx(hullB1);
+			// draw bridge
+			g_dbgDraw->AddLine(l.Vertices[b0Idx], l.Vertices[b1Idx], cvColorf::Yellow);
+
 			auto prevIdx = b.notches[0];
-			g_dbgDraw->AddLine(l.Vertices[b.idx0], l.Vertices[prevIdx], cvColorf::Blue);
+			g_dbgDraw->AddLine(l.Vertices[b0Idx], l.Vertices[prevIdx], cvColorf::Blue);
 			for (int j = 1; j < b.notches.size(); j++)
 			{
 				int curIdx = b.notches[j];
 				g_dbgDraw->AddLine(l.Vertices[curIdx], l.Vertices[prevIdx], cvColorf::Blue);
 				prevIdx = curIdx;
 			}
-			g_dbgDraw->AddLine(l.Vertices[prevIdx], l.Vertices[b.idx1], cvColorf::Blue);
+			g_dbgDraw->AddLine(l.Vertices[prevIdx], l.Vertices[b1Idx], cvColorf::Blue);
 		}
 
 		// pick best cw
@@ -210,9 +237,6 @@ int main(int, char**)
     printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
 
 
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
-    glfwSetCursorPosCallback(window, cursor_position_callback);
-    glfwSetScrollCallback(window, scroll_callback);
     glClearColor(clear_color.x, clear_color.y, clear_color.z, 1);
 
     cvDebugDraw* pdbgDraw = new cvDebugDraw();
@@ -225,6 +249,10 @@ int main(int, char**)
         return 1;
     }
 
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
     float lastTime = (float)glfwGetTime();
     float dt ;
     // main loop
@@ -233,7 +261,6 @@ int main(int, char**)
         dt = (float)glfwGetTime() - lastTime;
         lastTime = (float)glfwGetTime();
 
-        glfwPollEvents();
 
         bool run = false;
         if(!pause)
@@ -252,12 +279,15 @@ int main(int, char**)
 			glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 			RenderPolygon();
+			ResolveSingleStep();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             {
                 pdbgDraw->Flush();
             }
         }
+
+        glfwPollEvents();
 
         RenderUI();
 

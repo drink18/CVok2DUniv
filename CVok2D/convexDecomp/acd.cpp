@@ -71,11 +71,11 @@ namespace acd
 
 		}
 
-		hullLoop.addIndex(minIdx);
-		hullLoop.addIndex(maxIdx);
+		hullLoop.addIndex((int)minIdx);
+		hullLoop.addIndex((int)maxIdx);
 
-		_quickHull(loop.Vertices, minIdx, maxIdx, upper, hullLoop);
-		_quickHull(loop.Vertices, maxIdx, minIdx, lower, hullLoop);
+		_quickHull(loop.Vertices, (int) minIdx,  (int)maxIdx, upper, hullLoop);
+		_quickHull(loop.Vertices, (int) maxIdx,  (int)minIdx, lower, hullLoop);
 
 		hullLoop.sort();
 		return hullLoop;
@@ -139,15 +139,17 @@ namespace acd
 		auto& hull = h.getPtIndices();
 		int order = hull[1] - hull[0] > 0 ? ACC : DEC;
 
-		int prevIdx = hull[0];
+		int prevHullIdx = 0;
+		int prevIdx = hull[prevHullIdx];
 		for (int i = 1; i <= hull.size(); ++i)
 		{
-			int curIdx = hull[i % hull.size()];
+			int curHullIdx = i % hull.size();
+			int curIdx = hull[curHullIdx];
 			if (!loop.AreNeighbour(prevIdx, curIdx))
 			{
 				Bridge b;
-				b.idx0 = prevIdx;
-				b.idx1 = curIdx;
+				b.idx0.idx = prevHullIdx;
+				b.idx1.idx = curHullIdx;
 				if (prevIdx > curIdx)
 				{
 					int i0 = loop.nextIdx(prevIdx);
@@ -168,6 +170,7 @@ namespace acd
 				bridge.push_back(b);
 			}
 			prevIdx = curIdx;
+			prevHullIdx = curHullIdx;
 
 		}
 
@@ -186,8 +189,8 @@ namespace acd
 		for (int ip= 0; ip < pockets.size(); ++ip)
 		{
 			auto& p = pockets[ip];
-			auto& b0 = loop.Vertices[p.idx0];
-			auto& b1 = loop.Vertices[p.idx1];
+			auto& b0 = loop.Vertices[h.polyIdx(p.idx0)];
+			auto& b1 = loop.Vertices[h.polyIdx(p.idx1)];
 			for (int i = 0; i < p.notches.size(); ++i)
 			{
 				auto& ni = p.notches[i];
@@ -210,33 +213,28 @@ namespace acd
 	}
 
 	bool isValidCutPt(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets,
-		int curPocketIdx, int cwpIdx, int hullPtIdx)
+		int curPocketIdx, int cwpIdx, HullIdx hullPtIdx)
 	{
 		auto& vts = loop.Vertices;
-		auto& hull = h.getPtIndices();
+		auto& hullIndices = h.getPtIndices();
 		auto& curPocket = pockets[curPocketIdx];
 		cvVec2f cwPt = vts[cwpIdx];
 
-
-		//for (int i = 0; i < hull.size(); ++i)
+		for (auto& p : pockets)
 		{
-			int curHullIdx = hullPtIdx;
-			cvVec2f curHullVtx = vts[curHullIdx];
-
-			// ignore bridge
-			if (curHullIdx == curPocket.idx0 || curHullIdx == curPocket.idx1)
+			// ignore bridge vertices
+			// TODO: actually, bridge point of current pocket can be a candidate too
+			if (hullPtIdx == p.idx0 || hullPtIdx == p.idx1)
 				return false;
-
-			//float dl = DistToLine(cwPt, vts[loop.prevIdx(cwpIdx)], curHullVtx);
-			//float dr = DistToLine(vts[loop.nextIdx(cwpIdx)], cwPt, curHullVtx);
-
-			//if (dl < 0 || dr < 0)
-			//	return false;
-
-			return true;
 		}
 
-		return false;
+		//float dl = DistToLine(cwPt, vts[loop.prevIdx(cwpIdx)], curHullVtx);
+		//float dr = DistToLine(vts[loop.nextIdx(cwpIdx)], cwPt, curHullVtx);
+
+		//if (dl < 0 || dr < 0)
+		//	return false;
+
+		return true;
 	}
 
 	int _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
@@ -247,18 +245,24 @@ namespace acd
 		// find a point on hull that forms a line with witness point, that does not intersect with
 		// other pockets
 		auto& hullIndices = hull.getPtIndices();
-		int i0 = min(pocket.idx0, pocket.idx1);
-		int i1 = max(pocket.idx0, pocket.idx1);
 
-		for(int ih = i0 + 1; ih < i1; ++ih)
+		for(int ih = 0; ih < hull.getPtIndices().size(); ++ih)
 		{
 			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, ih))
 			{
-				return ih;
+				// return index on original polygon
+				return hull.getPtIndices()[ih];
 			}
 		}
 
 		cvAssert(false);
 		return 0;
+	}
+
+	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp
+		, int cutPtIdx)
+	{
+		vector<Polygon> poly;
+		return poly;
 	}
 }

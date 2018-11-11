@@ -7,6 +7,21 @@
 namespace acd
 {
 	using namespace std;
+
+	struct HullIdx 
+	{ 
+	public:
+		int idx; 
+
+	public:
+		HullIdx(int i) : idx(i) {}
+		bool operator==(const HullIdx& o) const
+		{
+			return o.idx == idx;
+		}
+		bool operator<(const HullIdx& o) const { return idx < o.idx; }
+	};
+
     class Loop
     {
 	public:
@@ -15,30 +30,39 @@ namespace acd
 		size_t prevIdx(int idx) const { return idx == 0 ? Vertices.size() - 1 : idx - 1; }
 		size_t nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
 	};
+
 	class HullLoop
 	{
 	private:
-		vector<int> ptIndicies;
+		vector<int> ptIndicies; //index into original polygon
 	public:
 		void addIndex(int idx) { ptIndicies.push_back(idx); }
 		void sort() { std::sort(ptIndicies.begin(), ptIndicies.end()); }
 		void insertAfterIdx(int after, int idx);
 		const vector<int>& getPtIndices() const { return ptIndicies; }
+		int polyIdx(HullIdx hi) const { return ptIndicies[hi.idx]; }
 	};
 
     class Polygon
     {
 	public:
-		vector<cvVec2f> Pathes;
+		vector<Loop> loops;
+		Polygon()
+		{
+			loops.push_back(Loop());
+		}
+		void reset() { loops.clear(); }
 	};
 
     class Bridge
     {
-        // 2 index of vertices on original loop that forms bridge;
+        // 2 index of bridge points on convex hull 
 	public:
-		int idx0;
-        int idx1;
-       vector<int> notches;
+		Bridge() :idx0(0), idx1(0) {}
+		HullIdx idx0;
+		HullIdx idx1;
+		// indices of notches in original polygon 
+		vector<int> notches;
 	};
 
     struct ConvexHull
@@ -46,6 +70,8 @@ namespace acd
 	public:
 		Bridge bridge;
         Loop origLoop;
+
+		// indices of vertices in original polygon
         vector<int> hullIndex;
 	};
 
@@ -54,7 +80,7 @@ namespace acd
 	public:
 		float Concavity;
         int loopIndex;
-        int ptIndex; //index of witness point in loop
+        int ptIndex; //index of witness point in original polygon
 		int pocketIdx;
     };
 	
@@ -63,5 +89,8 @@ namespace acd
 	WitnessPt _pickCW(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockes);
 	int _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
 						const WitnessPt& cwp);
+
+	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp, 
+		int cutPtIdx);
 
 }
