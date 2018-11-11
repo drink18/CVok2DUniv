@@ -130,26 +130,23 @@ namespace acd
 		_quickHull(origPoints, bestIdx, idxP1, available, hullLoop);
 	}
 
-	vector<Bridge> _findAllPockets(const HullLoop& h, const Loop& loop)
+	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop)
 	{
 		vector<Bridge> bridge;
 		const int DEC = 0;
 		const int ACC = 1;
 
-		auto& hull = h.getPtIndices();
-		int order = hull[1] - hull[0] > 0 ? ACC : DEC;
-
-		int prevHullIdx = 0;
+		HullIdx prevHullIdx = HullIdx(0);
 		int prevIdx = hull[prevHullIdx];
-		for (int i = 1; i <= hull.size(); ++i)
+		for (int i = 1; i <= hull.pointCount(); ++i)
 		{
-			int curHullIdx = i % hull.size();
+			HullIdx curHullIdx = HullIdx(i % hull.pointCount());
 			int curIdx = hull[curHullIdx];
 			if (!loop.AreNeighbour(prevIdx, curIdx))
 			{
 				Bridge b;
-				b.idx0.idx = prevHullIdx;
-				b.idx1.idx = curHullIdx;
+				b.idx0 = prevHullIdx;
+				b.idx1 = curHullIdx;
 				if (prevIdx > curIdx)
 				{
 					int i0 = loop.nextIdx(prevIdx);
@@ -171,7 +168,6 @@ namespace acd
 			}
 			prevIdx = curIdx;
 			prevHullIdx = curHullIdx;
-
 		}
 
 		return bridge;
@@ -180,7 +176,6 @@ namespace acd
 	WitnessPt _pickCW(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
 	{
 		WitnessPt cw;
-		auto& hull = h.getPtIndices();
 
 		float bestScore = -1e20f;
 		int bestPocketIdx = -1;
@@ -189,8 +184,8 @@ namespace acd
 		for (int ip= 0; ip < pockets.size(); ++ip)
 		{
 			auto& p = pockets[ip];
-			auto& b0 = loop.Vertices[h.polyIdx(p.idx0)];
-			auto& b1 = loop.Vertices[h.polyIdx(p.idx1)];
+			auto& b0 = loop.Vertices[h[p.idx0]];
+			auto& b1 = loop.Vertices[h[p.idx1]];
 			for (int i = 0; i < p.notches.size(); ++i)
 			{
 				auto& ni = p.notches[i];
@@ -216,7 +211,6 @@ namespace acd
 		int curPocketIdx, int cwpIdx, HullIdx hullPtIdx)
 	{
 		auto& vts = loop.Vertices;
-		auto& hullIndices = h.getPtIndices();
 		auto& curPocket = pockets[curPocketIdx];
 		cvVec2f cwPt = vts[cwpIdx];
 
@@ -244,14 +238,13 @@ namespace acd
 
 		// find a point on hull that forms a line with witness point, that does not intersect with
 		// other pockets
-		auto& hullIndices = hull.getPtIndices();
 
-		for(int ih = 0; ih < hull.getPtIndices().size(); ++ih)
+		for(int ih = 0; ih < hull.pointCount(); ++ih)
 		{
 			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, ih))
 			{
 				// return index on original polygon
-				return hull.getPtIndices()[ih];
+				return hull[ih];
 			}
 		}
 

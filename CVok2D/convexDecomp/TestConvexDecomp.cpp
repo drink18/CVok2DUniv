@@ -165,17 +165,20 @@ void ResolveSingleStep()
 		auto& polyVerts = polygones[0].loops[0].Vertices;
 		l.Vertices = polyVerts;
 		auto hullLoop = _quickHull(l);
-		auto& resPt = hullLoop.getPtIndices();
-		if (resPt.size() > 0)
+		if (hullLoop.pointCount() > 0)
 		{
-			auto prev = resPt[0];
-			for (int i = 1; i < resPt.size(); ++i)
+			auto prev = hullLoop[HullIdx(0)];
+			for (int i = 1; i < hullLoop.pointCount(); ++i)
 			{
-				auto cur = resPt[i];
+				auto cur = hullLoop[HullIdx(i)];
 				g_dbgDraw->AddLine(l.Vertices[cur], l.Vertices[prev], cvColorf::Red);
 				prev = cur;
 			}
-			g_dbgDraw->AddLine(l.Vertices[resPt[0]], l.Vertices[prev], cvColorf::Red);
+			g_dbgDraw->AddLine(
+				l.Vertices[
+					hullLoop[HullIdx(0)]
+				],
+				l.Vertices[prev], cvColorf::Red);
 		}
 
 		auto bridges = _findAllPockets(hullLoop, l);
@@ -183,8 +186,8 @@ void ResolveSingleStep()
 		{
 			auto hullB0 = b.idx0;
 			auto hullB1 = b.idx1;
-			int b0Idx = hullLoop.polyIdx(hullB0);
-			int b1Idx = hullLoop.polyIdx(hullB1);
+			int b0Idx = hullLoop[hullB0];
+			int b1Idx = hullLoop[hullB1];
 			// draw bridge
 			g_dbgDraw->AddLine(l.Vertices[b0Idx], l.Vertices[b1Idx], cvColorf::Yellow);
 

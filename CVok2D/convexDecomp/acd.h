@@ -20,6 +20,7 @@ namespace acd
 			return o.idx == idx;
 		}
 		bool operator<(const HullIdx& o) const { return idx < o.idx; }
+		void operator=(const HullIdx& o) { idx = o.idx; }
 	};
 
     class Loop
@@ -31,16 +32,22 @@ namespace acd
 		size_t nextIdx(int idx) const { return (idx + 1) % Vertices.size(); }
 	};
 
+	// a collection of indices into original polygon
+	// that forms the convex hull
 	class HullLoop
 	{
 	private:
 		vector<int> ptIndicies; //index into original polygon
 	public:
+		// operator overload
+		size_t operator[](const HullIdx& idx) const { return polyIdx(idx); };
 		void addIndex(int idx) { ptIndicies.push_back(idx); }
 		void sort() { std::sort(ptIndicies.begin(), ptIndicies.end()); }
 		void insertAfterIdx(int after, int idx);
-		const vector<int>& getPtIndices() const { return ptIndicies; }
-		int polyIdx(HullIdx hi) const { return ptIndicies[hi.idx]; }
+		//const vector<int>& getPtIndices() const { return ptIndicies; }
+		size_t pointCount() const { return ptIndicies.size(); }
+	private:
+		size_t polyIdx(const HullIdx& hi) const { return ptIndicies[hi.idx]; }
 	};
 
     class Polygon
@@ -71,7 +78,6 @@ namespace acd
 		Bridge bridge;
         Loop origLoop;
 
-		// indices of vertices in original polygon
         vector<int> hullIndex;
 	};
 
