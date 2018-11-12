@@ -34,12 +34,14 @@ static void error_callback(int error, const char* description)
 static ImVec4 clear_color = ImColor(114, 144, 154);
 static bool pause = false;
 static bool singleStep = false;
-static bool guiclick = false;
 
 static bool addPoints = false;
 
 typedef acd::Polygon Poly;
 vector<Poly> polygones;
+
+vector<Loop> polys_todo;
+vector<Loop> polys_done;
 
 static void RenderUI()
 {
@@ -48,20 +50,20 @@ static void RenderUI()
     {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
-		if (ImGui::Button("Reset"))
+		if (ImGui::Button("New Poly"))
 		{
 			if (!addPoints)
 			{
-				polygones.clear();
-				polygones.push_back(Poly());
+				polys_todo.clear();
+				polys_done.clear();
+				polys_todo.push_back(Loop());
 				addPoints = true;
 			}
 		}
 
-		if (ImGui::Button("Resolve once"))
+		if (ImGui::Button("Resolve One Step"))
 		{
 			ResolveSingleStep();
-			guiclick = true;
 		}
 
         if(ImGui::Button(">>"))
@@ -92,16 +94,16 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
 
 static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	if (guiclick)
-		return;
-
 	if (button == GLFW_MOUSE_BUTTON_LEFT)
 	{
 		if (action == GLFW_PRESS)
 		{
+			if (addPoints)
+			{
+				//polygones[0].loops[0].AddVertex(curPos);
+				polys_todo[0].AddVertex(curPos);
+			}
 
-			if(addPoints)
-				polygones[0].loops[0].AddVertex(curPos);
 		}
 	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
@@ -127,8 +129,40 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
 }
 
+void RenderPolyLoop(Loop &polyVerts, cvColorf color)
+{
+	if (polyVerts.ptCount() == 0) return;
+
+	for (auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1); iter++)
+	{
+		g_dbgDraw->AddLine(*iter, *(iter + 1), color);
+	}
+
+	if (addPoints)
+	{
+		g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
+		g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, color);
+	}
+	else
+	{
+		g_dbgDraw->AddLine(*(polyVerts.end() - 1), *polyVerts.begin(), color);
+	}
+}
+
 void RenderPolygon()
 {
+
+	for (auto& polyVerts : polys_todo)
+	{
+		RenderPolyLoop(polyVerts, cvColorf::Green);
+	}
+
+	for (auto& polyVerts : polys_done)
+	{
+		RenderPolyLoop(polyVerts, cvColorf::Red);
+	}
+
+#if 0 
 	if (polygones.size() > 0)
 	{
 		for (auto poly : polygones)
@@ -164,10 +198,30 @@ void RenderPolygon()
 		}
 
 	}
+#endif
 }
 
-
 void ResolveSingleStep()
+{
+	vector<Loop> result;
+	for (auto& loop : polys_todo)
+	{
+		vector<Loop> decomped = _resolveLoop(loop);
+		if (decomped.size() == 1)
+		{
+			polys_done.push_back(decomped[0]);
+		}
+		else
+		{
+			for (auto& dloop : decomped)
+				result.push_back(dloop);
+		}
+	}
+
+	polys_todo = result;
+}
+
+void ResolveSingleStepWithDebugDraw()
 {
 	if (!addPoints && polygones.size() > 0)
 	{
@@ -290,7 +344,7 @@ int main(int, char**)
 			glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 			RenderPolygon();
-			ResolveSingleStep();
+			//ResolveSingleStep();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             {

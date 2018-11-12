@@ -126,7 +126,6 @@ namespace acd
 	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
 						const WitnessPt& cwp);
 
-	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp, 
-		int cutPtIdx);
+	vector<Loop> _resolveLoop(const Loop& loop);
 
 }

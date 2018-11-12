@@ -166,9 +166,11 @@ namespace acd
 			PolyVertIdx curIdx = hull[curHullIdx];
 			if (!loop.AreNeighbour(prevIdx, curIdx))
 			{
+				//TODO : THIS IS BUGGY
 				Bridge b;
 				b.idx0 = prevHullIdx;
 				b.idx1 = curHullIdx;
+
 				if (prevIdx > curIdx)
 				{
 					PolyVertIdx i0 = loop.nextIdx(prevIdx);
@@ -339,10 +341,49 @@ namespace acd
 		return bestPtIdx;
 	}
 
-	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp
-		, int cutPtIdx)
+	vector<Loop> _resolveLoop(const Loop& loop)
 	{
-		vector<Polygon> poly;
+		vector<Loop> poly;
+		
+		Loop polyLoop(loop);
+		auto hullLoop = _quickHull(polyLoop);
+
+		// already convex
+		if (hullLoop.pointCount() == polyLoop.ptCount())
+		{
+			poly.push_back(loop);
+			return poly;
+		}
+
+		auto bridges = _findAllPockets(hullLoop, polyLoop);
+		cvAssert(bridges.size() > 0);
+
+		// pick deepest notches 
+		auto cw = _pickCW(polyLoop, hullLoop, bridges);
+
+		// find best cut point
+		PolyVertIdx cutPointIdx = _findBestCutPt(polyLoop, hullLoop, bridges, cw);
+
+		// split loop
+		Loop loop1;
+		for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
+		{
+			loop1.AddVertex(loop[i]);
+			if (i == PolyVertIdx(cutPointIdx))
+				break;
+		}
+		poly.push_back(loop1);
+
+		Loop loop2;
+		for (PolyVertIdx i = PolyVertIdx(cutPointIdx); ; i = loop.nextIdx(i))
+		{
+			loop2.AddVertex(loop[i]);
+			if (i == cw.ptIndex)
+				break;
+		}
+		poly.push_back(loop2);
+		
+
 		return poly;
 	}
 }
