@@ -150,7 +150,19 @@ void RenderPolygon()
 			{
 				g_dbgDraw->AddLine(*(polyVerts.end() - 1), *polyVerts.begin(), cvColorf::Green);
 			}
+			if (!addPoints)
+			{
+				//draw normals
+				for (PolyVertIdx i = polyVerts.beginIdx(); i <= polyVerts.endIdx(); ++i)
+				{
+					cvVec2f v = polyVerts[i];
+					cvVec2f nv = polyVerts[polyVerts.nextIdx(i)];
+					cvVec2f mid = (v + nv) * 0.5f;
+					g_dbgDraw->AddArrow(mid, mid + polyVerts.normal(i), cvColorf::Purple);
+				}
+			}
 		}
+
 	}
 }
 

@@ -16,7 +16,7 @@ namespace acd
     {
 	public:
 		Loop() { }
-		Loop(const vector<cvVec2f>& vtx) :_vertices(vtx) { }
+		Loop(const vector<cvVec2f>& vtx);
 		bool AreNeighbour(const PolyVertIdx& idx0, const PolyVertIdx& idx1) const
 		{
 			return AreNeighbour(idx0.val(), idx1.val());
@@ -25,16 +25,29 @@ namespace acd
 		PolyVertIdx nextIdx(const PolyVertIdx& idx) const { return PolyVertIdx(nextIdx(idx.val())); }
 		cvVec2f operator[](const PolyVertIdx& idx)const { return _vertices[idx.val()]; }
 		size_t ptCount() const { return _vertices.size(); }
-		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); }
+		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); updateNormals(); }
 
+		// iterators
 		typedef vector<cvVec2f>::iterator iterator;
 		typedef vector<cvVec2f>::const_iterator const_iterator;
 		iterator begin() { return _vertices.begin(); }
 		const_iterator cbegin() const { return _vertices.begin(); }
 		iterator end() { return _vertices.end(); }
 		const_iterator cend() const { return _vertices.end(); }
+
+		// indices
+		PolyVertIdx beginIdx() const { return PolyVertIdx(0); }
+		PolyVertIdx endIdx() const { return PolyVertIdx(_vertices.size() - 1); }
+
+		//normals
+		cvVec2f normal(PolyVertIdx idx) const { return _normals[idx.val()]; }
+
+		// update functions
+		void updateNormals();
+
 	private:
 		vector<cvVec2f> _vertices;
+		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)
 		bool AreNeighbour(size_t idx0, size_t idx1) const;
 		size_t prevIdx(size_t idx) const { return idx == 0 ? _vertices.size() - 1 : idx - 1; }
 		size_t nextIdx(size_t idx) const { return (idx + 1) % _vertices.size(); }

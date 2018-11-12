@@ -27,6 +27,31 @@ namespace acd
 	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1, 
 		vector<PolyVertIdx>& available, HullLoop& hullLoop);
 
+	Loop::Loop(const vector<cvVec2f>& vtx) 
+		:_vertices(vtx)
+	{
+		updateNormals();
+	}
+
+	void Loop::updateNormals()
+	{
+		_normals.clear();
+		_normals.reserve(_vertices.size());
+
+		if (ptCount() < 2)
+			return;
+
+		for (PolyVertIdx i = beginIdx(); i <= endIdx(); ++i)
+		{
+			cvVec2f v = (*this)[i];
+			cvVec2f nv = (*this)[nextIdx(i)];
+			cvVec2f e = nv - v;
+			cvVec2f n(-e.y, e.x);
+			n.normalize();
+			_normals.push_back(n);
+		}
+	}
+
 	HullLoop _quickHull(const Loop& loop)
 	{
 		HullLoop hullLoop;
@@ -234,16 +259,84 @@ namespace acd
 	{
 		auto& pocket = pockets[cwp.pocketIdx];
 
-		PolyVertIdx first(0);
-		PolyVertIdx end(loop.ptCount());
-		for (auto idx = first; idx < end; ++idx)
+		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
 		{
 			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, idx))
 				return idx;
 		}
 
-		cvAssert(false);
-		return PolyVertIdx(0);
+		// can't find a vertex as cut point , use normal as cut direction and find 
+		// best cutting point
+		cvVec2f lineDir = -(loop.normal(cwp.ptIndex) + loop.normal(loop.prevIdx(cwp.ptIndex)));
+		lineDir.normalize();
+		cvVec2f lineNorm(-lineDir.y, lineDir.x);
+
+		vector<bool> ups;
+		vector<cvVec2f> intersects;
+		vector<float> dists;
+		vector<PolyVertIdx> vtxIndices;
+		
+		cvVec2f cwPt = loop[cwp.ptIndex];
+		//update ups
+		const float eps = 1e-5f;
+		ups.reserve(loop.ptCount());
+		ups.resize(loop.ptCount());
+		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+		{
+			cvVec2f v = loop[idx];
+			float d = (v - cwPt).dot(lineNorm);
+			if (d > eps)
+				ups[idx.val()] = true;
+			//else if (d < -eps)
+			else
+				ups[idx.val()] = false;
+			//else
+			//	ups[idx.val()] = !ups[loop.prevIdx(idx).val()];
+		}
+
+		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+		{
+			bool up = ups[idx.val()];
+			PolyVertIdx ni = loop.nextIdx(idx);
+			bool nup = ups[ni.val()];
+			if (idx == cwp.ptIndex) continue;
+			if (idx == loop.prevIdx(cwp.ptIndex)) continue;
+			if (idx == loop.nextIdx(cwp.ptIndex)) continue;
+
+			if (up != nup)
+			{
+				cvVec2f v = loop[idx];
+				cvVec2f nv = loop[loop.nextIdx(idx)];
+				// intersecting, compute distance etc
+				float t = (v - cwPt).dot(lineNorm) / (nv - v).dot(lineNorm);
+				cvVec2f intersect = v * t + nv * (1 - t);
+				float dist = (intersect - cwPt).dot(lineDir);
+
+				//if (dist > -eps)
+				{
+					vtxIndices.push_back(idx);
+					intersects.push_back(intersect);
+					dists.push_back(dist);
+				}
+			}
+		}
+
+		//pick closet 
+		float bestDist = 1e10f;
+		PolyVertIdx bestPtIdx(-1);
+		for(int i = 0; i < vtxIndices.size(); ++i)
+		{
+			float d = dists[i];
+			if (d < bestDist && d > -eps)
+			{
+				bestDist = d;
+				bestPtIdx = vtxIndices[i];
+			}
+		}
+
+		cvAssert(bestPtIdx.val() != -1);
+
+		return bestPtIdx;
 	}
 
 	vector<Polygon> _resolveLoop(const Loop& loop, const HullLoop& hull, const WitnessPt& cwp
