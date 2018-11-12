@@ -204,21 +204,22 @@ void RenderPolygon()
 void ResolveSingleStep()
 {
 	vector<Loop> result;
-	for (auto& loop : polys_todo)
-	{
-		vector<Loop> decomped = _resolveLoop(loop);
-		if (decomped.size() == 1)
-		{
-			polys_done.push_back(decomped[0]);
-		}
-		else
-		{
-			for (auto& dloop : decomped)
-				result.push_back(dloop);
-		}
-	}
+	if (polys_todo.size() == 0)
+		return;
 
-	polys_todo = result;
+	Loop loop = polys_todo.back();
+	polys_todo.pop_back();
+
+	vector<Loop> decomped = _resolveLoop(loop);
+	if (decomped.size() == 1)
+	{
+		polys_done.push_back(decomped[0]);
+	}
+	else
+	{
+		for (auto& dloop : decomped)
+			polys_todo.push_back(dloop);
+	}
 }
 
 void ResolveSingleStepWithDebugDraw()
