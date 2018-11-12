@@ -30,6 +30,14 @@ namespace acd
 	Loop::Loop(const vector<cvVec2f>& vtx) 
 		:_vertices(vtx)
 	{
+		if (vtx.size() > 2)
+		{
+			cvVec2f v0 = _vertices[0];
+			cvVec2f v1 = _vertices[1];
+			cvVec2f v2 = _vertices[2];
+			if (Vec2Cross(v1 - v0, v2 - v1) > 0)
+				reverse(_vertices.begin(), _vertices.end());
+		}
 		updateNormals();
 	}
 
@@ -103,7 +111,15 @@ namespace acd
 		_quickHull(loop,  minIdx, maxIdx, upper, hullLoop);
 		_quickHull(loop,  maxIdx, minIdx, lower, hullLoop);
 
-		hullLoop.sort();
+		//hullLoop.sort();
+		cvVec2f v0 = loop[hullLoop[HullIdx(0)]];
+		cvVec2f v1 = loop[hullLoop[HullIdx(1)]];
+		cvVec2f v2 = loop[hullLoop[HullIdx(2)]];
+		float a = Vec2Cross(v1 - v0, v2 - v1);
+		if (a > 0)
+		{
+			reverse(hullLoop.begin(), hullLoop.end());
+		}
 		return hullLoop;
 	}
 
@@ -170,11 +186,12 @@ namespace acd
 				Bridge b;
 				b.idx0 = prevIdx;
 				b.idx1 = curIdx;
-
-				for (auto idx = loop.nextIdx(prevIdx); idx != curIdx; idx = loop.nextIdx(idx))
+				for (PolyVertIdx idx = loop.nextIdx(b.idx0); idx != b.idx1; idx = loop.nextIdx(idx))
 				{
 					b.notches.push_back(idx);
 				}
+
+				//sort(b.notches.begin(), b.notches.end());
 				cvAssert(b.notches.size() > 0);
 				bridge.push_back(b);
 			}

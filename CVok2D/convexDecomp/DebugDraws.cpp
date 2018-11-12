@@ -643,6 +643,23 @@ void cvDebugDraw::AddArrow(const cvVec2f& from, const cvVec2f& to, const cvColor
 	AddPolygon(arrow, ident, color);
 }
 
+void cvDebugDraw::AddArrowMid(const cvVec2f& from, const cvVec2f& to, const cvColorf& color)
+{
+	m_lineRender->Vertex(from, to, color, color);
+
+
+	//render arrow head
+	cvVec2f n = (to - from).getNormalized(); 
+	cvVec2f perp(-n.y, n.x);
+
+	cvVec2f mid = (from + to) / 2;
+	vector<cvVec2f> arrow;
+	arrow.push_back(mid - perp * 0.25f);
+	arrow.push_back(mid + perp * 0.25f);
+	arrow.push_back(mid + n * 0.43f);
+	cvMat33 ident;
+	AddPolygon(arrow, ident, color);
+}
 
 void cvDebugDraw::AddPolygon(const std::vector<cvVec2f>& vertices, 
         const cvTransform& trans, const cvColorf& color)

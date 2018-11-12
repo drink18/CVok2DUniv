@@ -45,6 +45,10 @@ namespace acd
 		// update functions
 		void updateNormals();
 
+		// is v1 precedent of v
+		bool isPrev(PolyVertIdx v, PolyVertIdx v1) const { return (v1.val() + 1) % ptCount() == v.val(); }
+		// is v1 successor of v
+		bool isNext(PolyVertIdx v, PolyVertIdx v1) const { return (v.val() + 1) % ptCount() == v1.val(); }
 	private:
 		vector<cvVec2f> _vertices;
 		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)
@@ -67,6 +71,11 @@ namespace acd
 		void insertAfterIdx(PolyVertIdx after, PolyVertIdx idx);
 		//const vector<int>& getPtIndices() const { return ptIndicies; }
 		size_t pointCount() const { return ptIndicies.size(); }
+
+		bool hasVtxIdx(PolyVertIdx idx)  const
+		{
+			return find(ptIndicies.begin(), ptIndicies.end(), idx) != ptIndicies.end();
+		}
 
 	public:
 		typedef vector<PolyVertIdx>::iterator iterator;

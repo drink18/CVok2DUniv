@@ -39,7 +39,6 @@ static bool addPoints = false;
 static bool showConvexHull = false;
 
 typedef acd::Polygon Poly;
-vector<Poly> polygones;
 
 vector<Loop> polys_todo;
 vector<Loop> polys_done;
@@ -152,15 +151,17 @@ void RenderPolyLoop(Loop &polyVerts, cvColorf color)
 
 void RenderPolygon()
 {
-
-	for (auto& polyVerts : polys_todo)
+	for(auto iter = polys_todo.begin(); iter != polys_todo.end(); ++iter)
 	{
-		RenderPolyLoop(polyVerts, cvColorf::Green);
+		if(iter  == polys_todo.end() - 1)
+			RenderPolyLoop(*iter, cvColorf::White);
+		else
+			RenderPolyLoop(*iter, cvColorf::White);
 	}
 
 	for (auto& polyVerts : polys_done)
 	{
-		RenderPolyLoop(polyVerts, cvColorf::Red);
+		RenderPolyLoop(polyVerts, cvColorf::White);
 	}
 
 	if (showConvexHull && !polys_todo.empty())
@@ -173,19 +174,65 @@ void RenderPolygon()
 			HullIdx h1(hull.pointCount() - 1);
 			for (HullIdx idx = h0; idx < h1; idx++)
 			{
-				g_dbgDraw->AddLine(loop[hull[idx]], loop[hull[idx + 1]], cvColorf::Purple);
+				g_dbgDraw->AddArrowMid(loop[hull[idx]], loop[hull[idx + 1]], cvColorf::Purple);
 			}
 
-			g_dbgDraw->AddLine(loop[hull[h0]], loop[hull[h1]], cvColorf::Purple);
+			g_dbgDraw->AddArrowMid(loop[hull[h1]], loop[hull[h0]], cvColorf::Purple);
+
+
+			vector<Bridge> pockets = _findAllPockets(hull, loop);
+			for (auto& b : pockets)
+			{
+				auto hullB0 = b.idx0;
+				auto hullB1 = b.idx1;
+				PolyVertIdx b0Idx = hullB0;
+				PolyVertIdx b1Idx = hullB1;
+				// draw bridge
+				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], cvColorf::Yellow);
+
+				PolyVertIdx prevIdx = b.notches[0];
+				if(b.notches.size() == 1)
+				{ 
+					g_dbgDraw->AddArrowMid(loop[b0Idx], loop[prevIdx], cvColorf::Orange);
+					g_dbgDraw->AddArrowMid(loop[b1Idx], loop[prevIdx], cvColorf::Orange);
+				}
+				else
+				{
+					PolyVertIdx curIdx = b.notches[1];
+					if (loop.isNext(b0Idx, prevIdx))
+					{
+						for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
+						{
+							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], cvColorf::Orange);
+						}
+					}
+					else
+					{
+						for (auto idx = b0Idx; idx != b1Idx; idx = loop.prevIdx(idx))
+						{
+							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.prevIdx(idx)], cvColorf::Orange);
+						}
+					}
+				}
+			}
+
+			if (pockets.size())
+			{
+				// pick best cw
+				auto cw = _pickCW(loop, hull, pockets);
+				g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
+			}
 		}
 	}
 
-#if 0 
-	if (polygones.size() > 0)
+}
+
+void DebugResolve()
+{
+	if (polys_todo.size() > 0)
 	{
-		for (auto poly : polygones)
+		for (auto polyVerts : polys_todo)
 		{
-			auto& polyVerts = poly.loops[0];
 			if (polyVerts.ptCount() == 0) continue;
 				
 			for(auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1);  iter++)
@@ -216,7 +263,6 @@ void RenderPolygon()
 		}
 
 	}
-#endif
 }
 
 void ResolveSingleStep()
@@ -243,9 +289,9 @@ void ResolveSingleStep()
 
 void ResolveSingleStepWithDebugDraw()
 {
-	if (!addPoints && polygones.size() > 0)
+	if (!addPoints && polys_todo.size() > 0)
 	{
-		auto& polyVerts = polygones[0].loops[0];
+		auto& polyVerts = polys_todo[0];
 		Loop polyLoop(polyVerts);
 		auto hullLoop = _quickHull(polyLoop);
 		if (hullLoop.pointCount() > 0)
@@ -364,7 +410,6 @@ int main(int, char**)
 			glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
 			RenderPolygon();
-			//ResolveSingleStep();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             {
