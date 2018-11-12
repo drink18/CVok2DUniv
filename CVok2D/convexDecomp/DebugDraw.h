@@ -58,6 +58,8 @@ public:
     void AddPolygon(const std::vector<cvVec2f>& vertices, const cvTransform& trans, const cvColorf& color);
     void AddPolygon(const std::vector<cvVec2f>& vertices, const cvMat33& mat, const cvColorf& color);
 
+	void AddArrow(const cvVec2f& from, const cvVec2f& to, const cvColorf& color);
+
     void DrawAabb(const cvAabb& aabb, const cvColorf& color);
     void DrawShape(const cvShape& shape, const cvMat33& trans, const cvColorf& color);
     void DrawPolygonShape(const cvPolygonShape& poly, cvTransform& trans, const cvColorf& color);
