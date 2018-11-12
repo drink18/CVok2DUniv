@@ -205,43 +205,41 @@ namespace acd
 	}
 
 	bool isValidCutPt(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets,
-		int curPocketIdx, PolyVertIdx cwpIdx, HullIdx hullPtIdx)
+		int curPocketIdx, PolyVertIdx cwpIdx, PolyVertIdx vIdx)
 	{
 		auto& curPocket = pockets[curPocketIdx];
-		cvVec2f cwPt = loop[cwpIdx];
 
-		for (auto& p : pockets)
+		if(vIdx != cwpIdx)
 		{
-			// ignore bridge vertices
-			// TODO: actually, bridge point of current pocket can be a candidate too
-			if (hullPtIdx == p.idx0 || hullPtIdx == p.idx1)
-				return false;
+			cvVec2f v = loop[vIdx];
+			cvVec2f cwPt = loop[cwpIdx];
+			cvVec2f prev = loop[loop.prevIdx(cwpIdx)];
+			cvVec2f next = loop[loop.nextIdx(cwpIdx)];
+
+			cvVec2f v1 = cwPt - prev;
+			cvVec2f v2 = cwPt - next;
+			cvVec2f vec = v - cwPt;
+	
+			float a = Vec2Cross(vec, v2);
+			float b = Vec2Cross(vec, v1);
+			float c = Vec2Cross(v2, v1);
+
+			return (a * c < 0) && (b * c > 0);
 		}
-
-		//float dl = DistToLine(cwPt, vts[loop.prevIdx(cwpIdx)], curHullVtx);
-		//float dr = DistToLine(vts[loop.nextIdx(cwpIdx)], cwPt, curHullVtx);
-
-		//if (dl < 0 || dr < 0)
-		//	return false;
-
-		return true;
+		return false;
 	}
-	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
+
+	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
 		const WitnessPt& cwp)
 	{
 		auto& pocket = pockets[cwp.pocketIdx];
 
-		// find a point on hull that forms a line with witness point, that does not intersect with
-		// other pockets
-
-
-		for(int ih = 0; ih < hull.pointCount(); ++ih)
+		PolyVertIdx first(0);
+		PolyVertIdx end(loop.ptCount());
+		for (auto idx = first; idx < end; ++idx)
 		{
-			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, HullIdx(ih)))
-			{
-				// return index on original polygon
-				return hull[HullIdx(ih)];
-			}
+			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, idx))
+				return idx;
 		}
 
 		cvAssert(false);
