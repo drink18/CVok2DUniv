@@ -36,6 +36,7 @@ static bool pause = false;
 static bool singleStep = false;
 
 static bool addPoints = false;
+static bool showConvexHull = false;
 
 typedef acd::Polygon Poly;
 vector<Poly> polygones;
@@ -70,6 +71,7 @@ static void RenderUI()
             singleStep = true;
 
         ImGui::Checkbox("Pause", &pause);
+        ImGui::Checkbox("Show Convex Hull", &showConvexHull);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -162,6 +164,23 @@ void RenderPolygon()
 		RenderPolyLoop(polyVerts, cvColorf::Red);
 	}
 
+	if (showConvexHull && !polys_todo.empty())
+ 	{
+		auto& loop = polys_todo.back();
+		if (loop.ptCount() > 2)
+		{
+			HullLoop hull = _quickHull(loop);
+			HullIdx h0(0);
+			HullIdx h1(hull.pointCount() - 1);
+			for (HullIdx idx = h0; idx < h1; idx++)
+			{
+				g_dbgDraw->AddLine(loop[hull[idx]], loop[hull[idx + 1]], cvColorf::Purple);
+			}
+
+			g_dbgDraw->AddLine(loop[hull[h0]], loop[hull[h1]], cvColorf::Purple);
+		}
+	}
+
 #if 0 
 	if (polygones.size() > 0)
 	{
@@ -211,6 +230,7 @@ void ResolveSingleStep()
 	polys_todo.pop_back();
 
 	vector<Loop> decomped = _resolveLoop(loop);
+	
 	if (decomped.size() == 1)
 	{
 		polys_done.push_back(decomped[0]);
