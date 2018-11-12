@@ -168,24 +168,12 @@ namespace acd
 			{
 				//TODO : THIS IS BUGGY
 				Bridge b;
-				b.idx0 = prevHullIdx;
-				b.idx1 = curHullIdx;
+				b.idx0 = prevIdx;
+				b.idx1 = curIdx;
 
-				if (prevIdx > curIdx)
+				for (auto idx = loop.nextIdx(prevIdx); idx != curIdx; idx = loop.nextIdx(idx))
 				{
-					PolyVertIdx i0 = loop.nextIdx(prevIdx);
-					PolyVertIdx i1 = loop.prevIdx(curIdx);
-					for (auto j = i0; j <= i1; j++)
-					{
-						b.notches.push_back(PolyVertIdx(j));
-					}
-				}
-				else
-				{ 
-					for (auto j = prevIdx + 1; j < curIdx; j++)
-					{
-						b.notches.push_back(j);
-					}
+					b.notches.push_back(idx);
 				}
 				cvAssert(b.notches.size() > 0);
 				bridge.push_back(b);
@@ -208,8 +196,8 @@ namespace acd
 		for (int ip= 0; ip < pockets.size(); ++ip)
 		{
 			auto& p = pockets[ip];
-			auto& b0 = loop[h[p.idx0]];
-			auto& b1 = loop[h[p.idx1]];
+			auto& b0 = loop[p.idx0];
+			auto& b1 = loop[p.idx1];
 			for (int i = 0; i < p.notches.size(); ++i)
 			{
 				auto& ni = p.notches[i];

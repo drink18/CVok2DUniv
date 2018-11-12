@@ -92,11 +92,10 @@ namespace acd
 
     class Bridge
     {
-        // 2 index of bridge points on convex hull 
 	public:
 		Bridge() :idx0(0), idx1(0) {}
-		HullIdx idx0;
-		HullIdx idx1;
+		// 2 points forming bridge
+		PolyVertIdx idx0;		PolyVertIdx idx1;
 		// indices of notches in original polygon 
 		vector<PolyVertIdx> notches;
 	};

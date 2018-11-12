@@ -245,8 +245,8 @@ void ResolveSingleStepWithDebugDraw()
 		{
 			auto hullB0 = b.idx0;
 			auto hullB1 = b.idx1;
-			PolyVertIdx b0Idx = hullLoop[hullB0];
-			PolyVertIdx b1Idx = hullLoop[hullB1];
+			PolyVertIdx b0Idx = hullB0;
+			PolyVertIdx b1Idx = hullB1;
 			// draw bridge
 			g_dbgDraw->AddLine(polyLoop[b0Idx], polyLoop[b1Idx], cvColorf::Yellow);
 
