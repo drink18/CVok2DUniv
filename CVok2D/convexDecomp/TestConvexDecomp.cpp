@@ -85,9 +85,8 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
     if (rightBtnDown)
     {
         cvVec2f delta = curPos - lastCursorPos;
-        delta *= 0.1f;
         g_camera.m_center.x -= delta.x;
-        g_camera.m_center.y += delta.y;
+        g_camera.m_center.y -= delta.y;
     }
 
     lastCursorPos.set((float)xpos, (float)ypos);
