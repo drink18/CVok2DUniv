@@ -193,7 +193,6 @@ void RenderPolygon()
 			RenderPolyLoop(*iter, cvColorf::White, false);
 	}
 
-	//for (auto& polyVerts : polys_done)
 	for(int i = 0; i < polys_done.size(); ++i)
 	{
 		auto& polyVerts = polys_done[i];
@@ -229,20 +228,22 @@ void RenderPolygon()
 			pockets = _findAllPockets(hull, loop);
 		if (dbgCtrl.showPocket)
 		{
-			for (auto& b : pockets)
+			for(int i = 0; i < pockets.size(); ++i)
 			{
+				cvColorf c = randomColors[i];
+				auto& b = pockets[i];
 				auto hullB0 = b.idx0;
 				auto hullB1 = b.idx1;
 				PolyVertIdx b0Idx = hullB0;
 				PolyVertIdx b1Idx = hullB1;
 				// draw bridge
-				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], cvColorf::Yellow);
+				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], c);
 
 				PolyVertIdx prevIdx = b.notches[0];
 				if (b.notches.size() == 1)
 				{
-					g_dbgDraw->AddArrowMid(loop[b0Idx], loop[prevIdx], cvColorf::Orange);
-					g_dbgDraw->AddArrowMid(loop[b1Idx], loop[prevIdx], cvColorf::Orange);
+					g_dbgDraw->AddArrowMid(loop[b0Idx], loop[prevIdx], c);
+					g_dbgDraw->AddArrowMid(loop[b1Idx], loop[prevIdx], c);
 				}
 				else
 				{
@@ -251,14 +252,14 @@ void RenderPolygon()
 					{
 						for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
 						{
-							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], cvColorf::Orange);
+							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
 						}
 					}
 					else
 					{
 						for (auto idx = b0Idx; idx != b1Idx; idx = loop.prevIdx(idx))
 						{
-							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.prevIdx(idx)], cvColorf::Orange);
+							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.prevIdx(idx)], c);
 						}
 					}
 				}
