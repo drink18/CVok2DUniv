@@ -326,18 +326,22 @@ namespace acd
 		return bestPtIdx;
 	}
 
-	vector<Loop> _resolveLoop(const Loop& loop)
+	vector<Polygon> _resolveLoop(const Polygon& polygon)
 	{
-		vector<Loop> poly;
+		vector<Polygon> retPolygons;
+
+		if (polygon.hasHole())
+			return retPolygons;
 		
+		auto& loop = polygon.outterLoop();
 		Loop polyLoop(loop);
 		auto hullLoop = _quickHull(polyLoop);
 
 		// already convex
 		if (hullLoop.pointCount() == polyLoop.ptCount())
 		{
-			poly.push_back(loop);
-			return poly;
+			retPolygons.push_back(polygon);
+			return retPolygons;
 		}
 
 		auto bridges = _findAllPockets(hullLoop, polyLoop);
@@ -350,26 +354,28 @@ namespace acd
 		PolyVertIdx cutPointIdx = _findBestCutPt(polyLoop, hullLoop, bridges, cw);
 
 		// split loop
-		Loop loop1;
+		Polygon poly1;
 		for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
 		{
-			loop1.AddVertex(loop[i]);
+			auto& nloop = poly1.outterLoop();
+			nloop.AddVertex(loop[i]);
 			if (i == PolyVertIdx(cutPointIdx))
 				break;
 		}
-		poly.push_back(loop1);
+		retPolygons.push_back(poly1);
 
-		Loop loop2;
+		Polygon poly2;
 		for (PolyVertIdx i = PolyVertIdx(cutPointIdx); ; i = loop.nextIdx(i))
 		{
-			loop2.AddVertex(loop[i]);
+			auto& nloop = poly2.outterLoop();
+			nloop.AddVertex(loop[i]);
 			if (i == cw.ptIndex)
 				break;
 		}
-		poly.push_back(loop2);
+		retPolygons.push_back(poly2);
 		
 
-		return poly;
+		return retPolygons;
 	}
 
 	Winding _testWinding(const vector<cvVec2f>& verts)

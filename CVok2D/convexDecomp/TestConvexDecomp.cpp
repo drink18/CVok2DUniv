@@ -36,23 +36,23 @@ static void error_callback(int error, const char* description)
 static ImVec4 clear_color = ImColor(114, 144, 154);
 static bool singleStep = false;
 
-static bool addPoints = false;
+static bool g_addPoints = false;
 
 struct DbgDisplayControl
 {
 	bool showConvexHull = false;
 	bool showPocket = false;
 	bool showCutLine = false;
-	bool highLightDonePoly = false;
 	bool showOrigin = false;
 };
 DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
 
-Loop input;
-vector<Loop> polys_todo;
-vector<Loop> polys_done;
+Loop g_inputLoop;
+Poly g_inputs;
+vector<Poly> g_polys_todo;
+vector<Poly> g_polys_done;
 
 static void RenderUI()
 {
@@ -63,12 +63,20 @@ static void RenderUI()
 
 		if (ImGui::Button("New Poly"))
 		{
-			if (!addPoints)
+			if (!g_addPoints)
 			{
-				polys_todo.clear();
-				polys_done.clear();
-				polys_todo.push_back(Loop());
-				addPoints = true;
+				//polys_todo.push_back(Loop());
+				g_addPoints = true;
+			}
+		}
+
+		if (ImGui::Button("Clear All"))
+		{
+			if (!g_addPoints)
+			{
+				g_inputs.reset();
+				g_polys_done.clear();
+				g_polys_todo.clear();
 			}
 		}
 
@@ -77,19 +85,17 @@ static void RenderUI()
 			ResolveSingleStep();
 		}
 
-		if (ImGui::Button("Reset"))
+		if (ImGui::Button("Reset Progress"))
 		{
-			polys_todo.clear();
-			polys_done.clear();
-			polys_todo.push_back(input);
+			g_polys_todo.clear();
+			g_polys_done.clear();
+			g_polys_todo.push_back(g_inputs);
 		}
-
 
         ImGui::Checkbox("Show Origin only", &dbgCtrl.showOrigin);
         ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
         ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
         ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
-        ImGui::Checkbox("Highlight done polygones", &dbgCtrl.highLightDonePoly);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -117,9 +123,9 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 	{
 		if (action == GLFW_PRESS)
 		{
-			if (addPoints)
+			if (g_addPoints)
 			{
-				polys_todo[0].AddVertex(curPos);
+				g_inputLoop.AddVertex(curPos);
 			}
 		}
 	}
@@ -130,12 +136,14 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
             rightBtnDown = true;
             dragStartPos = curPos;
 
-			if (addPoints)
+			if (g_addPoints)
 			{
-				addPoints = false;
+				g_addPoints = false;
 			}
-			polys_todo[0].fixWinding();
-			input = polys_todo[0];
+			g_inputLoop.fixWinding();
+			g_inputs.AddLoop(g_inputLoop);
+			g_polys_todo.push_back(g_inputs);
+			g_inputLoop = Loop();
         }
         else if (action == GLFW_RELEASE)
             rightBtnDown = false;
@@ -148,7 +156,7 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
 }
 
-void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
+void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close)
 {
 	if (polyVerts.ptCount() == 0) return;
 
@@ -160,20 +168,22 @@ void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
 	}
 	else
 	{
-		for (auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1); iter++)
+		for (auto iter = polyVerts.cbegin(); iter != (polyVerts.cend() - 1); iter++)
 		{
 			g_dbgDraw->AddArrowMid(*iter, *(iter + 1), color);
 		}
+
+		if (close)
+			g_dbgDraw->AddArrowMid(*(polyVerts.cend() - 1), *(polyVerts.cbegin()), color);
 	}
 
-	if (addPoints)
+}
+
+void RenderPoly(const Poly& poly, cvColorf color, bool solid)
+{
+	for(auto iter = poly.cbegin(); iter != poly.cend(); ++iter)
 	{
-		g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
-		g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, color);
-	}
-	else
-	{
-		g_dbgDraw->AddArrowMid(*(polyVerts.end() - 1), *polyVerts.begin(), color);
+		RenderPolyLoop(*iter, color, solid && !poly.hasHole(), true);
 	}
 }
 
@@ -181,31 +191,43 @@ void RenderPolygon()
 {
 	if (dbgCtrl.showOrigin)
 	{
-		RenderPolyLoop(input, cvColorf::White, false);
+		RenderPoly(g_inputs, cvColorf::White, false);
 		return;
 	}
 
-	for(auto iter = polys_todo.begin(); iter != polys_todo.end(); ++iter)
+	// render current working loop
 	{
-		if(iter  == polys_todo.end() - 1)
-			RenderPolyLoop(*iter, cvColorf::White, false);
-		else
-			RenderPolyLoop(*iter, cvColorf::White, false);
+		const bool closed = false;
+		RenderPolyLoop(g_inputLoop, cvColorf::White, false, closed);
+		auto& polyVerts = g_inputLoop.getVertsArray();
+		if (polyVerts.size() > 0)
+		{
+			if (g_addPoints)
+			{
+				g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
+				g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, cvColorf::White);
+			}
+			else
+			{
+				g_dbgDraw->AddArrowMid(*(polyVerts.end() - 1), *polyVerts.begin(), cvColorf::White);
+			}
+		}
 	}
 
-	for(int i = 0; i < polys_done.size(); ++i)
+	for(auto iter = g_polys_todo.begin(); iter != g_polys_todo.end(); ++iter)
 	{
-		auto& polyVerts = polys_done[i];
-		cvColorf c = cvColorf::White;
-		if (dbgCtrl.highLightDonePoly)
-			c = randomColors[i];
-
-		RenderPolyLoop(polyVerts, c, dbgCtrl.highLightDonePoly);
+		RenderPoly(*iter, cvColorf::White, false);
 	}
 
-	if (!polys_todo.empty())
+	for(int i = 0; i < g_polys_done.size(); ++i)
+	{
+		auto& polyVerts = g_polys_done[i];
+		RenderPoly(polyVerts, randomColors[i], true);
+	}
+
+	if (!g_polys_todo.empty())
  	{
-		auto& loop = polys_todo.back();
+		auto& loop = g_polys_todo.back().outterLoop();
 		HullLoop hull;
 		if(loop.ptCount() > 2)
 			hull = _quickHull(loop);
@@ -269,119 +291,25 @@ void RenderPolygon()
 	}
 }
 
-
-void DebugResolve()
-{
-	if (polys_todo.size() > 0)
-	{
-		for (auto polyVerts : polys_todo)
-		{
-			if (polyVerts.ptCount() == 0) continue;
-				
-			for(auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1);  iter++)
-			{
-				g_dbgDraw->AddLine(*iter, *(iter + 1), cvColorf::Green);
-			}
-
-			if (addPoints)
-			{
-				g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
-				g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, cvColorf::Green);
-			}
-			else
-			{
-				g_dbgDraw->AddLine(*(polyVerts.end() - 1), *polyVerts.begin(), cvColorf::Green);
-			}
-			if (!addPoints)
-			{
-				//draw normals
-				for (PolyVertIdx i = polyVerts.beginIdx(); i <= polyVerts.endIdx(); ++i)
-				{
-					cvVec2f v = polyVerts[i];
-					cvVec2f nv = polyVerts[polyVerts.nextIdx(i)];
-					cvVec2f mid = (v + nv) * 0.5f;
-					g_dbgDraw->AddArrow(mid, mid + polyVerts.normal(i), cvColorf::Purple);
-				}
-			}
-		}
-
-	}
-}
-
 void ResolveSingleStep()
 {
 	vector<Loop> result;
-	if (polys_todo.size() == 0)
+	if (g_polys_todo.size() == 0)
 		return;
 
-	Loop loop = polys_todo.back();
-	polys_todo.pop_back();
+	Poly poly = g_polys_todo.back();
+	g_polys_todo.pop_back();
 
-	vector<Loop> decomped = _resolveLoop(loop);
+	vector<Poly> decomped = _resolveLoop(poly);
 	
 	if (decomped.size() == 1)
 	{
-		polys_done.push_back(decomped[0]);
+		g_polys_done.push_back(decomped[0]);
 	}
 	else
 	{
 		for (auto& dloop : decomped)
-			polys_todo.push_back(dloop);
-	}
-}
-
-void ResolveSingleStepWithDebugDraw()
-{
-	if (!addPoints && polys_todo.size() > 0)
-	{
-		auto& polyVerts = polys_todo[0];
-		Loop polyLoop(polyVerts);
-		auto hullLoop = _quickHull(polyLoop);
-		if (hullLoop.pointCount() > 0)
-		{
-			auto prev = hullLoop[HullIdx(0)];
-			for (int i = 1; i < hullLoop.pointCount(); ++i)
-			{
-				auto cur = hullLoop[HullIdx(i)];
-				g_dbgDraw->AddLine(polyLoop[cur], polyLoop[prev], cvColorf::Red);
-				prev = cur;
-			}
-			g_dbgDraw->AddLine( polyLoop[hullLoop[HullIdx(0)]], polyLoop[prev], cvColorf::Red);
-		}
-
-		auto bridges = _findAllPockets(hullLoop, polyLoop);
-		for(auto& b : bridges)
-		{
-			auto hullB0 = b.idx0;
-			auto hullB1 = b.idx1;
-			PolyVertIdx b0Idx = hullB0;
-			PolyVertIdx b1Idx = hullB1;
-			// draw bridge
-			g_dbgDraw->AddLine(polyLoop[b0Idx], polyLoop[b1Idx], cvColorf::Yellow);
-
-			auto prevIdx = b.notches[0];
-			g_dbgDraw->AddLine(polyLoop[b0Idx], polyLoop[prevIdx], cvColorf::Blue);
-			for (int j = 1; j < b.notches.size(); j++)
-			{
-				PolyVertIdx curIdx = b.notches[j];
-				g_dbgDraw->AddLine(polyLoop[curIdx], polyLoop[prevIdx], cvColorf::Blue);
-				prevIdx = curIdx;
-			}
-			g_dbgDraw->AddLine(polyLoop[prevIdx], polyLoop[b1Idx], cvColorf::Blue);
-		}
-
-		if (bridges.size())
-		{
-			// pick best cw
-			auto cw = _pickCW(polyLoop, hullLoop, bridges);
-			g_dbgDraw->AddPoint(polyLoop[cw.ptIndex], 20, cvColorf::Purple);
-
-
-			// find best cut point
-			PolyVertIdx cutPointIdx = _findBestCutPt(polyLoop, hullLoop, bridges, cw);
-			g_dbgDraw->AddLine(polyLoop[cutPointIdx], polyLoop[cw.ptIndex], cvColorf::Green);
-			g_dbgDraw->AddPoint(polyLoop[cutPointIdx], 20, cvColorf::Green);
-		}
+			g_polys_todo.push_back(dloop);
 	}
 }
 
