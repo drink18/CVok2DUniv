@@ -44,11 +44,13 @@ struct DbgDisplayControl
 	bool showPocket = false;
 	bool showCutLine = false;
 	bool highLightDonePoly = false;
+	bool showOrigin = false;
 };
 DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
 
+Loop input;
 vector<Loop> polys_todo;
 vector<Loop> polys_done;
 
@@ -75,6 +77,15 @@ static void RenderUI()
 			ResolveSingleStep();
 		}
 
+		if (ImGui::Button("Reset"))
+		{
+			polys_todo.clear();
+			polys_done.clear();
+			polys_todo.push_back(input);
+		}
+
+
+        ImGui::Checkbox("Show Origin only", &dbgCtrl.showOrigin);
         ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
         ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
         ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
@@ -110,7 +121,6 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				polys_todo[0].AddVertex(curPos);
 			}
-
 		}
 	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
@@ -125,6 +135,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 				addPoints = false;
 			}
 			polys_todo[0].fixWinding();
+			input = polys_todo[0];
         }
         else if (action == GLFW_RELEASE)
             rightBtnDown = false;
@@ -168,6 +179,12 @@ void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
 
 void RenderPolygon()
 {
+	if (dbgCtrl.showOrigin)
+	{
+		RenderPolyLoop(input, cvColorf::White, false);
+		return;
+	}
+
 	for(auto iter = polys_todo.begin(); iter != polys_todo.end(); ++iter)
 	{
 		if(iter  == polys_todo.end() - 1)
