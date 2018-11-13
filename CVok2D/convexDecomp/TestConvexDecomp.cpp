@@ -231,7 +231,7 @@ void RenderPolygon()
 		auto& loop = polygon.outterLoop();
 		HullLoop hull;
 		if(loop.ptCount() > 2)
-			hull = _quickHull(loop);
+			hull = quickHull(polygon);
 
 		if (dbgCtrl.showConvexHull)
 		{
@@ -248,7 +248,7 @@ void RenderPolygon()
 
 		vector<Bridge> pockets;
 		if(hull.pointCount() > 0)
-			pockets = _findAllPockets(hull, loop);
+			pockets = findAllPockets(hull, loop);
 		if (dbgCtrl.showPocket)
 		{
 			for(int i = 0; i < pockets.size(); ++i)
@@ -286,8 +286,8 @@ void RenderPolygon()
 			// pick best cw
 			auto cw = pickCW(polygon, hull, pockets);
 			g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
-			CutLine cutLine = findCutLine(polygon, cw.ptIndex);
-			g_dbgDraw->AddArrow(loop[cutLine.orgin], loop[cutLine.orgin] + cutLine.lineDir * 100, cvColorf::Cyan);
+			CutLine cutLine = findCutLine(polygon, cw);
+			g_dbgDraw->AddArrow(cutLine.originPt, cutLine.originPt + cutLine.lineDir * 100, cvColorf::Cyan);
 		}
 	}
 }

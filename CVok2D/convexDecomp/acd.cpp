@@ -141,7 +141,13 @@ namespace acd
 		_quickHull(loop, bestIdx, idxP1, available, hullLoop);
 	}
 
-	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop)
+	HullLoop quickHull(const Polygon& polygon)
+	{
+		const Loop& loop = polygon.outterLoop();
+		return _quickHull(loop);
+	}
+
+	vector<Bridge> findAllPockets(const HullLoop& hull, const Loop& loop)
 	{
 		vector<Bridge> bridge;
 
@@ -173,7 +179,25 @@ namespace acd
 		return bridge;
 	}
 
-	WitnessPt _pickCW(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
+	WitnessPt _pickCW_inner(const Polygon& poly, const HullLoop& h, const vector<Bridge>& pockets)
+	{
+		WitnessPt cw;
+		cvAssert(poly.hasHole());
+		auto& loops = poly.loops;
+		for (int i = 0; i < loops.size(); ++i)
+		{
+			const Loop& loop = loops[i];
+			cw.loopIndex = i;
+			cw.pocketIdx = -1; 
+			// TODO: COMPUTE THESE LATER
+			cw.Concavity = 100; 
+			cw.ptIndex = PolyVertIdx(0);
+		}
+
+		return cw;
+	}
+
+	WitnessPt _pickCW_outter(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
 	{
 		WitnessPt cw;
 
@@ -211,23 +235,27 @@ namespace acd
 	{
 		if (poly.hasHole())
 		{
+			return _pickCW_inner(poly, h, pockets);
 		}
 		else
 		{
 
-			return _pickCW(poly.outterLoop(), h, pockets);
+			return _pickCW_outter(poly.outterLoop(), h, pockets);
 		}
 	}
 
-	bool isValidCutPt(const Loop& loop, PolyVertIdx cwpIdx, PolyVertIdx vIdx)
+	bool isValidCutPt(const Polygon& poly, const WitnessPt& wp, PolyVertIdx vIdx)
 	{
-
+		const Loop& outterLoop = poly.outterLoop();
+		const Loop& innerLoop = poly.loops[wp.loopIndex];
+		
+		PolyVertIdx cwpIdx = wp.ptIndex;
 		if (vIdx != cwpIdx)
 		{
-			cvVec2f v = loop[vIdx];
-			cvVec2f cwPt = loop[cwpIdx];
-			cvVec2f prev = loop[loop.prevIdx(cwpIdx)];
-			cvVec2f next = loop[loop.nextIdx(cwpIdx)];
+			cvVec2f v = outterLoop[vIdx];
+			cvVec2f cwPt = innerLoop[cwpIdx];
+			cvVec2f prev = innerLoop[innerLoop.prevIdx(cwpIdx)];
+			cvVec2f next = innerLoop[innerLoop.nextIdx(cwpIdx)];
 
 			cvVec2f v1 = cwPt - prev;
 			cvVec2f v2 = cwPt - next;
@@ -242,54 +270,108 @@ namespace acd
 		return false;
 	}
 
-	CutLine _findCutLine(const Loop& loop, PolyVertIdx origin)
+	CutLine _findCutLine_outter(const Polygon& polygon, const WitnessPt& wp)
 	{
-
 		PolyVertIdx cutVtx(-1);
 		cvVec2f lineDir;
+		const Loop& loop = polygon.outterLoop();
+		cvVec2f originPt = polygon.loops[wp.loopIndex][wp.ptIndex];
+		cvVec2f originNormal = polygon.loops[wp.loopIndex].normal(wp.ptIndex);
+		
 		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
 		{
-			if (isValidCutPt(loop, origin, idx))
-			{
-				cutVtx = idx;
-				lineDir = (loop[idx] - loop[origin]).getNormalized();
+			if (isValidCutPt(polygon, wp, idx))
+			{ cutVtx = idx;
+				lineDir = (loop[idx] - originPt).getNormalized();
 				break;
 			}
 		}
 
 		if (cutVtx.val() == -1)
 		{
-			// can't find a vertex as cut point , use normal as cut direction and find 
+			// can't find a vertex as cut point , use blended normal as cut direction and find 
 			// best cutting point
-			lineDir = -(loop.normal(origin) + loop.normal(loop.prevIdx(origin)));
+			lineDir = -(originNormal + originNormal);
 			lineDir.normalize();
 		}
 
 		CutLine line;
 		line.lineDir = lineDir;
-		line.orgin = origin;
+		line.orgin = wp;
+		line.originPt = originPt;
 
 		return line;
 	}
 
-	CutLine findCutLine(const Polygon& polygon, PolyVertIdx origin)
+	CutLine _findCutLine_inner(const Polygon& poly, const WitnessPt& wp)
+	{
+		PolyVertIdx cutVtx(-1);
+		cvVec2f lineDir;
+
+		const Loop& loop = poly.outterLoop();
+		const Loop& innerLoop = poly.loops[wp.loopIndex];
+		cvVec2f orignPt = innerLoop[wp.ptIndex];
+		cvVec2f orignNorm = innerLoop.normal(wp.ptIndex);
+		cvVec2f prevOrignNorm = innerLoop.normal(innerLoop.prevIdx(wp.ptIndex));
+
+		// if there is a point that could directly resolve witness point, use it to construct direction
+		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+		{
+			if (isValidCutPt(poly, wp, idx))
+			{
+				cutVtx = idx;
+				lineDir = (loop[idx] - orignPt).getNormalized();
+				break;
+			}
+		}
+
+		if (cutVtx.val() == -1)
+		{
+			// can't find a vertex as cut point , use blended normal as cut direction and find 
+			// best cutting point
+			lineDir = orignNorm - prevOrignNorm;
+			lineDir.normalize();
+		}
+
+		CutLine line;
+		line.lineDir = lineDir;
+		line.orgin = wp;
+
+		return line;
+	}
+
+	CutLine findCutLine(const Polygon& polygon, const WitnessPt& wp)
 	{
 		if (polygon.hasHole())
 		{
-
+			return _findCutLine_inner(polygon, wp);
 		}
 		else
 		{
-			return _findCutLine(polygon.outterLoop(), origin);
+			return _findCutLine_outter(polygon, wp);
 		}
 	}
 
-	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
+	PolyVertIdx _findBestCutPt_inner(const Polygon& poly, const HullLoop& hull, const vector<Bridge>& pockets,
+		const WitnessPt& cwp)
+	{
+		PolyVertIdx retIdx(-1);
+		cvAssert(cwp.loopIndex > 0);
+
+		// find a point on outter loop
+
+		// should not intersect any inner  loops
+
+		return retIdx;
+	}
+
+	PolyVertIdx _findBestCutPt_outter(const Polygon& poly, const HullLoop& hull, const vector<Bridge>& pockets,
 		const WitnessPt& cwp)
 	{
 		auto& pocket = pockets[cwp.pocketIdx];
+		const Loop& loop = poly.outterLoop();
 
-		CutLine cutLine = _findCutLine(loop, cwp.ptIndex);
+		CutLine cutLine = _findCutLine_outter(poly, cwp);
 
 		// can't find a vertex as cut point , use normal as cut direction and find 
 		// best cutting point
@@ -355,11 +437,11 @@ namespace acd
 	{
 		if (polygon.hasHole())
 		{
-
+			return _findBestCutPt_outter(polygon, hull, pockets, cwp);
 		}
 		else
 		{
-			return _findBestCutPt(polygon.outterLoop(), hull, pockets, cwp);
+			return _findBestCutPt_outter(polygon, hull, pockets, cwp);
 		}
 	}
 
@@ -381,7 +463,7 @@ namespace acd
 			return retPolygons;
 		}
 
-		auto bridges = _findAllPockets(hullLoop, polyLoop);
+		auto bridges = findAllPockets(hullLoop, polyLoop);
 		cvAssert(bridges.size() > 0);
 
 		// pick deepest notches 
@@ -390,27 +472,37 @@ namespace acd
 		// find best cut point
 		PolyVertIdx cutPointIdx = findBestCutPt(polygon, hullLoop, bridges, cw);
 
-		// split loop
-		Polygon poly1;
-		for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
+		if (cw.loopIndex > 0)
 		{
-			auto& nloop = poly1.outterLoop();
-			nloop.AddVertex(loop[i]);
-			if (i == PolyVertIdx(cutPointIdx))
-				break;
-		}
-		retPolygons.push_back(poly1);
 
-		Polygon poly2;
-		for (PolyVertIdx i = PolyVertIdx(cutPointIdx); ; i = loop.nextIdx(i))
-		{
-			auto& nloop = poly2.outterLoop();
-			nloop.AddVertex(loop[i]);
-			if (i == cw.ptIndex)
-				break;
+			Polygon retPoly;
+			// merge inner loop to outter
+			const Loop& innerLoop = polygon[cw.loopIndex];
+			
 		}
-		retPolygons.push_back(poly2);
-		
+		else
+		{
+			// split loop
+			Polygon poly1;
+			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
+			{
+				auto& nloop = poly1.outterLoop();
+				nloop.AddVertex(loop[i]);
+				if (i == PolyVertIdx(cutPointIdx))
+					break;
+			}
+			retPolygons.push_back(poly1);
+
+			Polygon poly2;
+			for (PolyVertIdx i = PolyVertIdx(cutPointIdx); ; i = loop.nextIdx(i))
+			{
+				auto& nloop = poly2.outterLoop();
+				nloop.AddVertex(loop[i]);
+				if (i == cw.ptIndex)
+					break;
+			}
+			retPolygons.push_back(poly2);
+		}
 
 		return retPolygons;
 	}

@@ -41,11 +41,24 @@ namespace acd
 		CW
 	};
 
+	struct WitnessPt
+	{
+	public:
+		WitnessPt() : ptIndex(-1) {}
+		float Concavity;
+		int loopIndex;
+		PolyVertIdx ptIndex; //index of witness point in original polygon
+		int pocketIdx;
+
+		bool onInnerLoop() const { return loopIndex > 0; }
+	};
+
 	struct CutLine
 	{
 	public:
-		CutLine() : orgin(-1) {}
-		PolyVertIdx orgin;
+		CutLine()  {}
+		WitnessPt orgin;
+		cvVec2f originPt;
 		cvVec2f lineDir;
 	};
 
@@ -180,15 +193,4 @@ namespace acd
 		vector<int> hullIndex;
 	};
 
-	struct WitnessPt
-	{
-	public:
-		WitnessPt() : ptIndex(-1) {}
-		float Concavity;
-		int loopIndex;
-		PolyVertIdx ptIndex; //index of witness point in original polygon
-		int pocketIdx;
-
-		bool onInnerLoop() const { return loopIndex > 0; }
-	};
 }
