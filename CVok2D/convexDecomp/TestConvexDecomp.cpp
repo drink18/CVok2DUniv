@@ -134,7 +134,6 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				addPoints = false;
 			}
-			polys_todo[0].fixWinding();
 			input = polys_todo[0];
         }
         else if (action == GLFW_RELEASE)
