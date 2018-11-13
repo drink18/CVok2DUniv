@@ -26,17 +26,26 @@ static cvVec2f curPos;
 static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 
+vector<cvColorf> randomColors;
+
 
 static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
 static ImVec4 clear_color = ImColor(114, 144, 154);
-static bool pause = false;
 static bool singleStep = false;
 
 static bool addPoints = false;
-static bool showConvexHull = false;
+
+struct DbgDisplayControl
+{
+	bool showConvexHull = false;
+	bool showPocket = false;
+	bool showCutLine = false;
+	bool highLightDonePoly = false;
+};
+DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
 
@@ -66,11 +75,10 @@ static void RenderUI()
 			ResolveSingleStep();
 		}
 
-        if(ImGui::Button(">>"))
-            singleStep = true;
-
-        ImGui::Checkbox("Pause", &pause);
-        ImGui::Checkbox("Show Convex Hull", &showConvexHull);
+        ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
+        ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
+        ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
+        ImGui::Checkbox("Highlight done polygones", &dbgCtrl.highLightDonePoly);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -100,7 +108,6 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 		{
 			if (addPoints)
 			{
-				//polygones[0].loops[0].AddVertex(curPos);
 				polys_todo[0].AddVertex(curPos);
 			}
 
@@ -117,6 +124,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				addPoints = false;
 			}
+			polys_todo[0].fixWinding();
         }
         else if (action == GLFW_RELEASE)
             rightBtnDown = false;
@@ -129,13 +137,22 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
 }
 
-void RenderPolyLoop(Loop &polyVerts, cvColorf color)
+void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
 {
 	if (polyVerts.ptCount() == 0) return;
 
-	for (auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1); iter++)
+	if(solid)
+	{ 
+		auto& verts = polyVerts.getVertsArray();
+		cvMat33 ident;
+		g_dbgDraw->AddPolygon(verts, ident, color);
+	}
+	else
 	{
-		g_dbgDraw->AddLine(*iter, *(iter + 1), color);
+		for (auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1); iter++)
+		{
+			g_dbgDraw->AddLine(*iter, *(iter + 1), color);
+		}
 	}
 
 	if (addPoints)
@@ -154,22 +171,31 @@ void RenderPolygon()
 	for(auto iter = polys_todo.begin(); iter != polys_todo.end(); ++iter)
 	{
 		if(iter  == polys_todo.end() - 1)
-			RenderPolyLoop(*iter, cvColorf::White);
+			RenderPolyLoop(*iter, cvColorf::White, false);
 		else
-			RenderPolyLoop(*iter, cvColorf::White);
+			RenderPolyLoop(*iter, cvColorf::White, false);
 	}
 
-	for (auto& polyVerts : polys_done)
+	//for (auto& polyVerts : polys_done)
+	for(int i = 0; i < polys_done.size(); ++i)
 	{
-		RenderPolyLoop(polyVerts, cvColorf::White);
+		auto& polyVerts = polys_done[i];
+		cvColorf c = cvColorf::White;
+		if (dbgCtrl.highLightDonePoly)
+			c = randomColors[i];
+
+		RenderPolyLoop(polyVerts, c, dbgCtrl.highLightDonePoly);
 	}
 
-	if (showConvexHull && !polys_todo.empty())
+	if (!polys_todo.empty())
  	{
 		auto& loop = polys_todo.back();
-		if (loop.ptCount() > 2)
+		HullLoop hull;
+		if(loop.ptCount() > 2)
+			hull = _quickHull(loop);
+
+		if (dbgCtrl.showConvexHull)
 		{
-			HullLoop hull = _quickHull(loop);
 			HullIdx h0(0);
 			HullIdx h1(hull.pointCount() - 1);
 			for (HullIdx idx = h0; idx < h1; idx++)
@@ -178,9 +204,14 @@ void RenderPolygon()
 			}
 
 			g_dbgDraw->AddArrowMid(loop[hull[h1]], loop[hull[h0]], cvColorf::Purple);
+		}
 
 
-			vector<Bridge> pockets = _findAllPockets(hull, loop);
+		vector<Bridge> pockets;
+		if(hull.pointCount() > 0)
+			pockets = _findAllPockets(hull, loop);
+		if (dbgCtrl.showPocket)
+		{
 			for (auto& b : pockets)
 			{
 				auto hullB0 = b.idx0;
@@ -191,8 +222,8 @@ void RenderPolygon()
 				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], cvColorf::Yellow);
 
 				PolyVertIdx prevIdx = b.notches[0];
-				if(b.notches.size() == 1)
-				{ 
+				if (b.notches.size() == 1)
+				{
 					g_dbgDraw->AddArrowMid(loop[b0Idx], loop[prevIdx], cvColorf::Orange);
 					g_dbgDraw->AddArrowMid(loop[b1Idx], loop[prevIdx], cvColorf::Orange);
 				}
@@ -215,19 +246,19 @@ void RenderPolygon()
 					}
 				}
 			}
+		}
 
-			if (pockets.size())
-			{
-				// pick best cw
-				auto cw = _pickCW(loop, hull, pockets);
-				g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
-				CutLine cutLine = _findCutLine(loop, cw.ptIndex);
-				g_dbgDraw->AddArrow(loop[cutLine.orgin], loop[cutLine.orgin] + cutLine.lineDir * 100, cvColorf::Cyan);
-			}
+		if (pockets.size() && dbgCtrl.showCutLine)
+		{
+			// pick best cw
+			auto cw = _pickCW(loop, hull, pockets);
+			g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
+			CutLine cutLine = _findCutLine(loop, cw.ptIndex);
+			g_dbgDraw->AddArrow(loop[cutLine.orgin], loop[cutLine.orgin] + cutLine.lineDir * 100, cvColorf::Cyan);
 		}
 	}
-
 }
+
 
 void DebugResolve()
 {
@@ -346,6 +377,12 @@ void ResolveSingleStepWithDebugDraw()
 
 int main(int, char**)
 {
+	// fill random color list
+	for (int i = 0; i < 1024; ++i)
+	{
+		randomColors.push_back(cvColorf::randomColor());
+	}
+
     glfwSetErrorCallback(error_callback);
     if (glfwInit() == 0)
         return 1;
@@ -394,30 +431,15 @@ int main(int, char**)
         dt = (float)glfwGetTime() - lastTime;
         lastTime = (float)glfwGetTime();
 
+		glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
+		glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
-        bool run = false;
-        if(!pause)
-        {
-            run  = true;
-        }
-        else if(singleStep)
-        {
-            singleStep = false;
-            run  = true;
-        }
+		RenderPolygon();
 
-		if (run)
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		{
-			glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
-			glViewport(0, 0, g_camera.m_width, g_camera.m_height);
-
-			RenderPolygon();
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            {
-                pdbgDraw->Flush();
-            }
-        }
+			pdbgDraw->Flush();
+		}
 
         glfwPollEvents();
 

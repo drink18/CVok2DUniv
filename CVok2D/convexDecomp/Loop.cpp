@@ -10,6 +10,45 @@ namespace acd
 		return (diff == 1) || (diff == totalV - 1);
 	}
 
+	void Loop::fixWinding()
+	{
+		if (_vertices.size() > 2)
+		{
+			cvVec2f v0 = _vertices[0];
+			cvVec2f v1 = _vertices[1];
+			cvVec2f v2 = _vertices[2];
+			if ((v1 - v0).cross(v2 - v1) > 0)
+				reverse(_vertices.begin(), _vertices.end());
+		}
+	}
+
+	Loop::Loop(const vector<cvVec2f>& vtx) 
+		:_vertices(vtx)
+	{
+		fixWinding();
+		updateNormals();
+	}
+
+	void Loop::updateNormals()
+	{
+		_normals.clear();
+		_normals.reserve(_vertices.size());
+
+		if (ptCount() < 2)
+			return;
+
+		for (PolyVertIdx i = beginIdx(); i <= endIdx(); ++i)
+		{
+			cvVec2f v = (*this)[i];
+			cvVec2f nv = (*this)[nextIdx(i)];
+			cvVec2f e = nv - v;
+			cvVec2f n(-e.y, e.x);
+			n.normalize();
+			_normals.push_back(n);
+		}
+	}
+
+
 	void HullLoop::insertAfterIdx(PolyVertIdx after, PolyVertIdx idx)
 	{
 		auto iter = find(ptIndicies.begin(), ptIndicies.end(), after);

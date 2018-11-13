@@ -35,6 +35,8 @@ namespace acd
 		size_t ptCount() const { return _vertices.size(); }
 		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); updateNormals(); }
 
+		void fixWinding();
+
 		// iterators
 		typedef vector<cvVec2f>::iterator iterator;
 		typedef vector<cvVec2f>::const_iterator const_iterator;
@@ -57,6 +59,8 @@ namespace acd
 		bool isPrev(PolyVertIdx v, PolyVertIdx v1) const { return (v1.val() + 1) % ptCount() == v.val(); }
 		// is v1 successor of v
 		bool isNext(PolyVertIdx v, PolyVertIdx v1) const { return (v.val() + 1) % ptCount() == v1.val(); }
+
+		const vector<cvVec2f>& getVertsArray() const { return _vertices; }
 	private:
 		vector<cvVec2f> _vertices;
 		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)
@@ -72,6 +76,10 @@ namespace acd
 	private:
 		vector<PolyVertIdx> ptIndicies; //index into original polygon
 	public:
+		HullLoop() {}
+		HullLoop(const HullLoop& other)
+			: ptIndicies(other.ptIndicies) { }
+
 		// operator overload
 		PolyVertIdx operator[](const HullIdx& idx) const { return polyIdx(idx); };
 		void addIndex(PolyVertIdx idx) { ptIndicies.push_back(idx); }

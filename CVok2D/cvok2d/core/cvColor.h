@@ -26,4 +26,6 @@ struct cvColorf
     static cvColorf Cyan;
     static cvColorf Black;
     static cvColorf Orange;
+
+	static cvColorf randomColor();
 };
