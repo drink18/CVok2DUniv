@@ -221,6 +221,8 @@ void RenderPolygon()
 				// pick best cw
 				auto cw = _pickCW(loop, hull, pockets);
 				g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
+				CutLine cutLine = _findCutLine(loop, cw.ptIndex);
+				g_dbgDraw->AddArrow(loop[cutLine.orgin], loop[cutLine.orgin] + cutLine.lineDir * 100, cvColorf::Cyan);
 			}
 		}
 	}

@@ -12,6 +12,14 @@ namespace acd
 	typedef IndexBase<int> HullIdx;
 	typedef IndexBase<size_t> PolyVertIdx;
 
+	struct CutLine
+	{
+	public:
+		CutLine(): orgin(-1) {}
+		PolyVertIdx orgin;
+		cvVec2f lineDir;
+	};
+
     class Loop
     {
 	public:
@@ -135,5 +143,6 @@ namespace acd
 						const WitnessPt& cwp);
 
 	vector<Loop> _resolveLoop(const Loop& loop);
+	CutLine _findCutLine(const Loop& loop, PolyVertIdx origin);
 
 }

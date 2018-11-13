@@ -236,10 +236,8 @@ namespace acd
 		return cw;
 	}
 
-	bool isValidCutPt(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets,
-		int curPocketIdx, PolyVertIdx cwpIdx, PolyVertIdx vIdx)
+	bool isValidCutPt(const Loop& loop,  PolyVertIdx cwpIdx, PolyVertIdx vIdx)
 	{
-		auto& curPocket = pockets[curPocketIdx];
 
 		if(vIdx != cwpIdx)
 		{
@@ -261,65 +259,75 @@ namespace acd
 		return false;
 	}
 
+	CutLine _findCutLine(const Loop& loop, PolyVertIdx origin)
+	{
+
+		PolyVertIdx cutVtx(-1);
+		cvVec2f lineDir;
+		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+		{
+			if (isValidCutPt(loop, origin, idx))
+			{
+				cutVtx = idx;
+				lineDir = (loop[idx] - loop[origin]).getNormalized();
+				break;
+			}
+		}
+
+		if (cutVtx.val() == -1)
+		{
+			// can't find a vertex as cut point , use normal as cut direction and find 
+			// best cutting point
+			lineDir = -(loop.normal(origin) + loop.normal(loop.prevIdx(origin)));
+			lineDir.normalize();
+		}
+
+		CutLine line;
+		line.lineDir = lineDir;
+		line.orgin = origin;
+
+		return line;
+	}
+
 	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
 		const WitnessPt& cwp)
 	{
 		auto& pocket = pockets[cwp.pocketIdx];
 
-		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
-		{
-			if (isValidCutPt(loop, hull, pockets, cwp.pocketIdx, cwp.ptIndex, idx))
-				return idx;
-		}
+		CutLine cutLine = _findCutLine(loop, cwp.ptIndex);
 
 		// can't find a vertex as cut point , use normal as cut direction and find 
 		// best cutting point
-		cvVec2f lineDir = -(loop.normal(cwp.ptIndex) + loop.normal(loop.prevIdx(cwp.ptIndex)));
+		cvVec2f lineDir = cutLine.lineDir;
 		lineDir.normalize();
 		cvVec2f lineNorm(-lineDir.y, lineDir.x);
 
-		vector<bool> ups;
 		vector<cvVec2f> intersects;
 		vector<float> dists;
 		vector<PolyVertIdx> vtxIndices;
 		
 		cvVec2f cwPt = loop[cwp.ptIndex];
-		//update ups
 		const float eps = 1e-5f;
-		ups.reserve(loop.ptCount());
-		ups.resize(loop.ptCount());
-		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
-		{
-			cvVec2f v = loop[idx];
-			float d = (v - cwPt).dot(lineNorm);
-			if (d > eps)
-				ups[idx.val()] = true;
-			//else if (d < -eps)
-			else
-				ups[idx.val()] = false;
-			//else
-			//	ups[idx.val()] = !ups[loop.prevIdx(idx).val()];
-		}
 
 		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
 		{
-			bool up = ups[idx.val()];
 			PolyVertIdx ni = loop.nextIdx(idx);
-			bool nup = ups[ni.val()];
 			if (idx == cwp.ptIndex) continue;
 			if (idx == loop.prevIdx(cwp.ptIndex)) continue;
 			if (idx == loop.nextIdx(cwp.ptIndex)) continue;
 
-			if (up != nup)
+			//if (up != nup)
 			{
 				cvVec2f v = loop[idx];
-				cvVec2f nv = loop[loop.nextIdx(idx)];
+				cvVec2f nv = loop[ni];
 				// intersecting, compute distance etc
-				float t = (v - cwPt).dot(lineNorm) / (nv - v).dot(lineNorm);
-				cvVec2f intersect = v * t + nv * (1 - t);
-				float dist = (intersect - cwPt).dot(lineDir);
+				float t = (v - cwPt).dot(lineNorm) / (v - nv).dot(lineNorm);
+				cvVec2f intersect = v * (1 - t) + nv * t;
+				float dist = (intersect - cwPt).dot(lineDir); 
+				if (t < -eps || t > eps + 1.0f)
+					dist = -1e10f;
 
-				//if (dist > -eps)
+				if (dist > -eps)
 				{
 					vtxIndices.push_back(idx);
 					intersects.push_back(intersect);
@@ -334,7 +342,7 @@ namespace acd
 		for(int i = 0; i < vtxIndices.size(); ++i)
 		{
 			float d = dists[i];
-			if (d < bestDist && d > -eps)
+			if (d < bestDist && d > - CV_FLOAT_EPS)
 			{
 				bestDist = d;
 				bestPtIdx = vtxIndices[i];
