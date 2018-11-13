@@ -83,7 +83,11 @@ namespace acd
 		cvVec2f v1 = loop[hullLoop[HullIdx(1)]];
 		cvVec2f v2 = loop[hullLoop[HullIdx(2)]];
 		float a = Vec2Cross(v1 - v0, v2 - v1);
-		if (a > 0)
+		vector<cvVec2f> hullVts(hullLoop.pointCount());
+		for (PolyVertIdx idx : hullLoop)
+			hullVts.push_back(loop[idx]);
+
+		if (_testWinding(hullVts) == Winding::CCW)
 		{
 			reverse(hullLoop.begin(), hullLoop.end());
 		}
@@ -366,5 +370,20 @@ namespace acd
 		
 
 		return poly;
+	}
+
+	Winding _testWinding(const vector<cvVec2f>& verts)
+	{
+		//https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+		float sum = 0;
+		for (int i = 0; i < verts.size(); ++i)
+		{
+			int ni = (i + 1) % verts.size();
+			cvVec2f v = verts[i];
+			cvVec2f nv = verts[ni];
+			sum += (nv.x - v.x) * (nv.y + v.y);
+		}
+
+		return sum > 0 ? Winding::CW : Winding::CCW;
 	}
 }

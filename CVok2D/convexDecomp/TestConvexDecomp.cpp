@@ -134,6 +134,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				addPoints = false;
 			}
+			polys_todo[0].fixWinding();
 			input = polys_todo[0];
         }
         else if (action == GLFW_RELEASE)
@@ -161,7 +162,7 @@ void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
 	{
 		for (auto iter = polyVerts.begin(); iter != (polyVerts.end() - 1); iter++)
 		{
-			g_dbgDraw->AddLine(*iter, *(iter + 1), color);
+			g_dbgDraw->AddArrowMid(*iter, *(iter + 1), color);
 		}
 	}
 
@@ -172,7 +173,7 @@ void RenderPolyLoop(Loop &polyVerts, cvColorf color, bool solid)
 	}
 	else
 	{
-		g_dbgDraw->AddLine(*(polyVerts.end() - 1), *polyVerts.begin(), color);
+		g_dbgDraw->AddArrowMid(*(polyVerts.end() - 1), *polyVerts.begin(), color);
 	}
 }
 
@@ -247,19 +248,11 @@ void RenderPolygon()
 				else
 				{
 					PolyVertIdx curIdx = b.notches[1];
-					if (loop.isNext(b0Idx, prevIdx))
+					PolyVertIdx i0 = PolyVertIdx(b0Idx > b1Idx ? b1Idx : b0Idx);
+					PolyVertIdx i1 = PolyVertIdx(b0Idx < b1Idx ? b1Idx : b0Idx);
+					for (auto idx = i0; idx != i1; idx = loop.nextIdx(idx))
 					{
-						for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
-						{
-							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
-						}
-					}
-					else
-					{
-						for (auto idx = b0Idx; idx != b1Idx; idx = loop.prevIdx(idx))
-						{
-							g_dbgDraw->AddArrowMid(loop[idx], loop[loop.prevIdx(idx)], c);
-						}
+						g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
 					}
 				}
 			}

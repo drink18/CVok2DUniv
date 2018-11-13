@@ -14,10 +14,7 @@ namespace acd
 	{
 		if (_vertices.size() > 2)
 		{
-			cvVec2f v0 = _vertices[0];
-			cvVec2f v1 = _vertices[1];
-			cvVec2f v2 = _vertices[2];
-			if ((v1 - v0).cross(v2 - v1) > 0)
+			if(_testWinding(_vertices) == Winding::CCW)
 				reverse(_vertices.begin(), _vertices.end());
 		}
 	}

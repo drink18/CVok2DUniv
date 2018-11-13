@@ -12,6 +12,12 @@ namespace acd
 	typedef IndexBase<int> HullIdx;
 	typedef IndexBase<size_t> PolyVertIdx;
 
+	enum class Winding : uint8_t
+	{
+		CCW,
+		CW
+	};
+
 	struct CutLine
 	{
 	public:
@@ -152,5 +158,7 @@ namespace acd
 
 	vector<Loop> _resolveLoop(const Loop& loop);
 	CutLine _findCutLine(const Loop& loop, PolyVertIdx origin);
+
+	Winding _testWinding(const vector<cvVec2f>& verts);
 
 }
