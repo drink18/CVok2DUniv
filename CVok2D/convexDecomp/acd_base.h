@@ -31,7 +31,7 @@ namespace acd
 		VTYPE val() const { return idx; }
 	};
 
-	typedef IndexBase<int> HullIdx;
+	typedef IndexBase<size_t> HullIdx;
 	typedef IndexBase<size_t> PolyVertIdx;
 	typedef IndexBase<size_t> LoopIdx;
 
@@ -150,7 +150,7 @@ namespace acd
 		}
 		const Loop& outterLoop() const { return loops[0]; }
 		bool hasHole() const { return loops.size() > 1; }
-		void AddLoop(const Loop& loop) { loops.push_back(loop); }
+		void addLoop(const Loop& loop) { loops.push_back(loop); }
 	public:
 		typedef vector<Loop>::iterator iterator;
 		typedef vector<Loop>::const_iterator const_iterator;
@@ -188,5 +188,7 @@ namespace acd
 		int loopIndex;
 		PolyVertIdx ptIndex; //index of witness point in original polygon
 		int pocketIdx;
+
+		bool onInnerLoop() const { return loopIndex > 0; }
 	};
 }

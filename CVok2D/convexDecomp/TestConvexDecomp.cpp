@@ -141,7 +141,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 				g_addPoints = false;
 			}
 			g_inputLoop.fixWinding();
-			g_inputs.AddLoop(g_inputLoop);
+			g_inputs.addLoop(g_inputLoop);
 			g_polys_todo.push_back(g_inputs);
 			g_inputLoop = Loop();
         }
@@ -227,7 +227,8 @@ void RenderPolygon()
 
 	if (!g_polys_todo.empty())
  	{
-		auto& loop = g_polys_todo.back().outterLoop();
+		Poly& polygon = g_polys_todo.back();
+		auto& loop = polygon.outterLoop();
 		HullLoop hull;
 		if(loop.ptCount() > 2)
 			hull = _quickHull(loop);
@@ -283,9 +284,9 @@ void RenderPolygon()
 		if (pockets.size() && dbgCtrl.showCutLine)
 		{
 			// pick best cw
-			auto cw = _pickCW(loop, hull, pockets);
+			auto cw = pickCW(polygon, hull, pockets);
 			g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
-			CutLine cutLine = _findCutLine(loop, cw.ptIndex);
+			CutLine cutLine = findCutLine(polygon, cw.ptIndex);
 			g_dbgDraw->AddArrow(loop[cutLine.orgin], loop[cutLine.orgin] + cutLine.lineDir * 100, cvColorf::Cyan);
 		}
 	}

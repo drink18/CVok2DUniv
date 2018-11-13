@@ -24,7 +24,7 @@ namespace acd
 			|| (p0p1p <= 0 && pp1p2 <= 0 && p0pp2 <= 0);
 	}
 
-	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1, 
+	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1,
 		vector<PolyVertIdx>& available, HullLoop& hullLoop);
 
 	HullLoop _quickHull(const Loop& loop)
@@ -75,8 +75,8 @@ namespace acd
 		hullLoop.addIndex(minIdx);
 		hullLoop.addIndex(maxIdx);
 
-		_quickHull(loop,  minIdx, maxIdx, upper, hullLoop);
-		_quickHull(loop,  maxIdx, minIdx, lower, hullLoop);
+		_quickHull(loop, minIdx, maxIdx, upper, hullLoop);
+		_quickHull(loop, maxIdx, minIdx, lower, hullLoop);
 
 		//hullLoop.sort();
 		cvVec2f v0 = loop[hullLoop[HullIdx(0)]];
@@ -94,7 +94,7 @@ namespace acd
 		return hullLoop;
 	}
 
-	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1, 
+	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1,
 		vector<PolyVertIdx>& available, HullLoop& hullLoop)
 	{
 		if (available.size() == 0)
@@ -172,7 +172,7 @@ namespace acd
 
 		return bridge;
 	}
-	
+
 	WitnessPt _pickCW(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
 	{
 		WitnessPt cw;
@@ -181,7 +181,7 @@ namespace acd
 		int bestPocketIdx = -1;
 		PolyVertIdx bestPtIdx(-1);
 
-		for (int ip= 0; ip < pockets.size(); ++ip)
+		for (int ip = 0; ip < pockets.size(); ++ip)
 		{
 			auto& p = pockets[ip];
 			auto& b0 = loop[p.idx0];
@@ -207,10 +207,22 @@ namespace acd
 		return cw;
 	}
 
-	bool isValidCutPt(const Loop& loop,  PolyVertIdx cwpIdx, PolyVertIdx vIdx)
+	WitnessPt pickCW(const Polygon& poly, const HullLoop& h, const vector<Bridge>& pockets)
+	{
+		if (poly.hasHole())
+		{
+		}
+		else
+		{
+
+			return _pickCW(poly.outterLoop(), h, pockets);
+		}
+	}
+
+	bool isValidCutPt(const Loop& loop, PolyVertIdx cwpIdx, PolyVertIdx vIdx)
 	{
 
-		if(vIdx != cwpIdx)
+		if (vIdx != cwpIdx)
 		{
 			cvVec2f v = loop[vIdx];
 			cvVec2f cwPt = loop[cwpIdx];
@@ -220,7 +232,7 @@ namespace acd
 			cvVec2f v1 = cwPt - prev;
 			cvVec2f v2 = cwPt - next;
 			cvVec2f vec = v - cwPt;
-	
+
 			float a = Vec2Cross(vec, v2);
 			float b = Vec2Cross(vec, v1);
 			float c = Vec2Cross(v2, v1);
@@ -258,6 +270,18 @@ namespace acd
 		line.orgin = origin;
 
 		return line;
+	}
+
+	CutLine findCutLine(const Polygon& polygon, PolyVertIdx origin)
+	{
+		if (polygon.hasHole())
+		{
+
+		}
+		else
+		{
+			return _findCutLine(polygon.outterLoop(), origin);
+		}
 	}
 
 	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
@@ -326,6 +350,19 @@ namespace acd
 		return bestPtIdx;
 	}
 
+	PolyVertIdx findBestCutPt(const Polygon& polygon, const HullLoop& hull, const vector<Bridge>& pockets,
+		const WitnessPt& cwp)
+	{
+		if (polygon.hasHole())
+		{
+
+		}
+		else
+		{
+			return _findBestCutPt(polygon.outterLoop(), hull, pockets, cwp);
+		}
+	}
+
 	vector<Polygon> _resolveLoop(const Polygon& polygon)
 	{
 		vector<Polygon> retPolygons;
@@ -338,7 +375,7 @@ namespace acd
 		auto hullLoop = _quickHull(polyLoop);
 
 		// already convex
-		if (hullLoop.pointCount() == polyLoop.ptCount())
+		if (hullLoop.pointCount() == polyLoop.ptCount() && !polygon.hasHole())
 		{
 			retPolygons.push_back(polygon);
 			return retPolygons;
@@ -348,10 +385,10 @@ namespace acd
 		cvAssert(bridges.size() > 0);
 
 		// pick deepest notches 
-		auto cw = _pickCW(polyLoop, hullLoop, bridges);
+		auto cw = pickCW(polygon, hullLoop, bridges);
 
 		// find best cut point
-		PolyVertIdx cutPointIdx = _findBestCutPt(polyLoop, hullLoop, bridges, cw);
+		PolyVertIdx cutPointIdx = findBestCutPt(polygon, hullLoop, bridges, cw);
 
 		// split loop
 		Polygon poly1;

@@ -10,12 +10,12 @@ namespace acd
 	
 	vector<Bridge> _findAllPockets(const HullLoop& hull, const Loop& loop);
 	HullLoop _quickHull(const Loop& loop);
-	WitnessPt _pickCW(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockes);
-	PolyVertIdx _findBestCutPt(const Loop& loop, const HullLoop& hull, const vector<Bridge>& pockets,
-						const WitnessPt& cwp);
+	WitnessPt pickCW(const Polygon& poly, const HullLoop& h, const vector<Bridge>& pockets);
+	PolyVertIdx findBestCutPt(const Polygon& polygon, const HullLoop& hull, const vector<Bridge>& pockets,
+		const WitnessPt& cwp);
 
 	vector<Polygon> _resolveLoop(const Polygon& polygon);
-	CutLine _findCutLine(const Loop& loop, PolyVertIdx origin);
+	CutLine findCutLine(const Polygon& polygon, PolyVertIdx origin);
 
 	Winding _testWinding(const vector<cvVec2f>& verts);
 
