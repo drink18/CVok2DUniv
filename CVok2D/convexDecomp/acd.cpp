@@ -291,7 +291,8 @@ namespace acd
 				float t = (v - cwPt).dot(lineNorm) / (v - nv).dot(lineNorm);
 				cvVec2f intersect = v * (1 - t) + nv * t;
 				float dist = (intersect - cwPt).dot(lineDir); 
-				if (t < -eps || t > eps + 1.0f)
+				//  t > 1.0f -eps makes sure that we only pick start point
+				if (t < -eps || t > 1.0f - eps)
 					dist = -1e10f;
 
 				if (dist > -eps)
