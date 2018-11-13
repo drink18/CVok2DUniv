@@ -56,7 +56,7 @@ static void RenderUI()
     // 1. show a simple window
     {
         ImGui::ListBox("Tests", &g_currentDemoIdx, &testNames[0], testNames.size());
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+        //ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
         if(ImGui::Button("Reset"))
             reset = true;

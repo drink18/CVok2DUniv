@@ -127,12 +127,12 @@ void ImGui_ImplGlfwGL3_RenderDrawLists(ImDrawData* draw_data)
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
 }
 
-static const char* ImGui_ImplGlfwGL3_GetClipboardText()
+static const char* ImGui_ImplGlfwGL3_GetClipboardText(void*)
 {
     return glfwGetClipboardString(g_Window);
 }
 
-static void ImGui_ImplGlfwGL3_SetClipboardText(const char* text)
+static void ImGui_ImplGlfwGL3_SetClipboardText(void*, const char* text)
 {
     glfwSetClipboardString(g_Window, text);
 }
@@ -345,7 +345,7 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
 void ImGui_ImplGlfwGL3_Shutdown()
 {
     ImGui_ImplGlfwGL3_InvalidateDeviceObjects();
-    ImGui::Shutdown();
+    //ImGui::Shutdown();
 }
 
 void ImGui_ImplGlfwGL3_NewFrame()
