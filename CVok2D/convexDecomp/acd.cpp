@@ -1,5 +1,8 @@
 #include "acd.h"
 #include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <string>
 
 namespace acd
 {
@@ -592,5 +595,49 @@ namespace acd
 		}
 
 		return sum > 0 ? Winding::CW : Winding::CCW;
+	}
+
+	void writePolygonInfo(ostream& os, const Polygon& poly)
+	{
+		for (const auto& loop : poly.loops)
+		{
+			os << loop.ptCount() << endl;;
+			auto& verts = loop.getVertsArray();
+			for (auto& p : verts)
+				os << p.x << " " << p.y << endl;
+		}
+	}
+
+	void readLoop(ifstream& is, Loop& loop)
+	{
+		float x, y;
+		while (is >> x >> y)
+		{
+			loop.AddVertex(cvVec2f(x, y));
+		}
+	}
+
+	Polygon readPolygon(ifstream& is)
+	{
+		std::string word;
+		Polygon poly;
+		float x, y;
+		int vtxCount;
+		while (!is.eof())
+		{
+			is >> vtxCount;
+			if (vtxCount > 0)
+			{
+				Loop l;
+				for (int i = 0; i < vtxCount; ++i)
+				{
+					is >> x >> y;
+					l.AddVertex(cvVec2f(x, y));
+				}
+
+				poly.loops.push_back(l);
+			}
+		}
+		return poly;
 	}
 }

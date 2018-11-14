@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <memory>
 
 #include <GL/gl3w.h>
@@ -10,6 +11,7 @@
 
 #include "DebugDraw.h"
 #include "acd.h"
+#include <signal.h>
 
 using namespace std;
 using namespace acd;
@@ -27,6 +29,12 @@ static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 
 vector<cvColorf> randomColors;
+
+LONG __stdcall CrashHandler(LPEXCEPTION_POINTERS exceptionPtrs)
+{
+	fprintf(stderr, "eRROR");
+	return EXCEPTION_CONTINUE_SEARCH;
+}
 
 
 static void error_callback(int error, const char* description)
@@ -321,19 +329,32 @@ void ResolveSingleStep()
 			g_polys_todo.push_back(dloop);
 	}
 }
-
-int main(int, char**)
+void AbortHandler(int signal)
 {
+	string fileName = "errorInput.txt";
+	fstream file(fileName, fstream::out);
+	writePolygonInfo(file, g_inputs);
+	file.close();
+	fprintf(stderr, "something went wrong. Input written to %s\n", fileName.c_str());
+}
+
+int main(int narg, char** args)
+{
+	signal(SIGABRT, AbortHandler);
+	signal(SIGSEGV, AbortHandler);
+
 	// fill random color list
 	for (int i = 0; i < 1024; ++i)
 	{
 		randomColors.push_back(cvColorf::randomColor());
 	}
 
+	//cvAssert(false);
+	SetErrorMode(SEM_NOGPFAULTERRORBOX);
+	
     glfwSetErrorCallback(error_callback);
     if (glfwInit() == 0)
         return 1;
-
 
 #if defined(__APPLE__)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);

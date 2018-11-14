@@ -21,4 +21,7 @@ namespace acd
 	Winding _testWinding(const vector<cvVec2f>& verts);
 	float _computeConcavity_out(const Loop& loop, const Pocket& pocket, int notchIdx);
 	float _computeConcavity_in(const Loop& loop, const Loop& outLoop);
+
+	void writePolygonInfo(ostream& stream, const Polygon& poly);
+	Polygon readPolygon(ifstream& stream);
 }
