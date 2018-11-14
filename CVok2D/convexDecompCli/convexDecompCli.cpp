@@ -21,7 +21,7 @@ int main(int narg, char** args)
     {
 		ifstream testFs(testFileName);
 		Polygon poly = acd::readPolygon(testFs);
-		
+
     }
 
 

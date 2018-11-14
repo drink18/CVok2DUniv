@@ -27,6 +27,7 @@ static bool rightBtnDown = false;
 static cvVec2f curPos;
 static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
+static int dumpCount = 0;
 
 vector<cvColorf> randomColors;
 
@@ -79,6 +80,7 @@ static void RenderUI()
 			}
 		}
 
+		ImGui::Spacing();
 		if (ImGui::Button("Clear All"))
 		{
 			if (!g_addPoints)
@@ -89,11 +91,24 @@ static void RenderUI()
 			}
 		}
 
+		ImGui::Spacing();
 		if (ImGui::Button("Resolve One Step"))
 		{
 			ResolveSingleStep();
 		}
 
+		ImGui::Spacing();
+		if (ImGui::Button("Resolve"))
+		{
+			for (auto& p : g_polys_todo)
+			{
+				auto res = acd::_resolveLoop_All(p);
+				for (auto& donePoly : res)
+					g_polys_done.push_back(donePoly);
+			}
+		}
+
+		ImGui::Spacing();
 		if (ImGui::Button("Reset Progress"))
 		{
 			g_polys_todo.clear();
@@ -101,15 +116,30 @@ static void RenderUI()
 			g_polys_todo.push_back(g_inputs);
 		}
 
+		ImGui::Separator();
         ImGui::Checkbox("Show Origin only", &dbgCtrl.showOrigin);
         ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
         ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
         ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
         ImGui::Checkbox("Hide Done Polygons", &dbgCtrl.hideDonePolygon);
+
+		ImGui::Separator();
+		ImGui::Spacing();
+		if (ImGui::Button("Dump Input Poly"))
+		{
+			if (g_inputs.loops.size() > 0)
+			{
+				char fn[1024];
+				sprintf(fn, "graph%d.txt", rand());
+				ofstream outFs(fn, ios::out);
+				writePolygonInfo(outFs, g_inputs);
+				dumpCount++;
+			}
+		}
+
         ImGui::PopStyleColor();
     }
     ImGui::Render();
-
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -317,7 +347,7 @@ void ResolveSingleStep()
 	Poly poly = g_polys_todo.back();
 	g_polys_todo.pop_back();
 
-	vector<Poly> decomped = _resolveLoop(poly);
+	vector<Poly> decomped = _resolveLoop_OneStep(poly);
 	
 	if (decomped.size() == 1 && poly.loops.size() == decomped.cbegin()->loops.size())
 	{

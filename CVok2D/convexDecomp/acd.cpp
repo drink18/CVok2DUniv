@@ -488,7 +488,7 @@ namespace acd
 		return bestPtIdx;
 	}
 
-	vector<Polygon> _resolveLoop(const Polygon& polygon)
+	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon)
 	{
 		vector<Polygon> retPolygons;
 		
@@ -639,5 +639,33 @@ namespace acd
 			}
 		}
 		return poly;
+	}
+
+	vector<Polygon> _resolveLoop_All(const Polygon& polygon)
+	{
+		vector<Polygon> retPolys;
+		vector<Polygon> todos;
+		todos.push_back(polygon);
+		while (!todos.empty())
+		{
+			vector<Polygon> nextTodos;
+			for (int i = 0; i < todos.size(); ++i)
+			{
+				auto& p = todos[i];
+				if (p.isConvex())
+				{
+					retPolys.push_back(p);
+				}
+				else
+				{
+					auto res = _resolveLoop_OneStep(p);
+					for (auto& nt : res)
+						nextTodos.push_back(nt);
+				}
+			}
+			todos = nextTodos;
+		}
+
+		return retPolys;
 	}
 }

@@ -14,7 +14,8 @@ namespace acd
 	PolyVertIdx findBestCutPt(const Polygon& polygon, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp);
 
-	vector<Polygon> _resolveLoop(const Polygon& polygon);
+	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon);
+	vector<Polygon> _resolveLoop_All(const Polygon& polygon);
 	CutLine findCutLine(const Polygon& polygon, const WitnessPt& wp);
 
 	HullLoop _quickHull(const Loop& loop);
