@@ -601,31 +601,50 @@ namespace acd
 	{
 		for (const auto& loop : poly.loops)
 		{
-			os << loop.ptCount() << endl;;
+			os << 0 << loop.ptCount() << endl;;
 			auto& verts = loop.getVertsArray();
 			for (auto& p : verts)
 				os << p.x << " " << p.y << endl;
 		}
 	}
 
-	void readLoop(ifstream& is, Loop& loop)
+	void writePolygonListInfo(ostream& os, const vector<Polygon>& polys)
 	{
-		float x, y;
-		while (is >> x >> y)
+		//for (const auto& loop : poly.loops)
+		for(int i = 0; i < polys.size(); ++i)
 		{
-			loop.AddVertex(cvVec2f(x, y));
+			auto& p = polys[i];
+			for (int j = 0; j < p.loops.size(); ++j)
+			{
+				auto& loop = p.loops[j];
+				os << i << loop.ptCount() << endl;;
+				auto& verts = loop.getVertsArray();
+				for (auto& p : verts)
+					os << p.x << " " << p.y << endl;
+			}
 		}
 	}
 
-	Polygon readPolygon(ifstream& is)
+	vector<Polygon> readPolygon(ifstream& is)
 	{
 		std::string word;
+		int lastPolyIdx = -1;
+		int polyIdx = -1;
+		vector<Polygon> polyList;
 		Polygon poly;
 		float x, y;
 		int vtxCount;
 		while (!is.eof())
 		{
-			is >> vtxCount;
+			is >> polyIdx >> vtxCount;
+			if (polyIdx != lastPolyIdx)
+			{
+				lastPolyIdx = polyIdx;
+				if (poly.loops.size() > 0)
+					polyList.push_back(poly);
+				poly = Polygon();
+			}
+
 			if (vtxCount > 0)
 			{
 				Loop l;
@@ -638,7 +657,10 @@ namespace acd
 				poly.loops.push_back(l);
 			}
 		}
-		return poly;
+
+		if (poly.loops.size() > 0)
+			polyList.push_back(poly);
+		return polyList;
 	}
 
 	vector<Polygon> _resolveLoop_All(const Polygon& polygon)

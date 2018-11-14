@@ -19,11 +19,23 @@ int main(int narg, char** args)
     string testFileName;
     while(listFs >> testFileName)
     {
+		string oname = string("out_" + testFileName);
 		ifstream testFs(testFileName);
-		Polygon poly = acd::readPolygon(testFs);
+		vector<Polygon> poly = acd::readPolygon(testFs);
+		vector<Polygon> doneList;
+		for (auto& p : poly)
+		{
+			p.initializeAll();
+			auto res = acd::_resolveLoop_All(p);
+			for (int ip = 0; ip < res.size(); ++ip)
+			{
+				doneList.push_back(res[ip]);
+			}
+		}
 
+		ofstream ofs(oname, ios::out);
+		writePolygonListInfo(ofs, doneList);
     }
-
 
     return 0;
 }

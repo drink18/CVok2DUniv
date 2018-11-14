@@ -24,5 +24,6 @@ namespace acd
 	float _computeConcavity_in(const Loop& loop, const Loop& outLoop);
 
 	void writePolygonInfo(ostream& stream, const Polygon& poly);
-	Polygon readPolygon(ifstream& stream);
+	void writePolygonListInfo(ostream& stream, const vector<Polygon>& poly);
+	vector<Polygon> readPolygon(ifstream& stream);
 }
