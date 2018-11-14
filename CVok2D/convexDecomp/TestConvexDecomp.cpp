@@ -142,9 +142,9 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				g_addPoints = false;
 			}
-			g_inputLoop.updateNormals();
 			g_inputLoop.fixWinding();
 			g_inputs.addLoop(g_inputLoop);
+			g_inputs.initializeAll();
 			g_polys_todo.clear();
 			g_polys_todo.push_back(g_inputs);
 			g_inputLoop = Loop();
@@ -254,7 +254,7 @@ void RenderPolygon()
 		}
 
 
-		vector<Bridge> pockets;
+		vector<Pocket> pockets;
 		if(hull.pointCount() > 0)
 			pockets = findAllPockets(hull, loop);
 		if (dbgCtrl.showPocket)

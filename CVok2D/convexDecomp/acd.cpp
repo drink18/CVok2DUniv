@@ -158,9 +158,9 @@ namespace acd
 		return _quickHull(loop);
 	}
 
-	vector<Bridge> findAllPockets(const HullLoop& hull, const Loop& loop)
+	vector<Pocket> findAllPockets(const HullLoop& hull, const Loop& loop)
 	{
-		vector<Bridge> bridge;
+		vector<Pocket> bridge;
 
 		HullIdx prevHullIdx = HullIdx(0);
 		PolyVertIdx prevIdx = hull[prevHullIdx];
@@ -171,7 +171,7 @@ namespace acd
 			if (!loop.AreNeighbour(prevIdx, curIdx))
 			{
 				//TODO : THIS IS BUGGY
-				Bridge b;
+				Pocket b;
 				b.idx0 = prevIdx;
 				b.idx1 = curIdx;
 				for (PolyVertIdx idx = loop.nextIdx(b.idx0); idx != b.idx1; idx = loop.nextIdx(idx))
@@ -189,7 +189,7 @@ namespace acd
 		return bridge;
 	}
 
-	WitnessPt _pickCW_inner(const Polygon& poly, const HullLoop& h, const vector<Bridge>& pockets)
+	WitnessPt _pickCW_inner(const Polygon& poly, const HullLoop& h, const vector<Pocket>& pockets)
 	{
 		WitnessPt cw;
 		cvAssert(poly.hasHole());
@@ -207,7 +207,17 @@ namespace acd
 		return cw;
 	}
 
-	WitnessPt _pickCW_outter(const Loop& loop, const HullLoop& h, const vector<Bridge>& pockets)
+	float _computeConcavity_out(const Loop& loop, const Pocket& pocket, int notchIdx)
+	{
+			cvVec2f b0 = loop[pocket.idx0];
+			cvVec2f b1 = loop[pocket.idx1];
+
+			PolyVertIdx ni = pocket.notches[notchIdx];
+			float d = abs(DistToLine(b0, b1, loop[ni]));
+			return d;
+	}
+
+	WitnessPt _pickCW_outter(const Loop& loop,  const vector<Pocket>& pockets)
 	{
 		WitnessPt cw;
 
@@ -222,12 +232,11 @@ namespace acd
 			auto& b1 = loop[p.idx1];
 			for (int i = 0; i < p.notches.size(); ++i)
 			{
-				auto& ni = p.notches[i];
-				float d = abs(DistToLine(b0, b1, loop[ni]));
+				float d = _computeConcavity_out(loop, p, i);
 				if (d > bestScore)
 				{
 					bestScore = d;
-					bestPtIdx = ni;
+					bestPtIdx = p.notches[i];
 					bestPocketIdx = ip;
 				}
 			}
@@ -241,7 +250,7 @@ namespace acd
 		return cw;
 	}
 
-	WitnessPt pickCW(const Polygon& poly, const HullLoop& h, const vector<Bridge>& pockets)
+	WitnessPt pickCW(const Polygon& poly, const HullLoop& h, const vector<Pocket>& pockets)
 	{
 		if (poly.hasHole())
 		{
@@ -249,8 +258,7 @@ namespace acd
 		}
 		else
 		{
-
-			return _pickCW_outter(poly.outterLoop(), h, pockets);
+			return _pickCW_outter(poly.outterLoop(), pockets);
 		}
 	}
 
@@ -364,7 +372,7 @@ namespace acd
 		}
 	}
 
-	PolyVertIdx findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Bridge>& pockets,
+	PolyVertIdx findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp)
 	{
 		const Loop& loop = poly.outterLoop();
@@ -441,24 +449,23 @@ namespace acd
 		vector<Polygon> retPolygons;
 		
 		auto& loop = polygon.outterLoop();
-		Loop polyLoop(loop);
-		auto hullLoop = _quickHull(polyLoop);
 
 		// already convex
-		if (hullLoop.pointCount() == polyLoop.ptCount() && !polygon.hasHole())
+		if (polygon.isConvex())
 		{
 			retPolygons.push_back(polygon);
 			return retPolygons;
 		}
 
-		auto bridges = findAllPockets(hullLoop, polyLoop);
 		//cvAssert(bridges.size() > 0);
 
 		// pick deepest notches 
-		auto cw = pickCW(polygon, hullLoop, bridges);
+		//auto cw = pickCW(polygon, hullLoop, bridges);
+		auto cw = polygon.findWitnessPt();
+		
 
 		// find best cut point
-		PolyVertIdx cutPointIdx = findBestCutPt(polygon, hullLoop, bridges, cw);
+		PolyVertIdx cutPointIdx = polygon.findBestCutPt(cw);
 
 		if (cw.loopIndex > 0)
 		{
@@ -489,7 +496,7 @@ namespace acd
 					} while (innerIdx != cw.ptIndex);
 				}
 			}
-			retPoly.outterLoop().updateNormals();
+			retPoly.initializeAll();
 			retPolygons.push_back(retPoly);
 		}
 		else
@@ -502,11 +509,11 @@ namespace acd
 				nloop.AddVertex(loop[i]);
 				if (i == PolyVertIdx(cutPointIdx))
 				{
-					nloop.updateNormals();
 					break;
 				}
 			}
 
+			poly1.initializeAll();
 			retPolygons.push_back(poly1);
 
 			Polygon poly2;
@@ -516,10 +523,10 @@ namespace acd
 				nloop.AddVertex(loop[i]);
 				if (i == cw.ptIndex)
 				{
-					nloop.updateNormals();
 					break;
 				}
 			}
+			poly2.initializeAll();
 			retPolygons.push_back(poly2);
 		}
 
