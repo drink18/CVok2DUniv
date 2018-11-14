@@ -33,7 +33,7 @@ static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
-static ImVec4 clear_color = ImColor(114, 144, 154);
+static ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f);
 static bool singleStep = false;
 
 static bool g_addPoints = false;
@@ -293,7 +293,7 @@ void RenderPolygon()
 		{
 			// pick best cw
 			auto cw = pickCW(polygon, hull, pockets);
-			g_dbgDraw->AddPoint(loop[cw.ptIndex], 20, cvColorf::Purple);
+			g_dbgDraw->AddPoint(polygon.loops[cw.loopIndex][cw.ptIndex], 20, cvColorf::Purple);
 			CutLine cutLine = findCutLine(polygon, cw);
 			g_dbgDraw->AddArrow(cutLine.originPt, cutLine.originPt + cutLine.lineDir * 100, cvColorf::Cyan);
 		}

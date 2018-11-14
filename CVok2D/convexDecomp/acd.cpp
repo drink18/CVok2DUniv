@@ -3,6 +3,8 @@
 
 namespace acd
 {
+	using namespace std; 
+
 	static float Vec2Cross(cvVec2f v1, cvVec2f v2)
 	{
 		return v1.x * v2.y - v1.y * v2.x;
@@ -12,6 +14,16 @@ namespace acd
 	{
 		auto n = (p1 - p0).getNormalized();
 		return Vec2Cross(n, p - p0);
+	}
+
+	static cvVec2f ClosestPtOnSeg(cvVec2f p, cvVec2f p0, cvVec2f p1)
+	{
+		cvVec2f d = p1 - p0;
+		float len = d.length();
+		d /= len;
+		float t = (p - p0).dot(d) / len;
+		t = max(min(t, 1.0f), 0.0f);
+		return p0 * (1 - t) + p1 * t;
 	}
 
 	static bool PtInTriangle(cvVec2f p0, cvVec2f p1, cvVec2f p2, cvVec2f p)
@@ -189,20 +201,43 @@ namespace acd
 		return bridge;
 	}
 
-	WitnessPt _pickCW_inner(const Polygon& poly, const HullLoop& h, const vector<Pocket>& pockets)
+	WitnessPt _pickCW_inner(const Polygon& poly)
 	{
 		WitnessPt cw;
 		cvAssert(poly.hasHole());
+
 		auto& loops = poly.loops;
-		for (int i = 0; i < loops.size(); ++i)
+		// pick first hole.....
+		const Loop& loop = poly.loops[1];
+		const Loop& outLoop = poly.outterLoop();
+
+		cvVec2f bestPt;
+		PolyVertIdx bestIdx(-1);
+		float bestD = 1e10f;
+
+		for (PolyVertIdx inIdx(0); inIdx < PolyVertIdx(loop.ptCount()); ++inIdx)
 		{
-			const Loop& loop = loops[i];
-			cw.loopIndex = i;
-			cw.pocketIdx = -1; 
-			// TODO: COMPUTE THESE LATER
-			cw.Concavity = 100; 
-			cw.ptIndex = PolyVertIdx(0);
+			cvVec2f inV = loop[inIdx];
+			for (PolyVertIdx i = PolyVertIdx(0); i < PolyVertIdx(outLoop.ptCount()); ++i)
+			{
+				cvVec2f v = outLoop[i];
+				cvVec2f nv = outLoop[outLoop.nextIdx(i)];
+
+				cvVec2f cp = ClosestPtOnSeg(inV, v, nv);
+				float d = (cp - inV).sqrLength();
+				if (d < bestD)
+				{
+					bestD = d;
+					bestIdx = inIdx;
+					bestPt = cp;
+				}
+			}
 		}
+
+		cw.Concavity = 1000;
+		cw.loopIndex = 1;
+		cw.pocketIdx = -1;
+		cw.ptIndex = bestIdx;
 
 		return cw;
 	}
@@ -215,6 +250,11 @@ namespace acd
 			PolyVertIdx ni = pocket.notches[notchIdx];
 			float d = abs(DistToLine(b0, b1, loop[ni]));
 			return d;
+	}
+
+	float _computeConcavity_in(const Loop& loop, const Loop& outLoop)
+	{
+		return 100;
 	}
 
 	WitnessPt _pickCW_outter(const Loop& loop,  const vector<Pocket>& pockets)
@@ -254,7 +294,7 @@ namespace acd
 	{
 		if (poly.hasHole())
 		{
-			return _pickCW_inner(poly, h, pockets);
+			return _pickCW_inner(poly);
 		}
 		else
 		{
@@ -355,6 +395,7 @@ namespace acd
 
 		CutLine line;
 		line.lineDir = lineDir;
+		line.originPt = orignPt;
 		line.orgin = wp;
 
 		return line;
@@ -375,7 +416,7 @@ namespace acd
 	PolyVertIdx findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp)
 	{
-		const Loop& loop = poly.outterLoop();
+		const Loop& outLoop = poly.outterLoop();
 
 		CutLine cutLine = findCutLine(poly, cwp);
 
@@ -389,21 +430,21 @@ namespace acd
 		vector<float> dists;
 		vector<PolyVertIdx> vtxIndices;
 		
-		cvVec2f cwPt = loop[cwp.ptIndex];
+		cvVec2f cwPt = poly.loops[cwp.loopIndex][cwp.ptIndex];
 		const float eps = 1e-5f;
 
-		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+		for (auto idx = outLoop.beginIdx(); idx <= outLoop.endIdx(); ++idx)
 		{
-			PolyVertIdx ni = loop.nextIdx(idx);
+			PolyVertIdx ni = outLoop.nextIdx(idx);
 			if (cwp.loopIndex == 0)
 			{
 				if (idx == cwp.ptIndex) continue;
-				if (idx == loop.prevIdx(cwp.ptIndex)) continue;
-				if (idx == loop.nextIdx(cwp.ptIndex)) continue;
+				if (idx == outLoop.prevIdx(cwp.ptIndex)) continue;
+				if (idx == outLoop.nextIdx(cwp.ptIndex)) continue;
 			}
 
-			cvVec2f v = loop[idx];
-			cvVec2f nv = loop[ni];
+			cvVec2f v = outLoop[idx];
+			cvVec2f nv = outLoop[ni];
 
 			// intersecting, compute distance etc
 			float t;
@@ -496,6 +537,11 @@ namespace acd
 					} while (innerIdx != cw.ptIndex);
 				}
 			}
+
+			// add remaining holes
+			for (int i = 2; i < polygon.loops.size(); ++i)
+				retPoly.addLoop(polygon.loops[i]);
+
 			retPoly.initializeAll();
 			retPolygons.push_back(retPoly);
 		}

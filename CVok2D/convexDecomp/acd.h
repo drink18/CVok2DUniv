@@ -20,4 +20,5 @@ namespace acd
 	HullLoop _quickHull(const Loop& loop);
 	Winding _testWinding(const vector<cvVec2f>& verts);
 	float _computeConcavity_out(const Loop& loop, const Pocket& pocket, int notchIdx);
+	float _computeConcavity_in(const Loop& loop, const Loop& outLoop);
 }
