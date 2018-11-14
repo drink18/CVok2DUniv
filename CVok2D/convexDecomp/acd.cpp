@@ -24,6 +24,21 @@ namespace acd
 			|| (p0p1p <= 0 && pp1p2 <= 0 && p0pp2 <= 0);
 	}
 
+	static bool IntersectRayLine(cvVec2f o, cvVec2f dir, cvVec2f from, cvVec2f to, float& outT, cvVec2f& intersect)
+	{
+		cvVec2f n(-dir.y, dir.x);
+		outT = (o - from).dot(n) / (to - from).dot(n);
+		
+		intersect = from * (1 - outT) + to * outT;
+		return outT >= 0 && outT <= 1.0f;
+	}
+
+	static bool IntersectLines(cvVec2f a0, cvVec2f a1, cvVec2f b0, cvVec2f b1, float& outT, cvVec2f& outPt)
+	{
+		cvVec2f da = (a1 - a0).getNormalized();
+		return IntersectRayLine(a0, da, b0, b1, outT, outPt);
+	}
+
 	void _quickHull(const Loop& loop, PolyVertIdx idxP0, PolyVertIdx idxP1,
 		vector<PolyVertIdx>& available, HullLoop& hullLoop);
 
@@ -379,24 +394,24 @@ namespace acd
 				if (idx == loop.nextIdx(cwp.ptIndex)) continue;
 			}
 
-			//if (up != nup)
-			{
-				cvVec2f v = loop[idx];
-				cvVec2f nv = loop[ni];
-				// intersecting, compute distance etc
-				float t = (v - cwPt).dot(lineNorm) / (v - nv).dot(lineNorm);
-				cvVec2f intersect = v * (1 - t) + nv * t;
-				float dist = (intersect - cwPt).dot(lineDir); 
-				//  t > 1.0f -eps makes sure that we only pick start point
-				if (t < -eps || t > 1.0f - eps)
-					dist = -1e10f;
+			cvVec2f v = loop[idx];
+			cvVec2f nv = loop[ni];
 
-				if (dist > -eps)
-				{
-					vtxIndices.push_back(idx);
-					intersects.push_back(intersect);
-					dists.push_back(dist);
-				}
+			// intersecting, compute distance etc
+			float t;
+			cvVec2f intersect;
+
+			IntersectRayLine(cwPt, lineDir, v, nv, t, intersect);
+			float dist = (intersect - cwPt).dot(lineDir);
+			//  t > 1.0f -eps makes sure that we only pick start point
+			if (t < -eps || t > 1.0f - eps)
+				dist = -1e10f;
+
+			if (dist > -eps)
+			{
+				vtxIndices.push_back(idx);
+				intersects.push_back(intersect);
+				dists.push_back(dist);
 			}
 		}
 
