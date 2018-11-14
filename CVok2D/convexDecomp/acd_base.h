@@ -75,7 +75,7 @@ namespace acd
 		PolyVertIdx nextIdx(const PolyVertIdx& idx) const { return PolyVertIdx(nextIdx(idx.val())); }
 		cvVec2f operator[](const PolyVertIdx& idx)const { return _vertices[idx.val()]; }
 		size_t ptCount() const { return _vertices.size(); }
-		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); updateNormals(); }
+		void AddVertex(const cvVec2f& vtx) { _vertices.push_back(vtx); }
 
 		void fixWinding();
 

@@ -44,6 +44,7 @@ struct DbgDisplayControl
 	bool showPocket = false;
 	bool showCutLine = false;
 	bool showOrigin = false;
+	bool hideDonePolygon = false;
 };
 DbgDisplayControl dbgCtrl;
 
@@ -96,6 +97,7 @@ static void RenderUI()
         ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
         ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
         ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
+        ImGui::Checkbox("Hide Done Polygons", &dbgCtrl.hideDonePolygon);
         ImGui::PopStyleColor();
     }
     ImGui::Render();
@@ -140,8 +142,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				g_addPoints = false;
 			}
+			g_inputLoop.updateNormals();
 			g_inputLoop.fixWinding();
 			g_inputs.addLoop(g_inputLoop);
+			g_polys_todo.clear();
 			g_polys_todo.push_back(g_inputs);
 			g_inputLoop = Loop();
         }
@@ -216,13 +220,17 @@ void RenderPolygon()
 
 	for(auto iter = g_polys_todo.begin(); iter != g_polys_todo.end(); ++iter)
 	{
-		RenderPoly(*iter, cvColorf::White, false);
+		int idx = iter - g_polys_todo.begin();
+		RenderPoly(*iter, randomColors[idx], false);
 	}
 
-	for(int i = 0; i < g_polys_done.size(); ++i)
+	if (!dbgCtrl.hideDonePolygon)
 	{
-		auto& polyVerts = g_polys_done[i];
-		RenderPoly(polyVerts, randomColors[i], true);
+		for (int i = 0; i < g_polys_done.size(); ++i)
+		{
+			auto& polyVerts = g_polys_done[i];
+			RenderPoly(polyVerts, randomColors[i], true);
+		}
 	}
 
 	if (!g_polys_todo.empty())
@@ -303,7 +311,7 @@ void ResolveSingleStep()
 
 	vector<Poly> decomped = _resolveLoop(poly);
 	
-	if (decomped.size() == 1)
+	if (decomped.size() == 1 && poly.loops.size() == decomped.cbegin()->loops.size())
 	{
 		g_polys_done.push_back(decomped[0]);
 	}
