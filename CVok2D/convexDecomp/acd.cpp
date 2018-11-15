@@ -582,9 +582,9 @@ namespace acd
 		return retPolygons;
 	}
 
-	Winding _testWinding(const vector<cvVec2f>& verts)
+	float _polyArea(const vector<cvVec2f>& verts)
 	{
-		//https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+
 		float sum = 0;
 		for (int i = 0; i < verts.size(); ++i)
 		{
@@ -593,7 +593,13 @@ namespace acd
 			cvVec2f nv = verts[ni];
 			sum += (nv.x - v.x) * (nv.y + v.y);
 		}
+		return sum;
+	}
 
+	Winding _testWinding(const vector<cvVec2f>& verts)
+	{
+		//https://stackoverflow.com/questions/1165647/how-to-determine-if-a-list-of-polygon-points-are-in-clockwise-order
+		float sum = _polyArea(verts);
 		return sum > 0 ? Winding::CW : Winding::CCW;
 	}
 

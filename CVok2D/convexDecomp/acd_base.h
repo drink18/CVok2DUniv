@@ -62,6 +62,8 @@ namespace acd
 		cvVec2f lineDir;
 	};
 
+	float _polyArea(const vector<cvVec2f>& verts);
+
 	// a collection of indices into original polygon
 	// that forms the convex hull
 	class HullLoop
@@ -163,6 +165,7 @@ namespace acd
 		const vector<float>& concavity() const { return _concativty; }
 		const vector<Pocket>& pockets() const { return _pockets; }
 
+		float area() const { return _polyArea(_vertices); }
 	private:
 		vector<cvVec2f> _vertices;
 		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)
@@ -223,6 +226,8 @@ namespace acd
 
 		// cutting
 		PolyVertIdx findBestCutPt(const WitnessPt& wp) const;
+
+		float area() const;
 
 	private:
 		HullLoop _hull;

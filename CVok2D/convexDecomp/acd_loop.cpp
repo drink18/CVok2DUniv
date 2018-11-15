@@ -139,4 +139,15 @@ namespace acd
 		}
 		return true;
 	}
+
+	float Polygon::area() const 
+	{
+		float outArea = outterLoop().area();
+		cvAssert(outArea > 0);
+		for (int i = 1; i < loops.size(); ++i)
+		{
+			outArea -= loops[i].area();
+		}
+		return outArea;
+	}
 }
