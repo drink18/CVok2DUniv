@@ -416,7 +416,103 @@ namespace acd
 		}
 	}
 
-	PolyVertIdx findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
+	CutPoint findBestCutPt_inner(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
+		const WitnessPt& cwp)
+	{
+		const Loop& outLoop = poly.outterLoop();
+		CutLine cutLine = findCutLine(poly, cwp);
+
+		// can't find a vertex as cut point , use normal as cut direction and find 
+		// best cutting point
+		cvVec2f lineDir = cutLine.lineDir;
+		lineDir.normalize();
+		cvVec2f lineNorm(-lineDir.y, lineDir.x);
+
+		vector<cvVec2f> intersects;
+		vector<float> dists;
+		vector<PolyVertIdx> vtxIndices;
+		vector<float> ts;
+		
+		cvVec2f cwPt = poly.loops[cwp.loopIndex][cwp.ptIndex];
+		const float eps = 1e-5f;
+
+		for (auto idx = outLoop.beginIdx(); idx <= outLoop.endIdx(); ++idx)
+		{
+			PolyVertIdx ni = outLoop.nextIdx(idx);
+			if (cwp.loopIndex == 0)
+			{
+				if (idx == cwp.ptIndex) continue;
+				if (idx == outLoop.prevIdx(cwp.ptIndex)) continue;
+				if (idx == outLoop.nextIdx(cwp.ptIndex)) continue;
+			}
+
+			cvVec2f v = outLoop[idx];
+			cvVec2f nv = outLoop[ni];
+
+			// intersecting, compute distance etc
+			float t;
+			cvVec2f intersect;
+
+			IntersectRayLine(cwPt, lineDir, v, nv, t, intersect);
+			float dist = (intersect - cwPt).dot(lineDir);
+			//  t > 1.0f -eps makes sure that we only pick start point
+			if (t < -eps || t > 1.0f - eps)
+				dist = -1e10f;
+
+			if (dist > -eps)
+			{
+				vtxIndices.push_back(idx);
+				intersects.push_back(intersect);
+				dists.push_back(dist);
+				ts.push_back(t);
+			}
+		}
+
+		//pick closet 
+		float bestDist = 1e10f;
+		float bestT = 0;
+		cvVec2f bestItersect;
+		PolyVertIdx bestPtIdx(-1);
+		for(int i = 0; i < vtxIndices.size(); ++i)
+		{
+			float d = dists[i];
+			// the <=  here is important, it makes sure we only pick
+			// the latest vertex in loop if we have several co-point vertices
+			// this avoid including pockets
+			if (d <= bestDist && d > - CV_FLOAT_EPS)
+			{
+				bestDist = d;
+				bestPtIdx = vtxIndices[i];
+				bestT = ts[i];
+				bestItersect = intersects[i];
+			}
+		}
+
+		CutPoint cp;
+		// close enough to end point, snap
+		if (bestT < eps || bestT >(1.0f - eps))
+		{
+			cp.idx = bestPtIdx;
+			cp.point = outLoop[bestPtIdx];
+		}
+		else
+		{
+			// have to add a new point..... sucks
+			cp.idx = PolyVertIdx(-1);
+			cp.point = bestItersect;
+			cp.prevIdx = bestPtIdx;
+			cp.nextIdx = outLoop.nextIdx(bestPtIdx);
+		}
+
+		static int a = 0;
+		if (bestPtIdx.val() == -1)
+			++a;
+		cvAssert(bestPtIdx.val() != -1);
+
+		return cp;
+	}
+
+	PolyVertIdx findBestCutPt_outter(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp)
 	{
 		const Loop& outLoop = poly.outterLoop();
@@ -486,6 +582,23 @@ namespace acd
 		cvAssert(bestPtIdx.val() != -1);
 
 		return bestPtIdx;
+
+	}
+
+	CutPoint findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
+		const WitnessPt& cwp)
+	{
+		CutPoint cp;
+		if (cwp.loopIndex == 0)
+		{
+			 cp.idx = findBestCutPt_outter(poly, hull, pockets, cwp);
+			 cp.point = poly.outterLoop()[cp.idx];
+		}
+		else
+		{
+			cp = findBestCutPt_inner(poly, hull, pockets, cwp);
+		}
+		return cp;
 	}
 
 	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon)
@@ -509,7 +622,8 @@ namespace acd
 		
 
 		// find best cut point
-		PolyVertIdx cutPointIdx = polygon.findBestCutPt(cw);
+		CutPoint cp = polygon.findBestCutPt(cw);
+		PolyVertIdx cutPointIdx = cp.idx;
 
 		if (cw.loopIndex > 0)
 		{
@@ -520,24 +634,58 @@ namespace acd
 			{
 				cvVec2f outVtx = loop[outIdx];
 				retPoly.outterLoop().AddVertex(outVtx);
-				if (outIdx == cutPointIdx)
-				{
-					// start looping inner loop but backwards
-					PolyVertIdx innerIdx = cw.ptIndex;
-					do 
-					{
-						cvVec2f innerVtx = innerLoop[innerIdx];
-						retPoly.outterLoop().AddVertex(innerVtx);
-						innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
 
-						if (innerIdx == cw.ptIndex)
+				// actually need to create new vtx
+				if (cutPointIdx.val() == -1)
+				{
+					cvAssert(cp.prevIdx.val() != -1);
+					cvAssert(cp.nextIdx.val() != -1);
+					if (outIdx == cp.prevIdx)
+					{
+						retPoly.outterLoop().AddVertex(cp.point);
+					}
+
+					if (outIdx == cp.prevIdx)
+					{
+						// start looping inner loop but backwards
+						PolyVertIdx innerIdx = cw.ptIndex;
+						do
 						{
-							// duplicate inner cut point
-							retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
-							// duplicate outter cut point
-							retPoly.outterLoop().AddVertex(outVtx);
-						}
-					} while (innerIdx != cw.ptIndex);
+							cvVec2f innerVtx = innerLoop[innerIdx];
+							retPoly.outterLoop().AddVertex(innerVtx);
+							innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
+
+							if (innerIdx == cw.ptIndex)
+							{
+								// duplicate inner cut point
+								retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
+								// duplicate outter cut point
+								retPoly.outterLoop().AddVertex(cp.point);
+							}
+						} while (innerIdx != cw.ptIndex);
+					}
+				}
+				else
+				{
+					if (outIdx == cutPointIdx)
+					{
+						// start looping inner loop but backwards
+						PolyVertIdx innerIdx = cw.ptIndex;
+						do
+						{
+							cvVec2f innerVtx = innerLoop[innerIdx];
+							retPoly.outterLoop().AddVertex(innerVtx);
+							innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
+
+							if (innerIdx == cw.ptIndex)
+							{
+								// duplicate inner cut point
+								retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
+								// duplicate outter cut point
+								retPoly.outterLoop().AddVertex(outVtx);
+							}
+						} while (innerIdx != cw.ptIndex);
+					}
 				}
 			}
 
@@ -550,6 +698,7 @@ namespace acd
 		}
 		else
 		{
+			cvAssertMsg(cutPointIdx.val() != -1, "cut point for outter loop should not create new point");
 			// split loop
 			Polygon poly1;
 			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))

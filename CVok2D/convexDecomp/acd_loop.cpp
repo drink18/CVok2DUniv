@@ -116,7 +116,7 @@ namespace acd
 		}
 	}
 
-	PolyVertIdx Polygon::findBestCutPt(const WitnessPt& wp) const
+	CutPoint Polygon::findBestCutPt(const WitnessPt& wp) const
 	{
 		return acd::findBestCutPt(*this, _hull, outterLoop().pockets(), wp);
 	}
@@ -126,6 +126,7 @@ namespace acd
 		if (other.loops.size() != loops.size())
 			return false;
 
+		const float eps = 1e-3;
 		for (int i = 0; i < loops.size(); ++i)
 		{
 			const Loop& l = loops[i];
@@ -134,8 +135,16 @@ namespace acd
 			if (ol.ptCount() != l.ptCount())
 				return false;
 
-			if (ol.getVertsArray() != l.getVertsArray())
-				return false;
+			auto& ola = ol.getVertsArray();
+			auto& la = l.getVertsArray();
+			for (int i = 0; i < ola.size(); ++i)
+			{
+				if (abs(ola[i].x - la[i].x) > eps)
+					return false;
+
+				if (abs(ola[i].y - la[i].y) > eps)
+					return false;
+			}
 		}
 		return true;
 	}

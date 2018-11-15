@@ -41,6 +41,19 @@ namespace acd
 		CW
 	};
 
+	struct CutPoint
+	{
+		cvVec2f point;
+		PolyVertIdx idx;
+		PolyVertIdx prevIdx;
+		PolyVertIdx nextIdx;
+		CutPoint()
+			:idx(-1),
+			prevIdx(-1),
+			nextIdx(-1)
+		{ }
+	};
+
 	struct WitnessPt
 	{
 	public:
@@ -225,7 +238,7 @@ namespace acd
 		bool identical(const Polygon& other) const;
 
 		// cutting
-		PolyVertIdx findBestCutPt(const WitnessPt& wp) const;
+		CutPoint findBestCutPt(const WitnessPt& wp) const;
 
 		float area() const;
 

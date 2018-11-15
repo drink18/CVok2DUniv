@@ -29,12 +29,33 @@ void compareWithRef(ifstream& listFs)
 		string oname = string("out_" + testFileName);
 		ifstream testFs(testFileName);
 		ifstream outputFs(oname);
-		cout << "comparing " << testFileName << " with " << oname << ".........";
+		cout << "comparing " << testFileName << " with " << oname << "........." << endl;
 
 		vector<Polygon> inputList = acd::readPolygon(testFs);
 		vector<Polygon> doneList = ResolvePolygon(inputList);
 
 		vector<Polygon> ref = acd::readPolygon(outputFs);
+
+
+		// compare area
+		float origArea = 0;
+		float resultArea = 0;
+		for (auto& p : inputList)
+			origArea += p.area();
+		for (auto& p : doneList)
+			resultArea += p.area();
+
+		const float areaTolerance = 1e-3f;
+		if (abs(origArea - resultArea) > areaTolerance)
+		{
+			cerr << "\t[Failed]:" << "area mismatch!"
+				<< "\t\tinput area = " << origArea << ", result area = " << resultArea << endl;
+		}
+		else
+		{
+			cout << "\t[Passed]: area match!" << endl;
+		}
+		
 		bool identical = true;
 
 		if (ref.size() != doneList.size())
@@ -54,25 +75,12 @@ void compareWithRef(ifstream& listFs)
 
 		if (identical)
 		{
-			cout << "[Passed]" << endl;
+			cout << "\t[Passed]: Topology match" << endl;
 		}
 		else
 		{
-			cerr << "[Failed]: result doesn't match with reference" << endl;
+			cerr << "\t[Failed]: result doesn't match with reference, if area match, consider update test references" << endl;
 		}
-
-		float origArea = 0;
-		float resultArea = 0;
-		for (auto& p : inputList)
-			origArea += p.area();
-		for (auto& p : doneList)
-			resultArea += p.area();
-
-
-		const float areaTolerance = 1e-3f;
-		if (abs(origArea - resultArea) > areaTolerance)
-			cerr << "[Failed]:" << "area mismatch!" 
-			<< "input area = " << origArea << ", result area = " << resultArea << endl;
 	}
 }
 

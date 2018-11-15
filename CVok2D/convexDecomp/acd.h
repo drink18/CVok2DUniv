@@ -11,7 +11,7 @@ namespace acd
 	vector<Pocket> findAllPockets(const HullLoop& hull, const Loop& loop);
 	HullLoop quickHull(const Polygon& polygon);
 	WitnessPt pickCW(const Polygon& poly, const HullLoop& h, const vector<Pocket>& pockets);
-	PolyVertIdx findBestCutPt(const Polygon& polygon, const HullLoop& hull, const vector<Pocket>& pockets,
+	CutPoint findBestCutPt(const Polygon& polygon, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp);
 
 	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon);
