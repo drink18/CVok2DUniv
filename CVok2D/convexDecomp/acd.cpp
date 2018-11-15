@@ -485,9 +485,12 @@ namespace acd
 		{
 			float d = dists[i];
 
-			// if distance is very close , prefer point with larger index
-			if( ( abs(d - bestDist) < CV_FLOAT_EPS && vtxIndices[i] > bestPtIdx) 
-				|| d < bestDist )
+			bool close = abs(d - bestDist) < CV_FLOAT_EPS;
+			bool idxLarger = vtxIndices[i] > bestPtIdx; // perefer pt with larger idx if duplicated vertex
+			// however, if the incoming vtx is previous of best vtx, then current best is actually "larger"
+			bool isPrev = outLoop.isPrev(bestPtIdx, vtxIndices[i]);
+			if( ( close && (idxLarger && !isPrev) )
+				|| (d < bestDist  && !close))
 			{
 				bestDist = d;
 				bestPtIdx = vtxIndices[i];
