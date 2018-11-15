@@ -463,8 +463,8 @@ namespace acd
 
 			IntersectRayLine(cwPt, lineDir, v, nv, t, intersect);
 			float dist = (intersect - cwPt).dot(lineDir);
-			//  t > 1.0f -eps makes sure that we only pick start point
-			if (t < -eps || t > 1.0f - eps)
+			// (-eps, 1 + eps) to handle floating point error
+			if (t < - eps || t > 1.0f + eps)
 				dist = -1e10f;
 
 			if (dist > -eps)
@@ -484,10 +484,10 @@ namespace acd
 		for(int i = 0; i < vtxIndices.size(); ++i)
 		{
 			float d = dists[i];
-			// the <=  here is important, it makes sure we only pick
-			// the latest vertex in loop if we have several co-point vertices
-			// this avoid including pockets
-			if (d <= bestDist && d > - CV_FLOAT_EPS)
+
+			// if distance is very close , prefer point with larger index
+			if( ( abs(d - bestDist) < CV_FLOAT_EPS && vtxIndices[i] > bestPtIdx) 
+				|| d < bestDist )
 			{
 				bestDist = d;
 				bestPtIdx = vtxIndices[i];

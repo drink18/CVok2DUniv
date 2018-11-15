@@ -2,7 +2,7 @@
 #include <cstdint>
 
 const float CV_PI = 3.1415926535f;
-const float CV_FLOAT_EPS = 1e-6f;
+const float CV_FLOAT_EPS = 1e-4f;
 
 inline bool cvIsValid(float x)
 {
