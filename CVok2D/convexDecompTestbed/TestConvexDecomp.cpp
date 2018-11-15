@@ -60,7 +60,7 @@ DbgDisplayControl dbgCtrl;
 typedef acd::Polygon Poly;
 
 Loop g_inputLoop;
-Poly g_inputs;
+vector<Poly> g_inputs;
 vector<Poly> g_polys_todo;
 vector<Poly> g_polys_done;
 
@@ -85,7 +85,8 @@ static void RenderUI()
 		{
 			if (!g_addPoints)
 			{
-				g_inputs.reset();
+				g_inputs.clear();
+				g_inputs.resize(1);
 				g_polys_done.clear();
 				g_polys_todo.clear();
 			}
@@ -113,7 +114,7 @@ static void RenderUI()
 		{
 			g_polys_todo.clear();
 			g_polys_done.clear();
-			g_polys_todo.push_back(g_inputs);
+			g_polys_todo = g_inputs;
 		}
 
 		ImGui::Separator();
@@ -127,15 +128,15 @@ static void RenderUI()
 		ImGui::Spacing();
 		if (ImGui::Button("Dump Input Poly"))
 		{
-			if (g_inputs.loops.size() > 0)
+			if (g_inputs.size() > 0)
 			{
 				char fn[1024];
 				sprintf(fn, "graph%d.txt", rand());
 				string infile(fn);
 				string reffile = "out_" + infile;
 				ofstream outFs(fn, ios::out);
-				writePolygonInfo(outFs, g_inputs);
-				vector<Poly> refs = _resolveLoop_All(g_inputs);
+				writePolygonListInfo(outFs, g_inputs);
+				vector<Poly> refs = acd::_resolvePolyList(g_inputs);
 				ofstream refFs(reffile, ios::out);
 				writePolygonListInfo(refFs, refs);
 				dumpCount++;
@@ -186,10 +187,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 				g_addPoints = false;
 			}
 			g_inputLoop.fixWinding();
-			g_inputs.addLoop(g_inputLoop);
-			g_inputs.initializeAll();
+			g_inputs[0].addLoop(g_inputLoop);
+			g_inputs[0].initializeAll();
 			g_polys_todo.clear();
-			g_polys_todo.push_back(g_inputs);
+			g_polys_todo.push_back(g_inputs[0]);
 			g_inputLoop = Loop();
         }
         else if (action == GLFW_RELEASE)
@@ -238,7 +239,8 @@ void RenderPolygon()
 {
 	if (dbgCtrl.showOrigin)
 	{
-		RenderPoly(g_inputs, cvColorf::White, false);
+		for(auto& p : g_inputs)
+			RenderPoly(p, cvColorf::White, false);
 		return;
 	}
 
@@ -353,7 +355,7 @@ void ResolveSingleStep()
 	g_polys_todo.pop_back();
 
 	vector<Poly> decomped = _resolveLoop_OneStep(poly);
-	
+
 	if (decomped.size() == 1 && poly.loops.size() == decomped.cbegin()->loops.size())
 	{
 		g_polys_done.push_back(decomped[0]);
@@ -368,7 +370,7 @@ void AbortHandler(int signal)
 {
 	string fileName = "errorInput.txt";
 	fstream file(fileName, fstream::out);
-	writePolygonInfo(file, g_inputs);
+	writePolygonListInfo(file, g_inputs);
 	file.close();
 	fprintf(stderr, "something went wrong. Input written to %s\n", fileName.c_str());
 }
@@ -378,6 +380,14 @@ int main(int narg, char** args)
 	signal(SIGABRT, AbortHandler);
 	signal(SIGSEGV, AbortHandler);
 
+	g_inputs.resize(1);
+
+	// fill random color list
+	for (int i = 0; i < 1024; ++i)
+	{
+		randomColors.push_back(cvColorf::randomColor());
+	}
+	// load input file
 	if (narg > 1)
 	{
 		string inputFile(args[1]);
@@ -385,18 +395,13 @@ int main(int narg, char** args)
 		if (fs.is_open())
 		{
 			
-			auto& polys = readPolygon(fs);
-			for(auto& p : polys)
+			g_inputs = readPolygon(fs);
+			for(auto& p : g_inputs)
 				g_polys_todo.push_back(p);
 		}
 	}
 
 
-	// fill random color list
-	for (int i = 0; i < 1024; ++i)
-	{
-		randomColors.push_back(cvColorf::randomColor());
-	}
 
 	//cvAssert(false);
 	SetErrorMode(SEM_NOGPFAULTERRORBOX);

@@ -690,4 +690,18 @@ namespace acd
 
 		return retPolys;
 	}
+
+	vector<Polygon> _resolvePolyList(const vector<Polygon>& polygons)
+	{
+		vector<Polygon> ret;
+
+		for (auto& p : polygons)
+		{
+			auto onRes = _resolveLoop_All(p);
+			ret.insert(ret.end(), onRes.begin(), onRes.end());
+		}
+
+		return ret;
+
+	}
 }

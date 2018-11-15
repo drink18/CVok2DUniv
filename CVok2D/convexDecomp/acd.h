@@ -16,6 +16,7 @@ namespace acd
 
 	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon);
 	vector<Polygon> _resolveLoop_All(const Polygon& polygon);
+	vector<Polygon> _resolvePolyList(const vector<Polygon>& polygons);
 	CutLine findCutLine(const Polygon& polygon, const WitnessPt& wp);
 
 	HullLoop _quickHull(const Loop& loop);
