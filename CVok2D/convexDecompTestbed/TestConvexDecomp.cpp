@@ -12,9 +12,11 @@
 #include "DebugDraw.h"
 #include "acd.h"
 #include <signal.h>
+#include <chrono>
 
 using namespace std;
 using namespace acd;
+using namespace chrono;
 
 //forward decl
 void ResolveSingleStep();
@@ -29,19 +31,8 @@ static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 static int dumpCount = 0;
 
-vector<cvColorf> randomColors;
+vector<cvColorf> g_randomColors;
 
-LONG __stdcall CrashHandler(LPEXCEPTION_POINTERS exceptionPtrs)
-{
-	fprintf(stderr, "eRROR");
-	return EXCEPTION_CONTINUE_SEARCH;
-}
-
-
-static void error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error %d: %s\n", error, description);
-}
 static ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f);
 static bool singleStep = false;
 
@@ -64,6 +55,19 @@ vector<Poly> g_inputs;
 vector<Poly> g_polys_todo;
 vector<Poly> g_polys_done;
 
+
+void LoadPolygonsFromFile(const char* filename)
+{
+	string inputFile(filename);
+	ifstream fs(inputFile);
+	if (fs.is_open())
+	{
+		g_inputs = readPolygon(fs);
+		for (auto& p : g_inputs)
+			g_polys_todo.push_back(p);
+		g_polys_done.clear();
+	}
+}
 static void RenderUI()
 {
     ImGui_ImplGlfwGL3_NewFrame();
@@ -131,7 +135,7 @@ static void RenderUI()
 			if (g_inputs.size() > 0)
 			{
 				char fn[1024];
-				sprintf(fn, "graph%d.txt", rand());
+				snprintf(fn, 1024, "graph%d.txt", rand());
 				string infile(fn);
 				string reffile = "out_" + infile;
 				ofstream outFs(fn, ios::out);
@@ -146,6 +150,11 @@ static void RenderUI()
         ImGui::PopStyleColor();
     }
     ImGui::Render();
+}
+
+static void error_callback(int error, const char* description)
+{
+	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
@@ -202,6 +211,11 @@ static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
     g_camera.m_zoom += (float)yoffset;
     g_camera.m_zoom = max(g_camera.m_zoom, 0.25f);
+}
+
+void drop_callback(GLFWwindow* window, int count, const char** paths)
+{
+	LoadPolygonsFromFile(paths[0]);
 }
 
 void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close)
@@ -265,8 +279,8 @@ void RenderPolygon()
 
 	for(auto iter = g_polys_todo.begin(); iter != g_polys_todo.end(); ++iter)
 	{
-		int idx = iter - g_polys_todo.begin();
-		RenderPoly(*iter, randomColors[idx], false);
+		size_t idx = iter - g_polys_todo.begin();
+		RenderPoly(*iter, g_randomColors[idx], false);
 	}
 
 	if (!dbgCtrl.hideDonePolygon)
@@ -274,7 +288,7 @@ void RenderPolygon()
 		for (int i = 0; i < g_polys_done.size(); ++i)
 		{
 			auto& polyVerts = g_polys_done[i];
-			RenderPoly(polyVerts, randomColors[i], true);
+			RenderPoly(polyVerts, g_randomColors[i], true);
 		}
 	}
 
@@ -306,7 +320,7 @@ void RenderPolygon()
 		{
 			for(int i = 0; i < pockets.size(); ++i)
 			{
-				cvColorf c = randomColors[i];
+				cvColorf c = g_randomColors[i];
 				auto& b = pockets[i];
 				auto hullB0 = b.idx0;
 				auto hullB1 = b.idx1;
@@ -368,15 +382,18 @@ void ResolveSingleStep()
 }
 void AbortHandler(int signal)
 {
-	string fileName = "errorInput.txt";
+	char fileName[1024];
+	snprintf(fileName, 1024, "errorInput%d.txt", rand());
 	fstream file(fileName, fstream::out);
 	writePolygonListInfo(file, g_inputs);
 	file.close();
-	fprintf(stderr, "something went wrong. Input written to %s\n", fileName.c_str());
+	fprintf(stderr, "something went wrong. Input written to %s\n", fileName);
 }
 
 int main(int narg, char** args)
 {
+	srand((int)system_clock::now().time_since_epoch().count());
+
 	signal(SIGABRT, AbortHandler);
 	signal(SIGSEGV, AbortHandler);
 
@@ -385,23 +402,13 @@ int main(int narg, char** args)
 	// fill random color list
 	for (int i = 0; i < 1024; ++i)
 	{
-		randomColors.push_back(cvColorf::randomColor());
+		g_randomColors.push_back(cvColorf::randomColor());
 	}
 	// load input file
 	if (narg > 1)
 	{
-		string inputFile(args[1]);
-		ifstream fs(inputFile);
-		if (fs.is_open())
-		{
-			
-			g_inputs = readPolygon(fs);
-			for(auto& p : g_inputs)
-				g_polys_todo.push_back(p);
-		}
+		LoadPolygonsFromFile(args[1]);
 	}
-
-
 
 	//cvAssert(false);
 	SetErrorMode(SEM_NOGPFAULTERRORBOX);
@@ -444,6 +451,7 @@ int main(int narg, char** args)
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetScrollCallback(window, scroll_callback);
+	glfwSetDropCallback(window, drop_callback);
 
     float lastTime = (float)glfwGetTime();
     float dt ;

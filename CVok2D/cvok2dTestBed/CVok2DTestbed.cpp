@@ -37,6 +37,7 @@ static void error_callback(int error, const char* description)
 {
     fprintf(stderr, "Error %d: %s\n", error, description);
 }
+
 static ImVec4 clear_color = ImColor(114, 144, 154);
 static bool pause = false;
 static bool singleStep = false;
