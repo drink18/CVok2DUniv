@@ -23,3 +23,6 @@ target_link_libraries(${PROJECT_NAME} convexDecomp)
 target_link_libraries(${PROJECT_NAME} ${OPENGL_gl_LIBRARY})
 target_link_libraries(${PROJECT_NAME} glew)
 target_link_libraries(${PROJECT_NAME} glfw)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${CMAKE_SOURCE_DIR}/../bin/${PROJECT_NAME}.exe)
