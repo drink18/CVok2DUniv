@@ -194,13 +194,13 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			if (g_addPoints)
 			{
 				g_addPoints = false;
+				g_inputLoop.fixWinding();
+				g_inputs[0].addLoop(g_inputLoop);
+				g_inputs[0].initializeAll();
+				g_polys_todo.clear();
+				g_polys_todo.push_back(g_inputs[0]);
+				g_inputLoop = Loop();
 			}
-			g_inputLoop.fixWinding();
-			g_inputs[0].addLoop(g_inputLoop);
-			g_inputs[0].initializeAll();
-			g_polys_todo.clear();
-			g_polys_todo.push_back(g_inputs[0]);
-			g_inputLoop = Loop();
         }
         else if (action == GLFW_RELEASE)
             rightBtnDown = false;
