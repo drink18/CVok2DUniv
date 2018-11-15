@@ -603,16 +603,18 @@ namespace acd
 		return sum > 0 ? Winding::CW : Winding::CCW;
 	}
 
+	void writeLoop(ostream& os, const  Loop &loop)
+	{
+		os << loop.ptCount() << endl;; // vtx count
+		auto& verts = loop.getVertsArray();
+		for (auto& p : verts)
+			os << p.x << " " << p.y << endl;
+	}
+
 	void writePolygonInfo(ostream& os, const Polygon& poly)
 	{
-		os << 1 << endl; //poly count
-		for (const auto& loop : poly.loops)
-		{
-			os << 0 << loop.ptCount() << endl;;
-			auto& verts = loop.getVertsArray();
-			for (auto& p : verts)
-				os << p.x << " " << p.y << endl;
-		}
+		vector<Polygon> polys(1, poly);
+		writePolygonListInfo(os, polys);
 	}
 
 	void writePolygonListInfo(ostream& os, const vector<Polygon>& polys)
@@ -621,13 +623,10 @@ namespace acd
 		for(int i = 0; i < polys.size(); ++i)
 		{
 			auto& p = polys[i];
-			for (int j = 0; j < p.loops.size(); ++j)
+			os << p.loops.size() << endl; //loop count
+			for (const auto& loop : p.loops)
 			{
-				auto& loop = p.loops[j];
-				os << i << " " << loop.ptCount() << endl;; // poly idx , loop vertex count
-				auto& verts = loop.getVertsArray();
-				for (auto& p : verts)
-					os << p.x << " " << p.y << endl;
+				writeLoop(os, loop);
 			}
 		}
 	}
@@ -635,45 +634,28 @@ namespace acd
 	vector<Polygon> readPolygon(ifstream& is)
 	{
 		int polyCount;
-		Polygon poly;
 		vector<Polygon> polyList;
 
 		is >> polyCount; 
-		for(int ipoly = 0; ipoly < polyCount; ++ipoly)
+		for (int ipoly = 0; ipoly < polyCount; ++ipoly)
 		{
-			int lastPolyIdx = -1;
-			int polyIdx = -1;
-			float x, y;
-			int vtxCount;
-
-			is >> polyIdx >> vtxCount;
-
-			if (polyIdx != lastPolyIdx)
+			int loopCount = 0;
+			is >> loopCount;
+			Polygon poly;
+			for (int iloop = 0; iloop < loopCount; ++iloop)
 			{
-				lastPolyIdx = polyIdx;
-				if (poly.loops.size() > 0)
-				{
-					poly.initializeAll();
-					polyList.push_back(poly);
-				}
-				poly = Polygon();
-			}
+				int vtxCount;
 
-			if (vtxCount > 0)
-			{
+				is >> vtxCount;
 				Loop l;
-				for (int i = 0; i < vtxCount; ++i)
+				for (int iv = 0; iv < vtxCount; ++iv)
 				{
+					float x, y;
 					is >> x >> y;
 					l.AddVertex(cvVec2f(x, y));
 				}
-
-				poly.loops.push_back(l);
+				poly.addLoop(l);
 			}
-		}
-
-		if (poly.loops.size() > 0)
-		{
 			poly.initializeAll();
 			polyList.push_back(poly);
 		}

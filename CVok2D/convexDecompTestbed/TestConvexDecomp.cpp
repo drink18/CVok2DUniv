@@ -131,8 +131,13 @@ static void RenderUI()
 			{
 				char fn[1024];
 				sprintf(fn, "graph%d.txt", rand());
+				string infile(fn);
+				string reffile = "out_" + infile;
 				ofstream outFs(fn, ios::out);
 				writePolygonInfo(outFs, g_inputs);
+				vector<Poly> refs = _resolveLoop_All(g_inputs);
+				ofstream refFs(reffile, ios::out);
+				writePolygonListInfo(refFs, refs);
 				dumpCount++;
 			}
 		}
@@ -372,6 +377,20 @@ int main(int narg, char** args)
 {
 	signal(SIGABRT, AbortHandler);
 	signal(SIGSEGV, AbortHandler);
+
+	if (narg > 1)
+	{
+		string inputFile(args[1]);
+		ifstream fs(inputFile);
+		if (fs.is_open())
+		{
+			
+			auto& polys = readPolygon(fs);
+			for(auto& p : polys)
+				g_polys_todo.push_back(p);
+		}
+	}
+
 
 	// fill random color list
 	for (int i = 0; i < 1024; ++i)
