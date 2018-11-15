@@ -194,6 +194,7 @@ namespace acd
 		bool hasHole() const { return loops.size() > 1; }
 		void addLoop(const Loop& loop) { loops.push_back(loop); }
 	public:
+		// iterators
 		typedef vector<Loop>::iterator iterator;
 		typedef vector<Loop>::const_iterator const_iterator;
 		iterator begin() { return loops.begin(); }
@@ -201,6 +202,9 @@ namespace acd
 		iterator end() { return loops.end(); }
 		const_iterator cend() const { return loops.end(); }
 
+		//overridden operators
+		bool operator==(const Polygon& other)const { return identical(other); }
+		bool operator!=(const Polygon& other)const { return !identical(other); }
 
 		//init
 		void computeHull();
@@ -215,6 +219,7 @@ namespace acd
 
 		// helpers
 		bool isConvex() const{ return loops.size() == 1 && _hull.pointCount() == outterLoop().ptCount(); }
+		bool identical(const Polygon& other) const;
 
 		// cutting
 		PolyVertIdx findBestCutPt(const WitnessPt& wp) const;

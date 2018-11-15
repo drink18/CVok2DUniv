@@ -599,6 +599,7 @@ namespace acd
 
 	void writePolygonInfo(ostream& os, const Polygon& poly)
 	{
+		os << 1 << endl; //poly count
 		for (const auto& loop : poly.loops)
 		{
 			os << 0 << loop.ptCount() << endl;;
@@ -610,14 +611,14 @@ namespace acd
 
 	void writePolygonListInfo(ostream& os, const vector<Polygon>& polys)
 	{
-		//for (const auto& loop : poly.loops)
+		os << polys.size() << endl; //poly count
 		for(int i = 0; i < polys.size(); ++i)
 		{
 			auto& p = polys[i];
 			for (int j = 0; j < p.loops.size(); ++j)
 			{
 				auto& loop = p.loops[j];
-				os << i << loop.ptCount() << endl;;
+				os << i << " " << loop.ptCount() << endl;; // poly idx , loop vertex count
 				auto& verts = loop.getVertsArray();
 				for (auto& p : verts)
 					os << p.x << " " << p.y << endl;
@@ -627,21 +628,28 @@ namespace acd
 
 	vector<Polygon> readPolygon(ifstream& is)
 	{
-		std::string word;
-		int lastPolyIdx = -1;
-		int polyIdx = -1;
-		vector<Polygon> polyList;
+		int polyCount;
 		Polygon poly;
-		float x, y;
-		int vtxCount;
-		while (!is.eof())
+		vector<Polygon> polyList;
+
+		is >> polyCount; 
+		for(int ipoly = 0; ipoly < polyCount; ++ipoly)
 		{
+			int lastPolyIdx = -1;
+			int polyIdx = -1;
+			float x, y;
+			int vtxCount;
+
 			is >> polyIdx >> vtxCount;
+
 			if (polyIdx != lastPolyIdx)
 			{
 				lastPolyIdx = polyIdx;
 				if (poly.loops.size() > 0)
+				{
+					poly.initializeAll();
 					polyList.push_back(poly);
+				}
 				poly = Polygon();
 			}
 
@@ -659,7 +667,11 @@ namespace acd
 		}
 
 		if (poly.loops.size() > 0)
+		{
+			poly.initializeAll();
 			polyList.push_back(poly);
+		}
+
 		return polyList;
 	}
 

@@ -120,4 +120,23 @@ namespace acd
 	{
 		return acd::findBestCutPt(*this, _hull, outterLoop().pockets(), wp);
 	}
+
+	bool Polygon::identical(const Polygon& other) const
+	{
+		if (other.loops.size() != loops.size())
+			return false;
+
+		for (int i = 0; i < loops.size(); ++i)
+		{
+			const Loop& l = loops[i];
+			const Loop& ol = other.loops[i];
+
+			if (ol.ptCount() != l.ptCount())
+				return false;
+
+			if (ol.getVertsArray() != l.getVertsArray())
+				return false;
+		}
+		return true;
+	}
 }
