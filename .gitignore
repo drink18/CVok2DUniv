@@ -5,3 +5,4 @@ work.vim
 .idea
 cmake-build-debug
 CVok2D/.vs/
+bin/
