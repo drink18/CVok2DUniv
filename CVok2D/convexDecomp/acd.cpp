@@ -712,12 +712,6 @@ namespace acd
 			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
 			{
 				auto& nloop = poly1.outterLoop();
-				if (nloop.ptCount() > 0)
-				{
-					// handle degenerated edge
-					if (loop[i].distance(nloop.getVertsArray().back()) < CV_FLOAT_EPS)
-						continue;
-				}
 				nloop.AddVertex(loop[i]);
 				if (i == PolyVertIdx(cutPointIdx))
 				{
