@@ -9,6 +9,8 @@ namespace acd
 {
 	using namespace std;
 
+	class Loop;
+
 	template<typename VTYPE>
 	struct IndexBase
 	{
@@ -84,6 +86,13 @@ namespace acd
 	private:
 		vector<PolyVertIdx> ptIndicies; //index into original polygon
 	public:
+		enum class InOut 
+		{
+			In,
+			Out,
+			Edge
+		};
+	public:
 		HullLoop() {}
 		HullLoop(const HullLoop& other)
 			: ptIndicies(other.ptIndicies) { }
@@ -108,6 +117,8 @@ namespace acd
 		const_iterator cbegin() const { return ptIndicies.begin(); }
 		iterator end() { return ptIndicies.end(); }
 		const_iterator cend() const { return ptIndicies.end(); }
+	public:
+		HullLoop::InOut isPointInside(const Loop& loop, const PolyVertIdx& ptIdx) const;
 	private:
 		PolyVertIdx polyIdx(const HullIdx& hi) const { return ptIndicies[hi.val()]; }
 	};
@@ -161,6 +172,7 @@ namespace acd
 		void computeConcavity_out(const HullLoop& hullLoop);
 		void computePockets(const HullLoop& hull);
 		void initializeAll(bool inner, const HullLoop& hull);
+		void removeDuplicate();
 
 
 		//concavity points related

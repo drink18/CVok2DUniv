@@ -76,6 +76,20 @@ namespace acd
 		return PolyVertIdx(minIter - _concativty.begin());
 	}
 
+	void Loop::removeDuplicate()
+	{
+		// handle degeneration
+		for (int i = 0; i < ptCount(); ++i)
+		{
+			int ni = (i + 1) % ptCount();
+			cvVec2f v = _vertices[i];
+			cvVec2f nv = _vertices[ni];
+
+			if (nv.distance(v) < CV_FLOAT_EPS)
+				_vertices.erase(_vertices.begin() + i);
+		}
+	}
+
 	void Loop::initializeAll(bool inner, const HullLoop& hull)
 	{
 		updateNormals();
@@ -97,6 +111,28 @@ namespace acd
 		ptIndicies.insert(iter + 1, idx);
 	}
 
+	HullLoop::InOut HullLoop::isPointInside(const Loop& loop, const PolyVertIdx& ptIdx) const
+	{
+		cvVec2f pt = loop[ptIdx];
+		for(int i = 0; i < ptIndicies.size(); ++i)
+		{
+			PolyVertIdx vidx = ptIndicies[i];
+			PolyVertIdx nvidx = ptIndicies[(i + 1) % ptIndicies.size()];
+
+			cvVec2f v0 = loop[vidx];
+			cvVec2f v1 = loop[nvidx];
+
+			cvVec2f d = pt - v0;
+			cvVec2f v1v0 = v1 - v0;
+			float cross = d.cross(v1v0);
+			if (abs(cross) < CV_FLOAT_EPS)
+				return HullLoop::InOut::Edge;
+			else if (cross < 0)
+				return HullLoop::InOut::Out;
+		}
+		return HullLoop::InOut::In;
+	}
+
 	void Polygon::computeHull()
 	{
 		_hull = acd::_quickHull(outterLoop());
@@ -109,6 +145,9 @@ namespace acd
 
 	void Polygon::initializeAll()
 	{
+		if (loops.size() > 0)
+			loops[0].removeDuplicate();
+
 		computeHull();
 		for (auto iter = loops.begin(); iter != loops.end(); ++iter)
 		{
@@ -126,7 +165,7 @@ namespace acd
 		if (other.loops.size() != loops.size())
 			return false;
 
-		const float eps = 1e-3;
+		const float eps = 1e-3f;
 		for (int i = 0; i < loops.size(); ++i)
 		{
 			const Loop& l = loops[i];

@@ -645,6 +645,10 @@ void cvDebugDraw::AddArrow(const cvVec2f& from, const cvVec2f& to, const cvColor
 
 void cvDebugDraw::AddArrowMid(const cvVec2f& from, const cvVec2f& to, const cvColorf& color)
 {
+	cvVec2f d = to - from;
+	if (d.length() < CV_FLOAT_EPS)
+		return;
+	
 	m_lineRender->Vertex(from, to, color, color);
 
 

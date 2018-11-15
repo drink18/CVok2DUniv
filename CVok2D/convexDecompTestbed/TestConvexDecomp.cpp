@@ -46,6 +46,8 @@ struct DbgDisplayControl
 	bool showOrigin = false;
 	bool hideDonePolygon = false;
 };
+bool g_snapToPoint = false;
+float g_snapThreshold = 0.8f;
 DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
@@ -130,6 +132,10 @@ static void RenderUI()
 
 		ImGui::Separator();
 		ImGui::Spacing();
+        ImGui::Checkbox("Snap point", &g_snapToPoint);
+
+		ImGui::Separator();
+		ImGui::Spacing();
 		if (ImGui::Button("Dump Input Poly"))
 		{
 			if (g_inputs.size() > 0)
@@ -180,7 +186,30 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 		{
 			if (g_addPoints)
 			{
-				g_inputLoop.AddVertex(curPos);
+				if (g_snapToPoint && g_inputLoop.ptCount() > 0)
+ 				{
+					vector<PolyVertIdx> dups;
+					// find all points in range
+					for (auto vidx = g_inputLoop.beginIdx(); vidx < g_inputLoop.endIdx(); ++vidx)
+					{
+						auto pt = g_inputLoop[vidx];
+						if (pt.distance(curPos) < g_snapThreshold)
+						{
+							dups.push_back(vidx);
+						}
+					}
+					cvVec2f pos = curPos;
+					if (dups.size() > 0)
+					{
+						sort(dups.begin(), dups.end());
+						pos = g_inputLoop[dups.back()];
+					}
+					g_inputLoop.AddVertex(pos);
+				}
+				else
+				{
+					g_inputLoop.AddVertex(curPos);
+				}
 			}
 		}
 	}
@@ -194,11 +223,14 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			if (g_addPoints)
 			{
 				g_addPoints = false;
-				g_inputLoop.fixWinding();
-				g_inputs[0].addLoop(g_inputLoop);
-				g_inputs[0].initializeAll();
-				g_polys_todo.clear();
-				g_polys_todo.push_back(g_inputs[0]);
+				if (g_inputLoop.ptCount() > 3)
+				{
+					g_inputLoop.fixWinding();
+					g_inputs[0].addLoop(g_inputLoop);
+					g_inputs[0].initializeAll();
+					g_polys_todo.clear();
+					g_polys_todo.push_back(g_inputs[0]);
+				}
 				g_inputLoop = Loop();
 			}
         }
@@ -300,6 +332,7 @@ void RenderPolygon()
 		if(loop.ptCount() > 2)
 			hull = quickHull(polygon);
 
+		g_dbgDraw->AddPoint(loop[PolyVertIdx(0)], 5, cvColorf::Orange);
 		if (dbgCtrl.showConvexHull)
 		{
 			HullIdx h0(0);
@@ -318,6 +351,7 @@ void RenderPolygon()
 			pockets = findAllPockets(hull, loop);
 		if (dbgCtrl.showPocket)
 		{
+			RenderPolyLoop(loop, cvColorf::White, false, true);
 			for(int i = 0; i < pockets.size(); ++i)
 			{
 				cvColorf c = g_randomColors[i];

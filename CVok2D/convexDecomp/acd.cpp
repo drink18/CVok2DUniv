@@ -15,7 +15,13 @@ namespace acd
 
 	static float DistToLine(cvVec2f p0, cvVec2f p1, cvVec2f p)
 	{
-		auto n = (p1 - p0).getNormalized();
+		cvVec2f d = p1 - p0;
+		float len = d.length();
+		// degenerated case
+		if (len < CV_FLOAT_EPS)
+			return (p - p0).length();
+
+		auto n = d / len;
 		return Vec2Cross(n, p - p0);
 	}
 
@@ -150,7 +156,6 @@ namespace acd
 
 
 		hullLoop.insertAfterIdx(idxP1, bestIdx);
-		available.erase(find(available.begin(), available.end(), bestIdx));
 
 		vector<PolyVertIdx> removedPts;
 		for (int i = 0; i < available.size(); ++i)
@@ -176,31 +181,34 @@ namespace acd
 	vector<Pocket> findAllPockets(const HullLoop& hull, const Loop& loop)
 	{
 		vector<Pocket> bridge;
-
-		HullIdx prevHullIdx = HullIdx(0);
-		PolyVertIdx prevIdx = hull[prevHullIdx];
-		for (int i = 1; i <= hull.pointCount(); ++i)
+		// starting by a vtx on hull
+		PolyVertIdx vIdx = hull[HullIdx(0)];
+		do
 		{
-			HullIdx curHullIdx = HullIdx(i % hull.pointCount());
-			PolyVertIdx curIdx = hull[curHullIdx];
-			if (!loop.AreNeighbour(prevIdx, curIdx))
+			PolyVertIdx nvIdx = loop.nextIdx(vIdx);
+			if (hull.isPointInside(loop, vIdx) == HullLoop::InOut::Edge
+				&& hull.isPointInside(loop, nvIdx) == HullLoop::InOut::In)
 			{
-				//TODO : THIS IS BUGGY
-				Pocket b;
-				b.idx0 = prevIdx;
-				b.idx1 = curIdx;
-				for (PolyVertIdx idx = loop.nextIdx(b.idx0); idx != b.idx1; idx = loop.nextIdx(idx))
+				Pocket p;
+				p.idx0 = vIdx;
+
+				for (auto inner = loop.nextIdx(vIdx); ; inner = loop.nextIdx(inner))
 				{
-					b.notches.push_back(idx);
+					if (hull.isPointInside(loop, inner) == HullLoop::InOut::Edge)
+					{
+						p.idx1 = inner;
+						vIdx = inner;
+						bridge.push_back(p);
+						break;
+					}
+					p.notches.push_back(inner);
 				}
-
-				cvAssert(b.notches.size() > 0);
-				bridge.push_back(b);
 			}
-			prevIdx = curIdx;
-			prevHullIdx = curHullIdx;
-		}
-
+			else
+			{
+				vIdx = loop.nextIdx(vIdx);
+			}
+		} while (vIdx != hull[HullIdx(0)]);
 		return bridge;
 	}
 
@@ -704,6 +712,12 @@ namespace acd
 			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
 			{
 				auto& nloop = poly1.outterLoop();
+				if (nloop.ptCount() > 0)
+				{
+					// handle degenerated edge
+					if (loop[i].distance(nloop.getVertsArray().back()) < CV_FLOAT_EPS)
+						continue;
+				}
 				nloop.AddVertex(loop[i]);
 				if (i == PolyVertIdx(cutPointIdx))
 				{

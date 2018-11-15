@@ -2,7 +2,9 @@ graph0.txt
 graph1.txt
 graph1048.txt
 graph10481.txt
+graph19572.txt
 graph2.txt
 graph21768.txt
 graph28195.txt
 graph3.txt
+graph5825.txt
