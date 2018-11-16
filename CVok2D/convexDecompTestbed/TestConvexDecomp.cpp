@@ -91,22 +91,30 @@ static void AddHole(const cvVec2f& pos)
 
 static void ClipWithHole(const cvVec2f& pos)
 {
-	Loop hole = _makeRoundLoop(pos, 2.0f, 4, 0);
+	Loop hole = _makeRoundLoop(pos, 4.0f, 4, 0);
 	hole.initializeAll(true, g_inputs[0].convexHull());
 	g_polys_done.clear();
 	vector<Loop> results;
 	Poly& cur = g_polys_todo.back();
-	Loop& toWork = cur.outterLoop();
-	toWork.clipLoop(hole, cur.convexHull(), results);
-	g_polys_todo.clear();
-	for (auto& l : results)
-	{
-		Poly p;
-		p.loops.push_back(l);
-		g_polys_done.push_back(p);
-	}
 
-	ResolveAll();
+	Loop& toWork = cur.outterLoop();
+	bool in = toWork.clipLoop(hole, cur.convexHull(), results);
+	if (results.size() == 0 && in)
+	{
+		cur.loops.push_back(hole);
+		cur.initializeAll();
+	}
+	else
+	{
+		g_polys_todo.pop_back();
+		for (auto& l : results)
+		{
+			Poly p;
+			p.loops.push_back(l);
+			p.initializeAll();
+			g_polys_todo.push_back(p);
+		}
+	}
 }
 
 static void RenderEditUI()
@@ -390,7 +398,8 @@ void RenderPolygon()
 {
 	if (g_clipMode)
 	{
-		Loop l = _makeRoundLoop(curPos, 2.0f, 4, 0);
+		Loop l = _makeRoundLoop(curPos, 4.0f, 4, 0);
+		g_dbgDraw->AddPoint(l.getVertsArray()[0], 5, cvColorf::Red);
 		RenderPolyLoop(l, cvColorf::White, false, true);
 	}
 
@@ -557,6 +566,7 @@ int main(int narg, char** args)
 		loop.AddVertex(cvVec2f(10, 2));
 		loop.AddVertex(cvVec2f(10, -12));
 		loop.AddVertex(cvVec2f(-10, -12));
+		poly.initializeAll();
 
 		g_polys_todo.push_back(poly);
 	}

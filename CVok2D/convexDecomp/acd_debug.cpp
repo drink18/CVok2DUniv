@@ -17,6 +17,8 @@ namespace acd
 			cvVec2f v(cos(ca) * radius, sin(ca) * radius);
 			l.AddVertex(v + center);
 		}
+		HullLoop hull;
+		l.initializeAll(true, hull);
 
 		return l;
 	}

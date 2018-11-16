@@ -125,7 +125,7 @@ namespace acd
 
 		if (len < CV_FLOAT_EPS) return;
 
-		for (auto idx = beginIdx(); idx < endIdx(); ++idx)
+		for (auto idx = beginIdx(); idx <= endIdx(); ++idx)
 		{
 			cvVec2f v0 = (*this)[idx];
 			cvVec2f v1 = (*this)[nextIdx(idx)];
@@ -148,7 +148,7 @@ namespace acd
 		sort(results.begin(), results.end());
 	}
 
-	void Loop::clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result)
+	bool Loop::clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result)
 	{
 		vector<SegIntersect> allIntersects;
 		vector<SegIntersect> segs;
@@ -159,24 +159,28 @@ namespace acd
 		SegIntersect lastOutSec;
 		PolyVertIdx lastOutClipIdx(-1);
 
-		for (auto cIdx = clip.beginIdx(); cIdx < clip.endIdx(); ++cIdx)
+		bool hasOut = false;
+		for (auto cIdx = clip.beginIdx(); cIdx <= clip.endIdx(); ++cIdx)
 		{
 			PolyVertIdx ncIdx = clip.nextIdx(cIdx);
 			cvVec2f v = clip[cIdx];
 			cvVec2f nv = clip[ncIdx];
 			
 			HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(cIdx)]);
+			if (inOut == HullLoop::InOut::Out)
+				hasOut = true;
 			findIntersections(v, nv, segs);
 			if (segs.size() == 2)
 			{
+				//cvAssert(inOut == HullLoop::InOut::Out);
 				// cut through , one loop ready
 				Loop nloop;
-				nloop.AddVertex(segs[0].intersect);
-				for(PolyVertIdx nidx = nextIdx(segs[0].idx); nidx <= segs[1].idx; ++nidx)
+				nloop.AddVertex(segs[1].intersect);
+				for(PolyVertIdx nidx = segs[1].idx; nidx != segs[0].idx; nidx = prevIdx(nidx))
 				{
 					nloop.AddVertex((*this)[nidx]);
 				}
-				nloop.AddVertex(segs[1].intersect);
+				nloop.AddVertex(segs[0].intersect);
 				result.push_back(nloop);
 			}
 			else if (segs.size() == 1)
@@ -185,10 +189,31 @@ namespace acd
 
 				if (nio == HullLoop::InOut::In)
 				{
-					if (lastOutSec.idx.val() != -1)
+					if (lastOutSec.idx.val() == -1)
 					{
 						lastInSec = SegIntersect();
 						lastInClipIdx = PolyVertIdx(-1);
+					}
+					else
+					{ 
+						// another loop is ready
+						Loop nloop;
+						nloop.AddVertex(segs[0].intersect);
+
+						//from in to out forward
+						for (PolyVertIdx idx = nextIdx(segs[0].idx); idx != lastOutSec.idx; idx = nextIdx(idx))
+						{
+							nloop.AddVertex((*this)[idx]);
+						}
+						nloop.AddVertex((*this)[lastOutSec.idx]);
+						nloop.AddVertex(lastOutSec.intersect);
+
+						for (PolyVertIdx idx = lastOutClipIdx; idx != cIdx; idx = clip.prevIdx(idx))
+						{
+							nloop.AddVertex(clip[idx]);
+						}
+
+						result.push_back(nloop);
 					}
 
 					if (nio != inOut)
@@ -202,7 +227,8 @@ namespace acd
 					// we just got out
 					if (lastInSec.idx.val() == -1) // no known outside  save this point
 					{
-						inPts.push_back(ncIdx);
+						lastOutClipIdx = cIdx;
+						lastOutSec = segs[0];
 					}
 					else
 					{
@@ -231,6 +257,12 @@ namespace acd
 				}
 			}
 		}
+
+		if (result.size() == 0 && !hasOut)
+		{
+			return true;
+		}
+		return false;
 	}
 
 	void HullLoop::insertAfterIdx(PolyVertIdx after, PolyVertIdx idx)
@@ -242,6 +274,7 @@ namespace acd
 
 	HullLoop::InOut HullLoop::isPointInside(const Loop& loop, const cvVec2f& pt) const
 	{
+		cvAssert(ptIndicies.size() > 0);
 		for(int i = 0; i < ptIndicies.size(); ++i)
 		{
 			PolyVertIdx vidx = ptIndicies[i];

@@ -193,7 +193,7 @@ namespace acd
 		void findIntersections(const cvVec2f& p0, const cvVec2f& p1, vector<SegIntersect>& results);
 
 		// clipping 
-		void clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result);
+		bool clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result);
 
 		//concavity points related
 		PolyVertIdx findConcavestPt() const;
