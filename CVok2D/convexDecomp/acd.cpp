@@ -465,8 +465,8 @@ namespace acd
 
 			IntersectRayLine(cwPt, lineDir, v, nv, t, intersect);
 			float dist = (intersect - cwPt).dot(lineDir);
-			// (-eps, 1 + eps) to handle floating point error
-			if (t < - eps || t > 1.0f + eps)
+			// (-eps, 1 - eps) to make sure that we only pick the start point of edge segments
+			if (t < - eps || t > 1.0f - eps)
 				dist = -1e10f;
 
 			if (dist > -eps)
@@ -488,10 +488,10 @@ namespace acd
 			float d = dists[i];
 
 			bool close = abs(d - bestDist) < CV_FLOAT_EPS;
-			bool idxLarger = vtxIndices[i] > bestPtIdx; // perefer pt with larger idx if duplicated vertex
-			// however, if the incoming vtx is previous of best vtx, then current best is actually "larger"
-			bool isPrev = outLoop.isPrev(bestPtIdx, vtxIndices[i]);
-			if( ( close && (idxLarger && !isPrev) )
+			PolyVertIdx nPtIdx = outLoop.nextIdx(bestPtIdx);
+			cvVec2f nVtx = outLoop[nPtIdx];
+			bool rightSide = (nVtx - intersects[i]).cross(lineDir) < 0;
+			if( ( close && rightSide )
 				|| (d < bestDist  && !close))
 			{
 				bestDist = d;
@@ -510,9 +510,16 @@ namespace acd
 		}
 		else
 		{
+			const bool shrink = false;
 			// have to add a new point..... sucks
 			cp.idx = PolyVertIdx(-1);
 			cp.point = bestItersect;
+			if(shrink)
+			{
+				// for debug... shrink the new vtx a bit inwward
+				cp.point -= lineDir * 0.5f;
+
+			}
 			cp.prevIdx = bestPtIdx;
 			cp.nextIdx = outLoop.nextIdx(bestPtIdx);
 		}
