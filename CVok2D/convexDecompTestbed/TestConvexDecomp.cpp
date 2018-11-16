@@ -70,23 +70,31 @@ void LoadPolygonsFromFile(const char* filename)
 		g_polys_done.clear();
 	}
 }
-static void RenderUI()
-{
-    ImGui_ImplGlfwGL3_NewFrame();
-    // 1. show a simple window
-    {
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
+static void RenderEditUI()
+{
+	ImGui::Begin("Edit tools");
+	{
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 		if (ImGui::Button("New Poly"))
 		{
 			if (!g_addPoints)
 			{
-				//polys_todo.push_back(Loop());
 				g_addPoints = true;
 			}
 		}
 
+		if (ImGui::Button("Add holes"))
+		{
+			if (!g_addPoints)
+			{
+				g_addPoints = true;
+			}
+		}
+
+		ImGui::Separator();
 		ImGui::Spacing();
+		ImGui::Dummy(ImVec2(100, 20));
 		if (ImGui::Button("Clear All"))
 		{
 			if (!g_addPoints)
@@ -97,42 +105,74 @@ static void RenderUI()
 				g_polys_todo.clear();
 			}
 		}
-
-		ImGui::Spacing();
-		if (ImGui::Button("Resolve One Step"))
-		{
-			ResolveSingleStep();
-		}
-
-		ImGui::Spacing();
-		if (ImGui::Button("Resolve"))
-		{
-			for (auto& p : g_polys_todo)
-			{
-				auto res = acd::_resolveLoop_All(p);
-				for (auto& donePoly : res)
-					g_polys_done.push_back(donePoly);
-			}
-		}
-
-		ImGui::Spacing();
-		if (ImGui::Button("Reset Progress"))
-		{
-			g_polys_todo.clear();
-			g_polys_done.clear();
-			g_polys_todo = g_inputs;
-		}
-
 		ImGui::Separator();
-        ImGui::Checkbox("Show Origin only", &dbgCtrl.showOrigin);
-        ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
-        ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
-        ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
-        ImGui::Checkbox("Hide Done Polygons", &dbgCtrl.hideDonePolygon);
-
-		ImGui::Separator();
-		ImGui::Spacing();
         ImGui::Checkbox("Snap point", &g_snapToPoint);
+
+		ImGui::PopStyleColor();
+	}
+	ImGui::End();
+}
+
+static void RenderDebugDisplayOptions()
+{
+	ImGui::Begin("Debug Display Options");
+	{
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+
+		ImGui::Checkbox("Show Origin only", &dbgCtrl.showOrigin);
+		ImGui::Checkbox("Show Convex Hull", &dbgCtrl.showConvexHull);
+		ImGui::Checkbox("Show Pockets", &dbgCtrl.showPocket);
+		ImGui::Checkbox("Show Cutline", &dbgCtrl.showCutLine);
+		ImGui::Checkbox("Hide Done Polygons", &dbgCtrl.hideDonePolygon);
+
+		ImGui::PopStyleColor();
+	}
+	ImGui::End();
+}
+
+static void RenderResolveWindow()
+{
+	ImGui::Begin("Resolve");
+	ImGui::Spacing();
+	if (ImGui::Button("Resolve One Step"))
+	{
+		ResolveSingleStep();
+	}
+
+	ImGui::Spacing();
+	if (ImGui::Button("Resolve"))
+	{
+		for (auto& p : g_polys_todo)
+		{
+			auto res = acd::_resolveLoop_All(p);
+			for (auto& donePoly : res)
+				g_polys_done.push_back(donePoly);
+		}
+	}
+
+	ImGui::Spacing();
+	if (ImGui::Button("Reset Progress"))
+	{
+		g_polys_todo.clear();
+		g_polys_done.clear();
+		g_polys_todo = g_inputs;
+	}
+	ImGui::End();
+}
+
+static void RenderUI()
+{
+
+    ImGui_ImplGlfwGL3_NewFrame();
+
+	RenderEditUI();
+	RenderResolveWindow();
+	RenderDebugDisplayOptions();
+
+    {
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+
+	
 
 		ImGui::Separator();
 		ImGui::Spacing();
