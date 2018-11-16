@@ -20,7 +20,8 @@ namespace acd
 	}
 
 	Loop::Loop(const vector<cvVec2f>& vtx) 
-		:_vertices(vtx)
+		:_vertices(vtx),
+		_cwPair(PolyVertIdx(-1), PolyVertIdx(-1))
 	{
 		fixWinding();
 		updateNormals();
@@ -105,6 +106,133 @@ namespace acd
 		}
 	}
 
+	void Loop::computeCWPairs(bool inner)
+	{
+		if (inner)
+		{
+			_cwPair.first = PolyVertIdx(0);
+			_cwPair.second = PolyVertIdx(ptCount() / 2 - 1);
+		}
+	}
+
+	void Loop::findIntersections(const cvVec2f& p0, const cvVec2f& p1, vector<SegIntersect>& results)
+	{
+		const float eps = 1e-3f;
+		cvVec2f d = p1 - p0;
+		float len = d.length();
+		results.clear();
+		d /= len;
+
+		if (len < CV_FLOAT_EPS) return;
+
+		for (auto idx = beginIdx(); idx < endIdx(); ++idx)
+		{
+			cvVec2f v0 = (*this)[idx];
+			cvVec2f v1 = (*this)[nextIdx(idx)];
+
+			float t;
+			cvVec2f intersect;
+			bool hit = IntersectRayLine(p0, d, v0, v1, t, intersect);
+			float t1 = (intersect - p0).dot(d) / len;
+			if(hit && (t1 > -eps && t1 < ( 1 - eps)))
+			{
+				SegIntersect inter;
+				inter.clipp_t = t1;
+				inter.subject_t = t;
+				inter.intersect = intersect;
+				inter.idx = idx;
+				results.push_back(inter);
+			}
+		}
+
+		sort(results.begin(), results.end());
+	}
+
+	void Loop::clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result)
+	{
+		vector<SegIntersect> allIntersects;
+		vector<SegIntersect> segs;
+		vector<PolyVertIdx> inPts;
+		segs.reserve(2);
+		SegIntersect lastInSec;
+		PolyVertIdx lastInClipIdx(-1);
+		SegIntersect lastOutSec;
+		PolyVertIdx lastOutClipIdx(-1);
+
+		for (auto cIdx = clip.beginIdx(); cIdx < clip.endIdx(); ++cIdx)
+		{
+			PolyVertIdx ncIdx = clip.nextIdx(cIdx);
+			cvVec2f v = clip[cIdx];
+			cvVec2f nv = clip[ncIdx];
+			
+			HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(cIdx)]);
+			findIntersections(v, nv, segs);
+			if (segs.size() == 2)
+			{
+				// cut through , one loop ready
+				Loop nloop;
+				nloop.AddVertex(segs[0].intersect);
+				for(PolyVertIdx nidx = nextIdx(segs[0].idx); nidx <= segs[1].idx; ++nidx)
+				{
+					nloop.AddVertex((*this)[nidx]);
+				}
+				nloop.AddVertex(segs[1].intersect);
+				result.push_back(nloop);
+			}
+			else if (segs.size() == 1)
+			{
+				HullLoop::InOut nio = inOut == HullLoop::InOut::Out ? HullLoop::InOut::In : HullLoop::InOut::Out;
+
+				if (nio == HullLoop::InOut::In)
+				{
+					if (lastOutSec.idx.val() != -1)
+					{
+						lastInSec = SegIntersect();
+						lastInClipIdx = PolyVertIdx(-1);
+					}
+
+					if (nio != inOut)
+					{
+						lastInClipIdx = cIdx;
+						lastInSec = segs[0];
+					}
+				}
+				else
+				{
+					// we just got out
+					if (lastInSec.idx.val() == -1) // no known outside  save this point
+					{
+						inPts.push_back(ncIdx);
+					}
+					else
+					{
+						// an loop is ready
+						Loop nloop;
+						nloop.AddVertex(lastInSec.intersect);
+						for (auto nidx = nextIdx(lastInSec.idx); nidx != segs[0].idx; nidx = nextIdx(nidx))
+						{
+							nloop.AddVertex((*this)[nidx]);
+						}
+						nloop.AddVertex((*this)[segs[0].idx]);
+						nloop.AddVertex(segs[0].intersect);
+
+						for (auto nidx = cIdx; nidx != lastInClipIdx; nidx = clip.prevIdx(nidx))
+						{
+							nloop.AddVertex(clip[nidx]);
+						}
+
+						result.push_back(nloop);
+
+						lastInSec = SegIntersect();
+						lastInClipIdx = PolyVertIdx(-1);
+						lastOutSec = SegIntersect();
+						lastOutClipIdx = PolyVertIdx(-1);
+					}
+				}
+			}
+		}
+	}
+
 	void HullLoop::insertAfterIdx(PolyVertIdx after, PolyVertIdx idx)
 	{
 		auto iter = find(ptIndicies.begin(), ptIndicies.end(), after);
@@ -112,9 +240,8 @@ namespace acd
 		ptIndicies.insert(iter + 1, idx);
 	}
 
-	HullLoop::InOut HullLoop::isPointInside(const Loop& loop, const PolyVertIdx& ptIdx) const
+	HullLoop::InOut HullLoop::isPointInside(const Loop& loop, const cvVec2f& pt) const
 	{
-		cvVec2f pt = loop[ptIdx];
 		for(int i = 0; i < ptIndicies.size(); ++i)
 		{
 			PolyVertIdx vidx = ptIndicies[i];
@@ -132,6 +259,11 @@ namespace acd
 				return HullLoop::InOut::Out;
 		}
 		return HullLoop::InOut::In;
+	}
+	HullLoop::InOut HullLoop::isPointInside(const Loop& loop, const PolyVertIdx& ptIdx) const
+	{
+		cvVec2f pt = loop[ptIdx];
+		return isPointInside(loop, pt);
 	}
 
 	void Polygon::computeHull()

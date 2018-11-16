@@ -21,6 +21,7 @@ using namespace chrono;
 //forward decl
 void ResolveSingleStep();
 void ResolveAll();
+void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close);
 
 Camera g_camera;
 cvDebugDraw* g_dbgDraw = nullptr;
@@ -35,6 +36,9 @@ static int dumpCount = 0;
 vector<cvColorf> g_randomColors;
 
 static ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f);
+
+Loop quad;
+Loop hexagon;
 
 struct DbgDisplayControl
 {
@@ -54,6 +58,7 @@ DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
 
+bool g_clipMode = false;
 Loop g_inputLoop;
 vector<Poly> g_inputs;
 vector<Poly> g_polys_todo;
@@ -75,7 +80,7 @@ void LoadPolygonsFromFile(const char* filename)
 
 static void AddHole(const cvVec2f& pos)
 {
-	Loop hole = _makeRoundLoop(pos, 2.0f, 6, 0);
+	Loop hole = _makeRoundLoop(pos, 2.0f, 4, 0);
 	hole.initializeAll(true, g_inputs[0].convexHull());
 	g_inputs[0].loops.push_back(hole);
 	g_polys_done.clear();
@@ -84,11 +89,42 @@ static void AddHole(const cvVec2f& pos)
 	ResolveAll();
 }
 
+static void ClipWithHole(const cvVec2f& pos)
+{
+	Loop hole = _makeRoundLoop(pos, 2.0f, 4, 0);
+	hole.initializeAll(true, g_inputs[0].convexHull());
+	g_polys_done.clear();
+	vector<Loop> results;
+	Poly& cur = g_polys_todo.back();
+	Loop& toWork = cur.outterLoop();
+	toWork.clipLoop(hole, cur.convexHull(), results);
+	g_polys_todo.clear();
+	for (auto& l : results)
+	{
+		Poly p;
+		p.loops.push_back(l);
+		g_polys_done.push_back(p);
+	}
+
+	ResolveAll();
+}
+
 static void RenderEditUI()
 {
 	ImGui::Begin("Edit tools");
 	{
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
+
+		if (g_clipMode && ImGui::Button("Exit clipmode"))
+		{
+			g_clipMode = false;
+		}
+
+		if (!g_clipMode && ImGui::Button("Clipmode"))
+		{
+			g_clipMode = true;
+		}
+
 		if (!g_addHoles && ImGui::Button("New Poly"))
 		{
 			if (!g_addPoints)
@@ -273,6 +309,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			{
 				AddHole(curPos);
 			}
+			else if (g_clipMode)
+			{
+				ClipWithHole(curPos);
+			}
 		}
 	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
@@ -349,6 +389,12 @@ void RenderPoly(const Poly& poly, cvColorf color, bool solid)
 
 void RenderPolygon()
 {
+	if (g_clipMode)
+	{
+		Loop l = _makeRoundLoop(curPos, 2.0f, 4, 0);
+		RenderPolyLoop(l, cvColorf::White, false, true);
+	}
+
 	if (dbgCtrl.showOrigin)
 	{
 		for(auto& p : g_inputs)
@@ -386,7 +432,7 @@ void RenderPolygon()
 		for (int i = 0; i < g_polys_done.size(); ++i)
 		{
 			auto& polyVerts = g_polys_done[i];
-			RenderPoly(polyVerts, g_randomColors[i], true);
+			RenderPoly(polyVerts, g_randomColors[i], !g_clipMode);
 		}
 	}
 
@@ -494,6 +540,8 @@ int main(int narg, char** args)
 	{
 		g_randomColors.push_back(cvColorf::randomColor());
 	}
+
+	//quad = _makeRoundLoop()
 	// load input file
 	if (narg > 1)
 	{

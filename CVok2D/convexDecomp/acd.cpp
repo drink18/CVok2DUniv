@@ -45,7 +45,7 @@ namespace acd
 			|| (p0p1p <= 0 && pp1p2 <= 0 && p0pp2 <= 0);
 	}
 
-	static bool IntersectRayLine(cvVec2f o, cvVec2f dir, cvVec2f from, cvVec2f to, float& outT, cvVec2f& intersect)
+	bool IntersectRayLine(cvVec2f o, cvVec2f dir, cvVec2f from, cvVec2f to, float& outT, cvVec2f& intersect)
 	{
 		cvVec2f n(-dir.y, dir.x);
 		outT = (o - from).dot(n) / (to - from).dot(n);
@@ -226,7 +226,8 @@ namespace acd
 		PolyVertIdx bestIdx(-1);
 		float bestD = 1e10f;
 
-		for (PolyVertIdx inIdx(0); inIdx < PolyVertIdx(loop.ptCount()); ++inIdx)
+		//for (PolyVertIdx inIdx(0); inIdx < PolyVertIdx(loop.ptCount()); ++inIdx)
+		PolyVertIdx inIdx(0);
 		{
 			cvVec2f inV = loop[inIdx];
 			for (PolyVertIdx i = PolyVertIdx(0); i < PolyVertIdx(outLoop.ptCount()); ++i)

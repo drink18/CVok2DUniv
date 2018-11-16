@@ -10,7 +10,7 @@ namespace acd
 		Loop l;
 
 		float a = rotation;
-		float da = 2 * CV_PI / nbSeg;
+		float da = -2 * CV_PI / nbSeg;
 		for (int i = 0; i < nbSeg; ++i)
 		{
 			float ca = a + da * i;

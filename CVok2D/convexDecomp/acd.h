@@ -28,6 +28,9 @@ namespace acd
 	void writePolygonListInfo(ostream& stream, const vector<Polygon>& poly);
 	vector<Polygon> readPolygon(ifstream& stream);
 
+	//utils
+	bool IntersectRayLine(cvVec2f o, cvVec2f dir, cvVec2f from, cvVec2f to, float& outT, cvVec2f& intersect);
+
 	//debugging stuff
 	Loop _makeRoundLoop(const cvVec2f& center, float radius, int nbSeg, float rotation);
 }

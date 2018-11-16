@@ -5,11 +5,13 @@
 #include <core/cvColor.h>
 #include <core/cvMath.h>
 
+
 namespace acd
 {
 	using namespace std;
 
 	class Loop;
+	class HullLoop;
 
 	template<typename VTYPE>
 	struct IndexBase
@@ -41,6 +43,16 @@ namespace acd
 	{
 		CCW,
 		CW
+	};
+
+	struct SegIntersect
+	{
+		SegIntersect() : idx(-1) {}
+		cvVec2f intersect;
+		PolyVertIdx idx;
+		float subject_t;
+		float clipp_t;
+		bool operator<(const SegIntersect& o) const {return clipp_t < o.clipp_t; }
 	};
 
 	struct CutPoint
@@ -119,6 +131,7 @@ namespace acd
 		const_iterator cend() const { return ptIndicies.end(); }
 	public:
 		HullLoop::InOut isPointInside(const Loop& loop, const PolyVertIdx& ptIdx) const;
+		HullLoop::InOut isPointInside(const Loop& loop, const cvVec2f& pt) const;
 	private:
 		PolyVertIdx polyIdx(const HullIdx& hi) const { return ptIndicies[hi.val()]; }
 	};
@@ -137,7 +150,7 @@ namespace acd
 	class Loop
 	{
 	public:
-		Loop() { }
+		Loop() : _cwPair(PolyVertIdx(-1), PolyVertIdx(-1)) { }
 		Loop(const vector<cvVec2f>& vtx);
 		bool AreNeighbour(const PolyVertIdx& idx0, const PolyVertIdx& idx1) const
 		{
@@ -173,7 +186,14 @@ namespace acd
 		void computePockets(const HullLoop& hull);
 		void initializeAll(bool inner, const HullLoop& hull);
 		void removeDuplicate();
+		void computeCWPairs(bool inner);
 
+		// queries
+		float area() const { return _polyArea(_vertices); }
+		void findIntersections(const cvVec2f& p0, const cvVec2f& p1, vector<SegIntersect>& results);
+
+		// clipping 
+		void clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result);
 
 		//concavity points related
 		PolyVertIdx findConcavestPt() const;
@@ -190,7 +210,6 @@ namespace acd
 		const vector<float>& concavity() const { return _concativty; }
 		const vector<Pocket>& pockets() const { return _pockets; }
 
-		float area() const { return _polyArea(_vertices); }
 	private:
 		vector<cvVec2f> _vertices;
 		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)
@@ -200,6 +219,8 @@ namespace acd
 		bool AreNeighbour(size_t idx0, size_t idx1) const;
 		size_t prevIdx(size_t idx) const { return idx == 0 ? _vertices.size() - 1 : idx - 1; }
 		size_t nextIdx(size_t idx) const { return (idx + 1) % _vertices.size(); }
+
+		pair<PolyVertIdx, PolyVertIdx> _cwPair;
 	};
 
 
