@@ -356,28 +356,16 @@ void RenderPolygon()
 			{
 				cvColorf c = g_randomColors[i];
 				auto& b = pockets[i];
-				auto hullB0 = b.idx0;
-				auto hullB1 = b.idx1;
-				PolyVertIdx b0Idx = hullB0;
-				PolyVertIdx b1Idx = hullB1;
+				PolyVertIdx b0Idx = b.idx0;
+				PolyVertIdx b1Idx = b.idx1;
 				// draw bridge
 				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], c);
 
-				PolyVertIdx prevIdx = b.notches[0];
-				if (b.notches.size() == 1)
+				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b.notches[0]], c);
+				g_dbgDraw->AddArrowMid(loop[b.notches.back()],loop[b1Idx], c);
+				for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
 				{
-					g_dbgDraw->AddArrowMid(loop[b0Idx], loop[prevIdx], c);
-					g_dbgDraw->AddArrowMid(loop[b1Idx], loop[prevIdx], c);
-				}
-				else
-				{
-					PolyVertIdx curIdx = b.notches[1];
-					PolyVertIdx i0 = PolyVertIdx(b0Idx > b1Idx ? b1Idx : b0Idx);
-					PolyVertIdx i1 = PolyVertIdx(b0Idx < b1Idx ? b1Idx : b0Idx);
-					for (auto idx = i0; idx != i1; idx = loop.nextIdx(idx))
-					{
-						g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
-					}
+					g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
 				}
 			}
 		}
