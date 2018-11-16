@@ -20,6 +20,7 @@ using namespace chrono;
 
 //forward decl
 void ResolveSingleStep();
+void ResolveAll();
 
 Camera g_camera;
 cvDebugDraw* g_dbgDraw = nullptr;
@@ -77,7 +78,10 @@ static void AddHole(const cvVec2f& pos)
 	Loop hole = _makeRoundLoop(pos, 2.0f, 6, 0);
 	hole.initializeAll(true, g_inputs[0].convexHull());
 	g_inputs[0].loops.push_back(hole);
-	g_polys_todo[0].loops.push_back(hole);
+	g_polys_done.clear();
+	g_polys_todo.clear();
+	g_polys_todo.push_back(g_inputs[0]);
+	ResolveAll();
 }
 
 static void RenderEditUI()
@@ -137,6 +141,16 @@ static void RenderDebugDisplayOptions()
 	ImGui::End();
 }
 
+static void ResolveAll()
+{
+	for (auto& p : g_polys_todo)
+	{
+		auto res = acd::_resolveLoop_All(p);
+		for (auto& donePoly : res)
+			g_polys_done.push_back(donePoly);
+	}
+}
+
 static void RenderResolveWindow()
 {
 	ImGui::Begin("Resolve");
@@ -149,12 +163,7 @@ static void RenderResolveWindow()
 	ImGui::Spacing();
 	if (ImGui::Button("Resolve"))
 	{
-		for (auto& p : g_polys_todo)
-		{
-			auto res = acd::_resolveLoop_All(p);
-			for (auto& donePoly : res)
-				g_polys_done.push_back(donePoly);
-		}
+		ResolveAll();
 	}
 
 	ImGui::Spacing();
