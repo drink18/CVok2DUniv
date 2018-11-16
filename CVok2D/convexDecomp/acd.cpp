@@ -245,6 +245,7 @@ namespace acd
 			}
 		}
 
+		cvAssert(bestIdx.val() != -1);
 		cw.Concavity = 1000;
 		cw.loopIndex = 1;
 		cw.pocketIdx = -1;
@@ -293,6 +294,7 @@ namespace acd
 			}
 		}
 
+		cvAssert(bestPtIdx.val() != -1);
 		cw.Concavity = bestScore;
 		cw.ptIndex = bestPtIdx;
 		cw.loopIndex = 0;
@@ -424,7 +426,7 @@ namespace acd
 		}
 	}
 
-	CutPoint findBestCutPt_inner(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
+	CutPoint _findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp)
 	{
 		const Loop& outLoop = poly.outterLoop();
@@ -523,92 +525,11 @@ namespace acd
 		return cp;
 	}
 
-	PolyVertIdx findBestCutPt_outter(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
-		const WitnessPt& cwp)
-	{
-		const Loop& outLoop = poly.outterLoop();
-
-		CutLine cutLine = findCutLine(poly, cwp);
-
-		// can't find a vertex as cut point , use normal as cut direction and find 
-		// best cutting point
-		cvVec2f lineDir = cutLine.lineDir;
-		lineDir.normalize();
-		cvVec2f lineNorm(-lineDir.y, lineDir.x);
-
-		vector<cvVec2f> intersects;
-		vector<float> dists;
-		vector<PolyVertIdx> vtxIndices;
-		
-		cvVec2f cwPt = poly.loops[cwp.loopIndex][cwp.ptIndex];
-		const float eps = 1e-5f;
-
-		for (auto idx = outLoop.beginIdx(); idx <= outLoop.endIdx(); ++idx)
-		{
-			PolyVertIdx ni = outLoop.nextIdx(idx);
-			if (cwp.loopIndex == 0)
-			{
-				if (idx == cwp.ptIndex) continue;
-				if (idx == outLoop.prevIdx(cwp.ptIndex)) continue;
-				if (idx == outLoop.nextIdx(cwp.ptIndex)) continue;
-			}
-
-			cvVec2f v = outLoop[idx];
-			cvVec2f nv = outLoop[ni];
-
-			// intersecting, compute distance etc
-			float t;
-			cvVec2f intersect;
-
-			IntersectRayLine(cwPt, lineDir, v, nv, t, intersect);
-			float dist = (intersect - cwPt).dot(lineDir);
-			//  t > 1.0f -eps makes sure that we only pick start point
-			if (t < -eps || t > 1.0f - eps)
-				dist = -1e10f;
-
-			if (dist > -eps)
-			{
-				vtxIndices.push_back(idx);
-				intersects.push_back(intersect);
-				dists.push_back(dist);
-			}
-		}
-
-		//pick closet 
-		float bestDist = 1e10f;
-		PolyVertIdx bestPtIdx(-1);
-		for(int i = 0; i < vtxIndices.size(); ++i)
-		{
-			float d = dists[i];
-			if (d < bestDist && d > - CV_FLOAT_EPS)
-			{
-				bestDist = d;
-				bestPtIdx = vtxIndices[i];
-			}
-		}
-
-		static int a = 0;
-		if (bestPtIdx.val() == -1)
-			++a;
-		cvAssert(bestPtIdx.val() != -1);
-
-		return bestPtIdx;
-
-	}
-
 	CutPoint findBestCutPt(const Polygon& poly, const HullLoop& hull, const vector<Pocket>& pockets,
 		const WitnessPt& cwp)
 	{
 		CutPoint cp;
-		if (cwp.loopIndex == 0)
-		{
-			 cp.idx = findBestCutPt_outter(poly, hull, pockets, cwp);
-			 cp.point = poly.outterLoop()[cp.idx];
-		}
-		else
-		{
-			cp = findBestCutPt_inner(poly, hull, pockets, cwp);
-		}
+		cp = _findBestCutPt(poly, hull, pockets, cwp);
 		return cp;
 	}
 
@@ -625,7 +546,6 @@ namespace acd
 			return retPolygons;
 		}
 
-		//cvAssert(bridges.size() > 0);
 
 		// pick deepest notches 
 		//auto cw = pickCW(polygon, hullLoop, bridges);
@@ -709,14 +629,23 @@ namespace acd
 		}
 		else
 		{
-			cvAssertMsg(cutPointIdx.val() != -1, "cut point for outter loop should not create new point");
+			//cvAssertMsg(cutPointIdx.val() != -1, "cut point for outter loop should not create new point");
 			// split loop
 			Polygon poly1;
 			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
 			{
 				auto& nloop = poly1.outterLoop();
 				nloop.AddVertex(loop[i]);
-				if (i == PolyVertIdx(cutPointIdx))
+
+				if (cutPointIdx == PolyVertIdx(-1))
+				{
+					if (i == cp.prevIdx)
+					{
+						nloop.AddVertex(cp.point);
+						break;
+					}
+				}
+				else if (i == cutPointIdx)
 				{
 					break;
 				}
@@ -726,11 +655,19 @@ namespace acd
 			retPolygons.push_back(poly1);
 
 			Polygon poly2;
-			for (PolyVertIdx i = PolyVertIdx(cutPointIdx); ; i = loop.nextIdx(i))
+			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.prevIdx(i))
 			{
 				auto& nloop = poly2.outterLoop();
 				nloop.AddVertex(loop[i]);
-				if (i == cw.ptIndex)
+
+				if (cutPointIdx == PolyVertIdx(-1))
+				{
+					if (i == cp.nextIdx)
+					{
+						nloop.AddVertex(cp.point);
+						break;
+					}
+				} else if (i == cutPointIdx)
 				{
 					break;
 				}

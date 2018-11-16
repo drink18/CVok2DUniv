@@ -95,6 +95,7 @@ namespace acd
 		updateNormals();
 		if (inner)
 		{
+			fixWinding();
 			computeConcavity_in(hull);
 		}
 		else
@@ -146,7 +147,10 @@ namespace acd
 	void Polygon::initializeAll()
 	{
 		if (loops.size() > 0)
+		{
+			loops[0].fixWinding();
 			loops[0].removeDuplicate();
+		}
 
 		computeHull();
 		for (auto iter = loops.begin(); iter != loops.end(); ++iter)

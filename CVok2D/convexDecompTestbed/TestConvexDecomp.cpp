@@ -377,6 +377,8 @@ void RenderPolygon()
 			g_dbgDraw->AddPoint(polygon.loops[cw.loopIndex][cw.ptIndex], 20, cvColorf::Purple);
 			CutLine cutLine = findCutLine(polygon, cw);
 			g_dbgDraw->AddArrow(cutLine.originPt, cutLine.originPt + cutLine.lineDir * 100, cvColorf::Cyan);
+			CutPoint cp = findBestCutPt(polygon, hull, pockets, cw);
+			g_dbgDraw->AddLine(cp.point, cutLine.originPt, cvColorf::Yellow);
 		}
 	}
 }
