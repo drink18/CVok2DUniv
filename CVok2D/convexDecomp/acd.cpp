@@ -315,7 +315,24 @@ namespace acd
 		}
 	}
 
-	bool isValidCutPt(const Polygon& poly, const WitnessPt& wp, PolyVertIdx vIdx)
+	bool isResolved(const Loop& loop, const PolyVertIdx& ptIdx, const cvVec2f& v)
+	{
+		cvVec2f cwPt = loop[ptIdx];
+		cvVec2f prev = loop[loop.prevIdx(ptIdx)];
+		cvVec2f next = loop[loop.nextIdx(ptIdx)];
+
+		cvVec2f v1 = cwPt - prev;
+		cvVec2f v2 = cwPt - next;
+		cvVec2f vec = v - cwPt;
+
+		float a = Vec2Cross(vec, v2);
+		float b = Vec2Cross(vec, v1);
+		float c = Vec2Cross(v2, v1);
+
+		return (a * c < 0) && (b * c > 0);
+	}
+
+	bool isResolved(const Polygon& poly, const WitnessPt& wp, PolyVertIdx vIdx)
 	{
 		const Loop& outterLoop = poly.outterLoop();
 		const Loop& innerLoop = poly.loops[wp.loopIndex];
@@ -324,19 +341,7 @@ namespace acd
 		if (vIdx != cwpIdx)
 		{
 			cvVec2f v = outterLoop[vIdx];
-			cvVec2f cwPt = innerLoop[cwpIdx];
-			cvVec2f prev = innerLoop[innerLoop.prevIdx(cwpIdx)];
-			cvVec2f next = innerLoop[innerLoop.nextIdx(cwpIdx)];
-
-			cvVec2f v1 = cwPt - prev;
-			cvVec2f v2 = cwPt - next;
-			cvVec2f vec = v - cwPt;
-
-			float a = Vec2Cross(vec, v2);
-			float b = Vec2Cross(vec, v1);
-			float c = Vec2Cross(v2, v1);
-
-			return (a * c < 0) && (b * c > 0);
+			return isResolved(innerLoop, wp.ptIndex, v);
 		}
 		return false;
 	}
@@ -353,7 +358,7 @@ namespace acd
 		
 		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
 		{
-			if (isValidCutPt(polygon, wp, idx))
+			if (isResolved(polygon, wp, idx))
 			{ cutVtx = idx;
 				lineDir = (loop[idx] - originPt).getNormalized();
 				break;
@@ -381,29 +386,42 @@ namespace acd
 		PolyVertIdx cutVtx(-1);
 		cvVec2f lineDir;
 
-		const Loop& loop = poly.outterLoop();
+		const Loop& outLoop = poly.outterLoop();
 		const Loop& innerLoop = poly.loops[wp.loopIndex];
 		cvVec2f orignPt = innerLoop[wp.ptIndex];
 		cvVec2f orignNorm = innerLoop.normal(wp.ptIndex);
 		cvVec2f prevOrignNorm = innerLoop.normal(innerLoop.prevIdx(wp.ptIndex));
 
-		// if there is a point that could directly resolve witness point, use it to construct direction
-		for (auto idx = loop.beginIdx(); idx <= loop.endIdx(); ++idx)
+
+		float bestDist = 1e10;
+		PolyVertIdx bestIdx(-1);
+		cvVec2f bestPt;
+		for (auto idx = outLoop.beginIdx(); idx <= outLoop.endIdx(); ++idx)
 		{
-			if (isValidCutPt(poly, wp, idx))
+			PolyVertIdx ni = outLoop.nextIdx(idx);
+			cvVec2f v0 = outLoop[idx];
+			cvVec2f v1 = outLoop[ni];
+
+			cvVec2f closestPt = ClosestPtOnSeg(orignPt, v0, v1);
+			float d = (orignPt - closestPt).length();
+			if (d < bestDist && isResolved(innerLoop, wp.ptIndex, closestPt))
 			{
-				cutVtx = idx;
-				lineDir = (loop[idx] - orignPt).getNormalized();
-				break;
+				bestDist = d;
+				bestIdx = idx;
+				bestPt = closestPt;
 			}
 		}
 
-		if (cutVtx.val() == -1)
+		if(bestIdx.val() == -1)
 		{
 			// can't find a vertex as cut point , use blended normal as cut direction and find 
 			// best cutting point
 			lineDir = orignNorm + prevOrignNorm;
 			lineDir.normalize();
+		}
+		else
+		{
+			lineDir = (bestPt - orignPt).getNormalized();
 		}
 
 		CutLine line;
