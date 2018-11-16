@@ -115,11 +115,6 @@ static void RenderEditUI()
 	{
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
-		if (g_clipMode && ImGui::Button("Exit clipmode"))
-		{
-			g_clipMode = false;
-		}
-
 		if (!g_clipMode && ImGui::Button("Clipmode"))
 		{
 			g_clipMode = true;
@@ -231,13 +226,13 @@ static void RenderUI()
     ImGui_ImplGlfwGL3_NewFrame();
 
 	RenderEditUI();
-	RenderResolveWindow();
-	RenderDebugDisplayOptions();
+	if(!g_clipMode)
+		RenderResolveWindow();
+	if(!g_clipMode)
+		RenderDebugDisplayOptions();
 
     {
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
-
-	
 
 		ImGui::Separator();
 		ImGui::Spacing();
@@ -338,6 +333,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			else if(g_addHoles)
 			{
 				g_addHoles = false;
+			}
+			else if (g_clipMode)
+			{
+				g_clipMode = false;
 			}
         }
         else if (action == GLFW_RELEASE)
