@@ -27,4 +27,7 @@ namespace acd
 	void writePolygonInfo(ostream& stream, const Polygon& poly);
 	void writePolygonListInfo(ostream& stream, const vector<Polygon>& poly);
 	vector<Polygon> readPolygon(ifstream& stream);
+
+	//debugging stuff
+	Loop _makeRoundLoop(const cvVec2f& center, float radius, int nbSeg, float rotation);
 }

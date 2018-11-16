@@ -815,6 +815,5 @@ namespace acd
 		}
 
 		return ret;
-
 	}
 }

@@ -34,9 +34,6 @@ static int dumpCount = 0;
 vector<cvColorf> g_randomColors;
 
 static ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f);
-static bool singleStep = false;
-
-static bool g_addPoints = false;
 
 struct DbgDisplayControl
 {
@@ -46,8 +43,12 @@ struct DbgDisplayControl
 	bool showOrigin = false;
 	bool hideDonePolygon = false;
 };
+
+static bool g_addPoints = false;
+static bool g_addHoles = false;
 bool g_snapToPoint = false;
 float g_snapThreshold = 0.8f;
+
 DbgDisplayControl dbgCtrl;
 
 typedef acd::Polygon Poly;
@@ -71,12 +72,20 @@ void LoadPolygonsFromFile(const char* filename)
 	}
 }
 
+static void AddHole(const cvVec2f& pos)
+{
+	Loop hole = _makeRoundLoop(pos, 2.0f, 6, 0);
+	hole.initializeAll(true, g_inputs[0].convexHull());
+	g_inputs[0].loops.push_back(hole);
+	g_polys_todo[0].loops.push_back(hole);
+}
+
 static void RenderEditUI()
 {
 	ImGui::Begin("Edit tools");
 	{
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
-		if (ImGui::Button("New Poly"))
+		if (!g_addHoles && ImGui::Button("New Poly"))
 		{
 			if (!g_addPoints)
 			{
@@ -84,12 +93,10 @@ static void RenderEditUI()
 			}
 		}
 
-		if (ImGui::Button("Add holes"))
+		if (!g_addPoints && g_inputs.size() > 0 &&
+			g_inputs[0].loops.size() > 0 && ImGui::Button("Add holes"))
 		{
-			if (!g_addPoints)
-			{
-				g_addPoints = true;
-			}
+			g_addHoles = true;
 		}
 
 		ImGui::Separator();
@@ -160,6 +167,19 @@ static void RenderResolveWindow()
 	ImGui::End();
 }
 
+static void DumpInput()
+{
+	if (g_inputs.size() > 0)
+	{
+		char fn[1024];
+		snprintf(fn, 1024, "graph%d.txt", rand());
+		string infile(fn);
+		ofstream outFs(fn, ios::out);
+		writePolygonListInfo(outFs, g_inputs);
+		dumpCount++;
+	}
+}
+
 static void RenderUI()
 {
 
@@ -178,19 +198,8 @@ static void RenderUI()
 		ImGui::Spacing();
 		if (ImGui::Button("Dump Input Poly"))
 		{
-			if (g_inputs.size() > 0)
-			{
-				char fn[1024];
-				snprintf(fn, 1024, "graph%d.txt", rand());
-				string infile(fn);
-				string reffile = "out_" + infile;
-				ofstream outFs(fn, ios::out);
-				writePolygonListInfo(outFs, g_inputs);
-				vector<Poly> refs = acd::_resolvePolyList(g_inputs);
-				ofstream refFs(reffile, ios::out);
-				writePolygonListInfo(refFs, refs);
-				dumpCount++;
-			}
+			DumpInput();
+
 		}
 
         ImGui::PopStyleColor();
@@ -251,6 +260,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 					g_inputLoop.AddVertex(curPos);
 				}
 			}
+			else if (g_addHoles)
+			{
+				AddHole(curPos);
+			}
 		}
 	}
     if (button == GLFW_MOUSE_BUTTON_RIGHT )
@@ -272,6 +285,10 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 					g_polys_todo.push_back(g_inputs[0]);
 				}
 				g_inputLoop = Loop();
+			}
+			else if(g_addHoles)
+			{
+				g_addHoles = false;
 			}
         }
         else if (action == GLFW_RELEASE)
