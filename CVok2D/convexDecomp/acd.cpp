@@ -533,147 +533,163 @@ namespace acd
 		return cp;
 	}
 
-	vector<Polygon> _resolveLoop_OneStep(const Polygon& polygon)
+	Polygon _mergeHole(const Polygon& polygon, const WitnessPt& cw, const CutPoint& cp)
+	{
+		Polygon retPoly;
+		const Loop& outterLoop = polygon.outterLoop();
+		PolyVertIdx cutPointIdx = cp.idx;
+
+		// merge inner loop to outer
+		const Loop& innerLoop = polygon.loops[cw.loopIndex];
+		for (PolyVertIdx outIdx = PolyVertIdx(0); outIdx < PolyVertIdx(outterLoop.ptCount()); ++outIdx)
+		{
+			cvVec2f outVtx = outterLoop[outIdx];
+			retPoly.outterLoop().AddVertex(outVtx);
+
+			// actually need to create new vtx
+			if (cutPointIdx.val() == -1)
+			{
+				cvAssert(cp.prevIdx.val() != -1);
+				cvAssert(cp.nextIdx.val() != -1);
+				if (outIdx == cp.prevIdx)
+				{
+					retPoly.outterLoop().AddVertex(cp.point);
+				}
+
+				if (outIdx == cp.prevIdx)
+				{
+					// start looping inner loop but backwards
+					PolyVertIdx innerIdx = cw.ptIndex;
+					do
+					{
+						cvVec2f innerVtx = innerLoop[innerIdx];
+						retPoly.outterLoop().AddVertex(innerVtx);
+						innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
+
+						if (innerIdx == cw.ptIndex)
+						{
+							// duplicate inner cut point
+							retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
+							// duplicate outter cut point
+							retPoly.outterLoop().AddVertex(cp.point);
+						}
+					} while (innerIdx != cw.ptIndex);
+				}
+			}
+			else
+			{
+				if (outIdx == cutPointIdx)
+				{
+					// start looping inner loop but backwards
+					PolyVertIdx innerIdx = cw.ptIndex;
+					do
+					{
+						cvVec2f innerVtx = innerLoop[innerIdx];
+						retPoly.outterLoop().AddVertex(innerVtx);
+						innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
+
+						if (innerIdx == cw.ptIndex)
+						{
+							// duplicate inner cut point
+							retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
+							// duplicate outter cut point
+							retPoly.outterLoop().AddVertex(outVtx);
+						}
+					} while (innerIdx != cw.ptIndex);
+				}
+			}
+		}
+
+		// add remaining holes
+		for (int i = 2; i < polygon.loops.size(); ++i)
+			retPoly.addLoop(polygon.loops[i]);
+
+		retPoly.initializeAll();
+		return retPoly;
+	}
+
+	void _splitPolygon(const Polygon& poly, const WitnessPt& cw, const CutPoint& cp, vector<Polygon>& outPolygons)
+	{
+		const Loop& outLoop = poly.outterLoop();
+		PolyVertIdx cutPointIdx = cp.idx;
+
+		// split loop
+		Polygon poly1;
+		for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = outLoop.nextIdx(i))
+		{
+			auto& nloop = poly1.outterLoop();
+			nloop.AddVertex(outLoop[i]);
+
+			if (cutPointIdx == PolyVertIdx(-1))
+			{
+				if (i == cp.prevIdx)
+				{
+					nloop.AddVertex(cp.point);
+					break;
+				}
+			}
+			else if (i == cutPointIdx)
+			{
+				break;
+			}
+		}
+
+		poly1.initializeAll();
+		outPolygons.push_back(poly1);
+
+		Polygon poly2;
+		for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = outLoop.prevIdx(i))
+		{
+			auto& nloop = poly2.outterLoop();
+			nloop.AddVertex(outLoop[i]);
+
+			if (cutPointIdx == PolyVertIdx(-1))
+			{
+				if (i == cp.nextIdx)
+				{
+					nloop.AddVertex(cp.point);
+					break;
+				}
+			}
+			else if (i == cutPointIdx)
+			{
+				break;
+			}
+		}
+		poly2.initializeAll();
+		outPolygons.push_back(poly2);
+	}
+
+	vector<Polygon> _resolveLoop_OneStep(const Polygon& currentPolygon)
 	{
 		vector<Polygon> retPolygons;
 		
-		auto& loop = polygon.outterLoop();
+		auto& loop = currentPolygon.outterLoop();
 
 		// already convex
-		if (polygon.isConvex())
+		if (currentPolygon.isConvex())
 		{
-			retPolygons.push_back(polygon);
+			retPolygons.push_back(currentPolygon);
 			return retPolygons;
 		}
 
 
 		// pick deepest notches 
-		//auto cw = pickCW(polygon, hullLoop, bridges);
-		auto cw = polygon.findWitnessPt();
+		auto cw = currentPolygon.findWitnessPt();
 		
 
 		// find best cut point
-		CutPoint cp = polygon.findBestCutPt(cw);
+		CutPoint cp = currentPolygon.findBestCutPt(cw);
 		PolyVertIdx cutPointIdx = cp.idx;
 
 		if (cw.loopIndex > 0)
 		{
-			Polygon retPoly;
-			// merge inner loop to outer
-			const Loop& innerLoop = polygon.loops[cw.loopIndex];
-			for(PolyVertIdx outIdx = PolyVertIdx(0); outIdx < PolyVertIdx(loop.ptCount()); ++outIdx)
-			{
-				cvVec2f outVtx = loop[outIdx];
-				retPoly.outterLoop().AddVertex(outVtx);
-
-				// actually need to create new vtx
-				if (cutPointIdx.val() == -1)
-				{
-					cvAssert(cp.prevIdx.val() != -1);
-					cvAssert(cp.nextIdx.val() != -1);
-					if (outIdx == cp.prevIdx)
-					{
-						retPoly.outterLoop().AddVertex(cp.point);
-					}
-
-					if (outIdx == cp.prevIdx)
-					{
-						// start looping inner loop but backwards
-						PolyVertIdx innerIdx = cw.ptIndex;
-						do
-						{
-							cvVec2f innerVtx = innerLoop[innerIdx];
-							retPoly.outterLoop().AddVertex(innerVtx);
-							innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
-
-							if (innerIdx == cw.ptIndex)
-							{
-								// duplicate inner cut point
-								retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
-								// duplicate outter cut point
-								retPoly.outterLoop().AddVertex(cp.point);
-							}
-						} while (innerIdx != cw.ptIndex);
-					}
-				}
-				else
-				{
-					if (outIdx == cutPointIdx)
-					{
-						// start looping inner loop but backwards
-						PolyVertIdx innerIdx = cw.ptIndex;
-						do
-						{
-							cvVec2f innerVtx = innerLoop[innerIdx];
-							retPoly.outterLoop().AddVertex(innerVtx);
-							innerIdx = innerLoop.prevIdx(innerIdx); // backward looping
-
-							if (innerIdx == cw.ptIndex)
-							{
-								// duplicate inner cut point
-								retPoly.outterLoop().AddVertex(innerLoop[cw.ptIndex]);
-								// duplicate outter cut point
-								retPoly.outterLoop().AddVertex(outVtx);
-							}
-						} while (innerIdx != cw.ptIndex);
-					}
-				}
-			}
-
-			// add remaining holes
-			for (int i = 2; i < polygon.loops.size(); ++i)
-				retPoly.addLoop(polygon.loops[i]);
-
-			retPoly.initializeAll();
+			Polygon retPoly = _mergeHole(currentPolygon, cw, cp);
 			retPolygons.push_back(retPoly);
 		}
 		else
 		{
-			//cvAssertMsg(cutPointIdx.val() != -1, "cut point for outter loop should not create new point");
-			// split loop
-			Polygon poly1;
-			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.nextIdx(i))
-			{
-				auto& nloop = poly1.outterLoop();
-				nloop.AddVertex(loop[i]);
-
-				if (cutPointIdx == PolyVertIdx(-1))
-				{
-					if (i == cp.prevIdx)
-					{
-						nloop.AddVertex(cp.point);
-						break;
-					}
-				}
-				else if (i == cutPointIdx)
-				{
-					break;
-				}
-			}
-
-			poly1.initializeAll();
-			retPolygons.push_back(poly1);
-
-			Polygon poly2;
-			for (PolyVertIdx i = PolyVertIdx(cw.ptIndex); ; i = loop.prevIdx(i))
-			{
-				auto& nloop = poly2.outterLoop();
-				nloop.AddVertex(loop[i]);
-
-				if (cutPointIdx == PolyVertIdx(-1))
-				{
-					if (i == cp.nextIdx)
-					{
-						nloop.AddVertex(cp.point);
-						break;
-					}
-				} else if (i == cutPointIdx)
-				{
-					break;
-				}
-			}
-			poly2.initializeAll();
-			retPolygons.push_back(poly2);
+			_splitPolygon(currentPolygon, cw, cp, retPolygons);
 		}
 
 		return retPolygons;
