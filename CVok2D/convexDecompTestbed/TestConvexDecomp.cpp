@@ -80,7 +80,7 @@ void LoadPolygonsFromFile(const char* filename)
 
 static void AddHole(const cvVec2f& pos)
 {
-	Loop hole = _makeRoundLoop(pos, 2.0f, 4, 0);
+	Loop hole = _makeRoundLoop(pos, 4.0f, 4, 0);
 	hole.initializeAll(true, g_inputs[0].convexHull());
 	g_inputs[0].loops.push_back(hole);
 	g_polys_done.clear();
@@ -545,6 +545,20 @@ int main(int narg, char** args)
 	if (narg > 1)
 	{
 		LoadPolygonsFromFile(args[1]);
+	}
+	else
+	{
+		// add a default quad
+		g_inputs.resize(1);
+		auto& poly = g_inputs.back();
+		Loop& loop = poly.outterLoop();
+
+		loop.AddVertex(cvVec2f(-10, 2));
+		loop.AddVertex(cvVec2f(10, 2));
+		loop.AddVertex(cvVec2f(10, -12));
+		loop.AddVertex(cvVec2f(-10, -12));
+
+		g_polys_todo.push_back(poly);
 	}
 
 	//cvAssert(false);
