@@ -65,7 +65,7 @@ namespace acd
 		}
 	}
 
-	void Loop::computeConcavity_in(const HullLoop& hull)
+	void Loop::computeConcavity_in()
 	{
 		_concativty.clear();
 		_concativty.resize(ptCount(), 100);
@@ -91,18 +91,29 @@ namespace acd
 		}
 	}
 
-	void Loop::initializeAll(bool inner, const HullLoop& hull)
+	void Loop::initializeIn()
 	{
 		updateNormals();
+		fixWinding();
+		computeConcavity_in();
+	}
+
+	void Loop::initializeOut(const HullLoop& hull)
+	{
+		updateNormals();
+		computePockets(hull);
+		computeConcavity_out(hull);
+	}
+
+	void Loop::initializeAll(bool inner, const HullLoop& hull)
+	{
 		if (inner)
 		{
-			fixWinding();
-			computeConcavity_in(hull);
+			initializeIn();
 		}
 		else
 		{
-			computePockets(hull);
-			computeConcavity_out(hull);
+			initializeOut(hull);
 		}
 	}
 
@@ -148,7 +159,7 @@ namespace acd
 		sort(results.begin(), results.end());
 	}
 
-	bool Loop::clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result)
+	bool Loop::clipLoop(const Loop& clip, const cvVec2f& clipPos, const HullLoop& hull, vector<Loop>& result)
 	{
 		vector<SegIntersect> allIntersects;
 		vector<SegIntersect> segs;
@@ -160,12 +171,12 @@ namespace acd
 		PolyVertIdx lastOutClipIdx(-1);
 
 		bool hasOut = false;
-		HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(0)]);
+		HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(0)] + clipPos);
 		for (auto cIdx = clip.beginIdx(); cIdx <= clip.endIdx(); ++cIdx)
 		{
 			PolyVertIdx ncIdx = clip.nextIdx(cIdx);
-			cvVec2f v = clip[cIdx];
-			cvVec2f nv = clip[ncIdx];
+			cvVec2f v = clip[cIdx] + clipPos;
+			cvVec2f nv = clip[ncIdx] + clipPos;
 			
 			if (inOut == HullLoop::InOut::Out)
 				hasOut = true;
@@ -211,7 +222,7 @@ namespace acd
 
 						for (PolyVertIdx idx = lastOutClipIdx; idx != cIdx; idx = clip.prevIdx(idx))
 						{
-							nloop.AddVertex(clip[idx]);
+							nloop.AddVertex(clip[idx] + clipPos);
 						}
 
 						result.push_back(nloop);
@@ -245,7 +256,7 @@ namespace acd
 
 						for (auto nidx = cIdx; nidx != lastInClipIdx; nidx = clip.prevIdx(nidx))
 						{
-							nloop.AddVertex(clip[nidx]);
+							nloop.AddVertex(clip[nidx] + clipPos);
 						}
 
 						result.push_back(nloop);
@@ -265,6 +276,18 @@ namespace acd
 			return true;
 		}
 		return false;
+	}
+
+	Loop Loop::duplicate(const cvVec2f& pos) const 
+	{
+		Loop l;
+
+		for(int i = 0; i < ptCount(); ++i)
+			l.AddVertex(_vertices[i] + pos);
+
+		l.initializeIn();
+
+		return l;
 	}
 
 	void HullLoop::insertAfterIdx(PolyVertIdx after, PolyVertIdx idx)

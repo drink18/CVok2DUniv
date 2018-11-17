@@ -181,10 +181,12 @@ namespace acd
 
 		// update functions
 		void updateNormals();
-		void computeConcavity_in(const HullLoop& hullLoop);
+		void computeConcavity_in();
 		void computeConcavity_out(const HullLoop& hullLoop);
 		void computePockets(const HullLoop& hull);
 		void initializeAll(bool inner, const HullLoop& hull);
+		void initializeIn();
+		void initializeOut(const HullLoop& hull);
 		void removeDuplicate();
 		void computeCWPairs(bool inner);
 
@@ -193,7 +195,7 @@ namespace acd
 		void findIntersections(const cvVec2f& p0, const cvVec2f& p1, vector<SegIntersect>& results);
 
 		// clipping 
-		bool clipLoop(const Loop& clip, const HullLoop& hull, vector<Loop>& result);
+		bool clipLoop(const Loop& clip, const cvVec2f& clipPos, const HullLoop& hull, vector<Loop>& result);
 
 		//concavity points related
 		PolyVertIdx findConcavestPt() const;
@@ -210,6 +212,9 @@ namespace acd
 		const vector<float>& concavity() const { return _concativty; }
 		const vector<Pocket>& pockets() const { return _pockets; }
 
+		// miscellaneous 
+	public:
+		Loop duplicate(const cvVec2f& pos) const;
 	private:
 		vector<cvVec2f> _vertices;
 		vector<cvVec2f> _normals; //normal of each edge ( perpendicular to nextVert - curVert)

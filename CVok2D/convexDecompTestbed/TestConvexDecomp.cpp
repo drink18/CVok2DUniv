@@ -37,7 +37,7 @@ vector<cvColorf> g_randomColors;
 
 static ImVec4 clear_color = ImColor(0.2f, 0.2f, 0.2f);
 
-Loop quad;
+Loop g_quad;
 Loop hexagon;
 
 struct DbgDisplayControl
@@ -80,9 +80,7 @@ void LoadPolygonsFromFile(const char* filename)
 
 static void AddHole(const cvVec2f& pos)
 {
-	Loop hole = _makeRoundLoop(pos, 4.0f, 4, 0);
-	hole.initializeAll(true, g_inputs[0].convexHull());
-	g_inputs[0].loops.push_back(hole);
+	g_inputs[0].loops.push_back(g_quad);
 	g_polys_done.clear();
 	g_polys_todo.clear();
 	g_polys_todo.push_back(g_inputs[0]);
@@ -91,18 +89,22 @@ static void AddHole(const cvVec2f& pos)
 
 static void ClipWithHole(const cvVec2f& pos)
 {
-	Loop hole = _makeRoundLoop(pos, 4.0f, 4, 0);
-	hole.initializeAll(true, g_inputs[0].convexHull());
 	g_polys_done.clear();
 	vector<Loop> results;
+	if (g_polys_todo.empty()) return;
 	Poly& cur = g_polys_todo.back();
 
 	Loop& toWork = cur.outterLoop();
-	bool in = toWork.clipLoop(hole, cur.convexHull(), results);
-	if (results.size() == 0 && in)
+	bool in = toWork.clipLoop(g_quad, pos, cur.convexHull(), results);
+	if (results.size() == 0)
 	{
-		cur.loops.push_back(hole);
-		cur.initializeAll();
+		if (in)
+		{
+			// we are inside polygon, put loop as hole
+			cvAssert(!cur.hasHole());
+			cur.loops.push_back(g_quad.duplicate(pos));
+			cur.initializeAll();
+		}
 	}
 	else
 	{
@@ -119,48 +121,59 @@ static void ClipWithHole(const cvVec2f& pos)
 
 static void RenderEditUI()
 {
-	ImGui::Begin("Edit tools");
+	if (!g_addHoles && !g_addPoints && !g_clipMode)
 	{
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
-
-		if (!g_clipMode && ImGui::Button("Clipmode"))
+		ImGui::Begin("Edit tools");
 		{
-			g_clipMode = true;
-		}
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImColor::HSV(2 / 7.0f, 0.6f, 0.6f));
 
-		if (!g_addHoles && ImGui::Button("New Poly"))
-		{
-			if (!g_addPoints)
+			if (!g_addHoles && !g_clipMode && ImGui::Button("New Poly"))
 			{
-				g_addPoints = true;
+				if (!g_addPoints)
+				{
+					g_addPoints = true;
+				}
 			}
-		}
 
-		if (!g_addPoints && g_inputs.size() > 0 &&
-			g_inputs[0].loops.size() > 0 && ImGui::Button("Add holes"))
-		{
-			g_addHoles = true;
-		}
-
-		ImGui::Separator();
-		ImGui::Spacing();
-		ImGui::Dummy(ImVec2(100, 20));
-		if (ImGui::Button("Clear All"))
-		{
-			if (!g_addPoints)
+			if (!g_addPoints && !g_clipMode && g_inputs.size() > 0 &&
+				g_inputs[0].loops.size() > 0 && ImGui::Button("Add holes"))
 			{
-				g_inputs.clear();
-				g_inputs.resize(1);
-				g_polys_done.clear();
-				g_polys_todo.clear();
+				g_addHoles = true;
 			}
-		}
-		ImGui::Separator();
-        ImGui::Checkbox("Snap point", &g_snapToPoint);
 
-		ImGui::PopStyleColor();
+			if (!g_clipMode)
+			{
+				ImGui::Separator();
+				ImGui::Spacing();
+				ImGui::Dummy(ImVec2(100, 20));
+
+				if (ImGui::Button("Clipmode"))
+				{
+					g_clipMode = true;
+				}
+				ImGui::Dummy(ImVec2(100, 20));
+
+				ImGui::Separator();
+				ImGui::Spacing();
+				ImGui::Dummy(ImVec2(100, 20));
+				if (ImGui::Button("Clear All"))
+				{
+					if (!g_addPoints)
+					{
+						g_inputs.clear();
+						g_inputs.resize(1);
+						g_polys_done.clear();
+						g_polys_todo.clear();
+					}
+				}
+				ImGui::Separator();
+				ImGui::Checkbox("Snap point", &g_snapToPoint);
+			}
+
+			ImGui::PopStyleColor();
+		}
+		ImGui::End();
 	}
-	ImGui::End();
 }
 
 static void RenderDebugDisplayOptions()
@@ -363,7 +376,7 @@ void drop_callback(GLFWwindow* window, int count, const char** paths)
 	LoadPolygonsFromFile(paths[0]);
 }
 
-void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close)
+void RenderPolyLoop(const Loop& polyVerts, const cvVec2f& pos, cvColorf color, bool solid, bool close)
 {
 	if (polyVerts.ptCount() == 0) return;
 
@@ -371,19 +384,25 @@ void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool clos
 	{ 
 		auto& verts = polyVerts.getVertsArray();
 		cvMat33 ident;
+		ident.setTranslation(pos);
 		g_dbgDraw->AddPolygon(verts, ident, color);
 	}
 	else
 	{
 		for (auto iter = polyVerts.cbegin(); iter != (polyVerts.cend() - 1); iter++)
 		{
-			g_dbgDraw->AddArrowMid(*iter, *(iter + 1), color);
+			g_dbgDraw->AddArrowMid(*iter + pos, *(iter + 1) + pos, color);
 		}
 
 		if (close)
-			g_dbgDraw->AddArrowMid(*(polyVerts.cend() - 1), *(polyVerts.cbegin()), color);
+			g_dbgDraw->AddArrowMid(*(polyVerts.cend() - 1) + pos, *(polyVerts.cbegin()) + pos, color);
 	}
 
+}
+
+void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close)
+{
+	RenderPolyLoop(polyVerts, cvVec2f::getZero(), color, solid, close);
 }
 
 void RenderPoly(const Poly& poly, cvColorf color, bool solid)
@@ -398,9 +417,7 @@ void RenderPolygon()
 {
 	if (g_clipMode)
 	{
-		Loop l = _makeRoundLoop(curPos, 4.0f, 4, 0);
-		g_dbgDraw->AddPoint(l.getVertsArray()[0], 5, cvColorf::Red);
-		RenderPolyLoop(l, cvColorf::White, false, true);
+		RenderPolyLoop(g_quad, curPos, cvColorf::White, false, true);
 	}
 
 	if (dbgCtrl.showOrigin)
@@ -549,7 +566,7 @@ int main(int narg, char** args)
 		g_randomColors.push_back(cvColorf::randomColor());
 	}
 
-	//quad = _makeRoundLoop()
+	g_quad = _makeRoundLoop(cvVec2f::getZero(), 4.0f, 4, CV_PI / 4);
 	// load input file
 	if (narg > 1)
 	{
