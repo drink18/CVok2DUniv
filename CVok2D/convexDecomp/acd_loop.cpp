@@ -160,15 +160,16 @@ namespace acd
 		PolyVertIdx lastOutClipIdx(-1);
 
 		bool hasOut = false;
+		HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(0)]);
 		for (auto cIdx = clip.beginIdx(); cIdx <= clip.endIdx(); ++cIdx)
 		{
 			PolyVertIdx ncIdx = clip.nextIdx(cIdx);
 			cvVec2f v = clip[cIdx];
 			cvVec2f nv = clip[ncIdx];
 			
-			HullLoop::InOut inOut = hull.isPointInside(*this, clip[PolyVertIdx(cIdx)]);
 			if (inOut == HullLoop::InOut::Out)
 				hasOut = true;
+
 			findIntersections(v, nv, segs);
 			if (segs.size() == 2)
 			{
@@ -255,6 +256,7 @@ namespace acd
 						lastOutClipIdx = PolyVertIdx(-1);
 					}
 				}
+				inOut = nio;
 			}
 		}
 
