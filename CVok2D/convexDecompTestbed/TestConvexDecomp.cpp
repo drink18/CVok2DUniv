@@ -18,10 +18,13 @@ using namespace std;
 using namespace acd;
 using namespace chrono;
 
+typedef acd::Polygon Poly;
+
 //forward decl
 void ResolveSingleStep();
-void ResolveAll();
+vector<acd::Polygon> ResolveAll();
 void RenderPolyLoop(const Loop& polyVerts, cvColorf color, bool solid, bool close);
+vector<acd::Polygon> ClipTodoPolygons();
 
 Camera g_camera;
 cvDebugDraw* g_dbgDraw = nullptr;
@@ -57,7 +60,6 @@ float g_snapThreshold = 0.8f;
 
 DbgDisplayControl dbgCtrl;
 
-typedef acd::Polygon Poly;
 
 bool g_clipMode = false;
 Loop g_inputLoop;
@@ -194,14 +196,15 @@ static void RenderDebugDisplayOptions()
 	ImGui::End();
 }
 
-static void ResolveAll()
+static vector<Poly> ResolveAll()
 {
+	vector<Poly> polys;
 	for (auto& p : g_polys_todo)
 	{
 		auto res = acd::_resolveLoop_All(p);
-		for (auto& donePoly : res)
-			g_polys_done.push_back(donePoly);
+		polys.insert(polys.end(), res.begin(), res.end());
 	}
+	return polys;
 }
 
 static void RenderResolveWindow()
@@ -216,7 +219,8 @@ static void RenderResolveWindow()
 	ImGui::Spacing();
 	if (ImGui::Button("Resolve"))
 	{
-		ResolveAll();
+		auto res = ResolveAll();
+		g_polys_todo.insert(g_polys_todo.end(), res.begin(), res.end());
 	}
 
 	ImGui::Spacing();
@@ -331,7 +335,12 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 			}
 			else if (g_clipMode)
 			{
-				ClipWithHole(g_curMousePos);
+				auto result = ClipTodoPolygons();
+				g_polys_todo.clear();
+				g_polys_todo.insert(g_polys_todo.end(), result.begin(), result.end());
+				auto resolved = ResolveAll();
+				g_polys_todo.clear(); 
+				g_polys_todo.insert(g_polys_todo.end(), resolved.begin(), resolved.end());
 			}
 		}
 	}
@@ -483,6 +492,48 @@ void RenderDecompDebugInfo()
 	}
 }
 
+vector<Poly> ClipTodoPolygons()
+{
+	vector<Poly> results;
+	for (auto& cur : g_polys_todo)
+	{
+		vector<Loop> curLoops;
+		vector<Poly> curRes;
+		if (cur.hasHole())
+			continue;
+		Loop& toWork = cur.outterLoop();
+		bool in = toWork.clipLoop(g_quad, g_curMousePos, cur.convexHull(), curLoops);
+		if (curLoops.empty())
+		{
+			if (in)
+			{
+				Poly p;
+				p.addLoop(toWork);
+				p.addLoop(g_quad.duplicate(g_curMousePos));
+				curRes.push_back(p);
+			}
+			else
+			{
+				curRes.push_back(cur);
+			}
+		}
+		else
+		{
+			for(auto l : curLoops)
+			{
+				Poly p;
+				p.addLoop(l);
+				curRes.push_back(p);
+			}
+		}
+		results.insert(results.end(), curRes.begin(), curRes.end());
+	}
+
+	for (auto& r : results)
+		r.initializeAll();
+	return results;
+}
+
 void RenderPolygon()
 {
 
@@ -515,7 +566,7 @@ void RenderPolygon()
 	for(auto iter = g_polys_todo.begin(); iter != g_polys_todo.end(); ++iter)
 	{
 		size_t idx = iter - g_polys_todo.begin();
-		RenderPoly(*iter, g_randomColors[idx], false);
+		RenderPoly(*iter, g_randomColors[idx], g_clipMode);
 	}
 
 	if (!dbgCtrl.hideDonePolygon)
@@ -534,18 +585,13 @@ void RenderPolygon()
 		{
 			RenderPolyLoop(g_quad, g_curMousePos, cvColorf::White, false, true);
 
-			vector<Loop> results;
-			Poly& cur = g_polys_todo.back();
-
-			Loop& toWork = cur.outterLoop();
-			bool in = toWork.clipLoop(g_quad, g_curMousePos, cur.convexHull(), results);
-			if (!results.empty())
+			/*
+			vector<Poly> results = ClipTodoPolygons();
+			for (auto& poly : results)
 			{
-				for (auto& l : results)
-				{
-					RenderPolyLoop(l, cvColorf::Green, false, true);
-				}
+				RenderPoly(poly, cvColorf::Green, false);
 			}
+			*/
 		}
 		else
 		{
@@ -600,7 +646,7 @@ int main(int narg, char** args)
 		g_randomColors.push_back(cvColorf::randomColor());
 	}
 
-	g_quad = _makeRoundLoop(cvVec2f::getZero(), 4.0f, 4, CV_PI / 4);
+	g_quad = _makeRoundLoop(cvVec2f::getZero(), 1.0f, 6, CV_PI / 4);
 	// load input file
 	if (narg > 1)
 	{
@@ -613,10 +659,10 @@ int main(int narg, char** args)
 		auto& poly = g_inputs.back();
 		Loop& loop = poly.outterLoop();
 
-		loop.AddVertex(cvVec2f(-10, 2));
-		loop.AddVertex(cvVec2f(10, 2));
-		loop.AddVertex(cvVec2f(10, -12));
-		loop.AddVertex(cvVec2f(-10, -12));
+		loop.AddVertex(cvVec2f(-20, 12));
+		loop.AddVertex(cvVec2f(20, 12));
+		loop.AddVertex(cvVec2f(20, -12));
+		loop.AddVertex(cvVec2f(-20, -12));
 		poly.initializeAll();
 
 		g_polys_todo.push_back(poly);
