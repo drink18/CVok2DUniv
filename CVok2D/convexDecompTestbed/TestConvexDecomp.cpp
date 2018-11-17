@@ -28,7 +28,7 @@ cvDebugDraw* g_dbgDraw = nullptr;
 cvDebugDraw* GetDebugDraw() { return g_dbgDraw; }
 
 static bool rightBtnDown = false;
-static cvVec2f curPos;
+static cvVec2f g_curMousePos;
 static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 static int dumpCount = 0;
@@ -51,6 +51,7 @@ struct DbgDisplayControl
 
 static bool g_addPoints = false;
 static bool g_addHoles = false;
+bool g_pauseMode = false;
 bool g_snapToPoint = false;
 float g_snapThreshold = 0.8f;
 
@@ -275,11 +276,14 @@ static void error_callback(int error, const char* description)
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-    curPos.set((float)xpos, (float)ypos);
-	curPos = g_camera.ConvertScreenToWorld(cvVec2f((float)xpos, (float)ypos));
+	if (g_pauseMode)
+		return;
+
+    g_curMousePos.set((float)xpos, (float)ypos);
+	g_curMousePos = g_camera.ConvertScreenToWorld(cvVec2f((float)xpos, (float)ypos));
     if (rightBtnDown)
     {
-        cvVec2f delta = curPos - lastCursorPos;
+        cvVec2f delta = g_curMousePos - lastCursorPos;
         g_camera.m_center.x -= delta.x;
         g_camera.m_center.y -= delta.y;
     }
@@ -303,12 +307,12 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 					for (auto vidx = g_inputLoop.beginIdx(); vidx < g_inputLoop.endIdx(); ++vidx)
 					{
 						auto pt = g_inputLoop[vidx];
-						if (pt.distance(curPos) < g_snapThreshold)
+						if (pt.distance(g_curMousePos) < g_snapThreshold)
 						{
 							dups.push_back(vidx);
 						}
 					}
-					cvVec2f pos = curPos;
+					cvVec2f pos = g_curMousePos;
 					if (dups.size() > 0)
 					{
 						sort(dups.begin(), dups.end());
@@ -318,16 +322,16 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
 				}
 				else
 				{
-					g_inputLoop.AddVertex(curPos);
+					g_inputLoop.AddVertex(g_curMousePos);
 				}
 			}
 			else if (g_addHoles)
 			{
-				AddHole(curPos);
+				AddHole(g_curMousePos);
 			}
 			else if (g_clipMode)
 			{
-				ClipWithHole(curPos);
+				ClipWithHole(g_curMousePos);
 			}
 		}
 	}
@@ -336,7 +340,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
         if (action == GLFW_PRESS)
         {
             rightBtnDown = true;
-            dragStartPos = curPos;
+            dragStartPos = g_curMousePos;
 
 			if (g_addPoints)
 			{
@@ -376,6 +380,14 @@ void drop_callback(GLFWwindow* window, int count, const char** paths)
 	LoadPolygonsFromFile(paths[0]);
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_P && action == GLFW_RELEASE)
+	{
+		g_pauseMode = !g_pauseMode;
+	}
+}
+
 void RenderPolyLoop(const Loop& polyVerts, const cvVec2f& pos, cvColorf color, bool solid, bool close)
 {
 	if (polyVerts.ptCount() == 0) return;
@@ -413,12 +425,66 @@ void RenderPoly(const Poly& poly, cvColorf color, bool solid)
 	}
 }
 
+void RenderDecompDebugInfo()
+{
+	Poly& polygon = g_polys_todo.back();
+	auto& loop = polygon.outterLoop();
+	HullLoop hull;
+	if (loop.ptCount() > 2)
+		hull = quickHull(polygon);
+
+	g_dbgDraw->AddPoint(loop[PolyVertIdx(0)], 5, cvColorf::Orange);
+	if (dbgCtrl.showConvexHull)
+	{
+		HullIdx h0(0);
+		HullIdx h1(hull.pointCount() - 1);
+		for (HullIdx idx = h0; idx < h1; idx++)
+		{
+			g_dbgDraw->AddArrowMid(loop[hull[idx]], loop[hull[idx + 1]], cvColorf::Purple);
+		}
+
+		g_dbgDraw->AddArrowMid(loop[hull[h1]], loop[hull[h0]], cvColorf::Purple);
+	}
+
+
+	vector<Pocket> pockets;
+	if (hull.pointCount() > 0)
+		pockets = findAllPockets(hull, loop);
+	if (dbgCtrl.showPocket)
+	{
+		RenderPolyLoop(loop, cvColorf::White, false, true);
+		for (int i = 0; i < pockets.size(); ++i)
+		{
+			cvColorf c = g_randomColors[i];
+			auto& b = pockets[i];
+			PolyVertIdx b0Idx = b.idx0;
+			PolyVertIdx b1Idx = b.idx1;
+			// draw bridge
+			g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], c);
+
+			g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b.notches[0]], c);
+			g_dbgDraw->AddArrowMid(loop[b.notches.back()], loop[b1Idx], c);
+			for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
+			{
+				g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
+			}
+		}
+	}
+
+	if (pockets.size() && dbgCtrl.showCutLine)
+	{
+		// pick best cw
+		auto cw = pickCW(polygon, hull, pockets);
+		g_dbgDraw->AddPoint(polygon.loops[cw.loopIndex][cw.ptIndex], 20, cvColorf::Purple);
+		CutLine cutLine = findCutLine(polygon, cw);
+		g_dbgDraw->AddArrow(cutLine.originPt, cutLine.originPt + cutLine.lineDir * 100, cvColorf::Cyan);
+		CutPoint cp = findBestCutPt(polygon, hull, pockets, cw);
+		g_dbgDraw->AddLine(cp.point, cutLine.originPt, cvColorf::Yellow);
+	}
+}
+
 void RenderPolygon()
 {
-	if (g_clipMode)
-	{
-		RenderPolyLoop(g_quad, curPos, cvColorf::White, false, true);
-	}
 
 	if (dbgCtrl.showOrigin)
 	{
@@ -436,8 +502,8 @@ void RenderPolygon()
 		{
 			if (g_addPoints)
 			{
-				g_dbgDraw->AddLine(*polyVerts.begin(), curPos, cvColorf::Yellow);
-				g_dbgDraw->AddLine(*(polyVerts.end() - 1), curPos, cvColorf::White);
+				g_dbgDraw->AddLine(*polyVerts.begin(), g_curMousePos, cvColorf::Yellow);
+				g_dbgDraw->AddLine(*(polyVerts.end() - 1), g_curMousePos, cvColorf::White);
 			}
 			else
 			{
@@ -461,61 +527,29 @@ void RenderPolygon()
 		}
 	}
 
+
 	if (!g_polys_todo.empty())
- 	{
-		Poly& polygon = g_polys_todo.back();
-		auto& loop = polygon.outterLoop();
-		HullLoop hull;
-		if(loop.ptCount() > 2)
-			hull = quickHull(polygon);
-
-		g_dbgDraw->AddPoint(loop[PolyVertIdx(0)], 5, cvColorf::Orange);
-		if (dbgCtrl.showConvexHull)
+	{
+		if (g_clipMode)
 		{
-			HullIdx h0(0);
-			HullIdx h1(hull.pointCount() - 1);
-			for (HullIdx idx = h0; idx < h1; idx++)
+			RenderPolyLoop(g_quad, g_curMousePos, cvColorf::White, false, true);
+
+			vector<Loop> results;
+			Poly& cur = g_polys_todo.back();
+
+			Loop& toWork = cur.outterLoop();
+			bool in = toWork.clipLoop(g_quad, g_curMousePos, cur.convexHull(), results);
+			if (!results.empty())
 			{
-				g_dbgDraw->AddArrowMid(loop[hull[idx]], loop[hull[idx + 1]], cvColorf::Purple);
-			}
-
-			g_dbgDraw->AddArrowMid(loop[hull[h1]], loop[hull[h0]], cvColorf::Purple);
-		}
-
-
-		vector<Pocket> pockets;
-		if(hull.pointCount() > 0)
-			pockets = findAllPockets(hull, loop);
-		if (dbgCtrl.showPocket)
-		{
-			RenderPolyLoop(loop, cvColorf::White, false, true);
-			for(int i = 0; i < pockets.size(); ++i)
-			{
-				cvColorf c = g_randomColors[i];
-				auto& b = pockets[i];
-				PolyVertIdx b0Idx = b.idx0;
-				PolyVertIdx b1Idx = b.idx1;
-				// draw bridge
-				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b1Idx], c);
-
-				g_dbgDraw->AddArrowMid(loop[b0Idx], loop[b.notches[0]], c);
-				g_dbgDraw->AddArrowMid(loop[b.notches.back()],loop[b1Idx], c);
-				for (auto idx = b0Idx; idx != b1Idx; idx = loop.nextIdx(idx))
+				for (auto& l : results)
 				{
-					g_dbgDraw->AddArrowMid(loop[idx], loop[loop.nextIdx(idx)], c);
+					RenderPolyLoop(l, cvColorf::Green, false, true);
 				}
 			}
 		}
-
-		if (pockets.size() && dbgCtrl.showCutLine)
+		else
 		{
-			// pick best cw
-			auto cw = pickCW(polygon, hull, pockets);
-			g_dbgDraw->AddPoint(polygon.loops[cw.loopIndex][cw.ptIndex], 20, cvColorf::Purple);
-			CutLine cutLine = findCutLine(polygon, cw);
-			g_dbgDraw->AddArrow(cutLine.originPt, cutLine.originPt + cutLine.lineDir * 100, cvColorf::Cyan);
-			CutPoint cp = findBestCutPt(polygon, hull, pockets, cw);
-			g_dbgDraw->AddLine(cp.point, cutLine.originPt, cvColorf::Yellow);
+			RenderDecompDebugInfo();
 		}
 	}
 }
@@ -630,6 +664,7 @@ int main(int narg, char** args)
     glfwSetCursorPosCallback(window, cursor_position_callback);
     glfwSetScrollCallback(window, scroll_callback);
 	glfwSetDropCallback(window, drop_callback);
+	glfwSetKeyCallback(window, key_callback);
 
     float lastTime = (float)glfwGetTime();
     float dt ;
