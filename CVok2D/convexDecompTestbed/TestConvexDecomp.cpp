@@ -3,6 +3,8 @@
 #include <fstream>
 #include <memory>
 
+#include <Brofiler.h>
+
 #include <GL/gl3w.h>
 #include <imgui.h>
 #include "imgui_gl3/imgui_impl_glfw_gl3.h"
@@ -92,6 +94,7 @@ static void AddHole(const cvVec2f& pos)
 
 static void ClipWithHole(const cvVec2f& pos)
 {
+	BROFILER_CATEGORY("Clip With holes", Profiler::Color::Orchid)
 	g_polys_done.clear();
 	vector<Loop> results;
 	if (g_polys_todo.empty()) return;
@@ -494,6 +497,7 @@ void RenderDecompDebugInfo()
 
 vector<Poly> ClipTodoPolygons()
 {
+	BROFILER_CATEGORY("Clip todo polygons", Profiler::Color::Orchid)
 	vector<Poly> results;
 	for (auto& cur : g_polys_todo)
 	{
@@ -717,6 +721,7 @@ int main(int narg, char** args)
     // main loop
     while (!glfwWindowShouldClose(window))
     {
+        BROFILER_FRAME("MainLoop")
         dt = (float)glfwGetTime() - lastTime;
         lastTime = (float)glfwGetTime();
 
@@ -730,7 +735,10 @@ int main(int narg, char** args)
 			pdbgDraw->Flush();
 		}
 
-        glfwPollEvents();
+		{
+			BROFILER_CATEGORY("poll Event", Profiler::Color::Orchid)
+			glfwPollEvents();
+		}
 
         RenderUI();
 
