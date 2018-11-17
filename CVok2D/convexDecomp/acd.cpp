@@ -47,8 +47,13 @@ namespace acd
 
 	bool IntersectRayLine(cvVec2f o, cvVec2f dir, cvVec2f from, cvVec2f to, float& outT, cvVec2f& intersect)
 	{
+		const float eps = 1e-5f;
 		cvVec2f n(-dir.y, dir.x);
-		outT = (o - from).dot(n) / (to - from).dot(n);
+		cvVec2f vec = to - from;
+		float vecDotN = vec.dot(n);
+		if (abs(vecDotN) < eps) //parallel
+			return false;
+		outT = (o - from).dot(n) / vecDotN;
 		
 		intersect = from * (1 - outT) + to * outT;
 		return outT >= 0 && outT <= 1.0f;

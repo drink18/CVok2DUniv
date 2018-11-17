@@ -145,7 +145,7 @@ namespace acd
 			cvVec2f intersect;
 			bool hit = IntersectRayLine(p0, d, v0, v1, t, intersect);
 			float t1 = (intersect - p0).dot(d) / len;
-			if(hit && (t1 > -eps && t1 < ( 1 - eps)))
+			if(hit && (t1 > 0 && t1 < ( 1 - eps)))
 			{
 				SegIntersect inter;
 				inter.clipp_t = t1;
@@ -203,8 +203,8 @@ namespace acd
 				{
 					if (lastOutSec.idx.val() == -1)
 					{
-						lastInSec = SegIntersect();
-						lastInClipIdx = PolyVertIdx(-1);
+						lastInSec = segs[0];
+						lastInClipIdx = cIdx;
 					}
 					else
 					{ 
