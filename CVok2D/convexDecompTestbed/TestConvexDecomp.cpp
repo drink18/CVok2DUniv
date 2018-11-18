@@ -86,7 +86,7 @@ void LoadPolygonsFromFile(const char* filename)
 
 static void AddHole(const cvVec2f& pos)
 {
-	g_inputs[0].loops.push_back(g_quad);
+	g_inputs[0].loops.push_back(g_quad.duplicate(pos));
 	g_polys_done.clear();
 	g_polys_todo.clear();
 	g_polys_todo.push_back(g_inputs[0]);
