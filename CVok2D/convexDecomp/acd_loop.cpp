@@ -201,7 +201,7 @@ namespace acd
 
 				if (nio == HullLoop::InOut::In)
 				{
-					if (lastOutSec.idx.val() == -1)
+					if (!lastOutSec.idx.isValid())
 					{
 						lastInSec = segs[0];
 						lastInClipIdx = cIdx;
@@ -237,7 +237,7 @@ namespace acd
 				else
 				{
 					// we just got out
-					if (lastInSec.idx.val() == -1) // no known outside  save this point
+					if (!lastInSec.idx.isValid()) // no known outside  save this point
 					{
 						lastOutClipIdx = cIdx;
 						lastOutSec = segs[0];

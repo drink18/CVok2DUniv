@@ -92,39 +92,6 @@ static void AddHole(const cvVec2f& pos)
 	ResolveAll();
 }
 
-static void ClipWithHole(const cvVec2f& pos)
-{
-	BROFILER_CATEGORY("Clip With holes", Profiler::Color::Orchid)
-	g_polys_done.clear();
-	vector<Loop> results;
-	if (g_polys_todo.empty()) return;
-	Poly& cur = g_polys_todo.back();
-
-	Loop& toWork = cur.outterLoop();
-	bool in = toWork.clipLoop(g_quad, pos, cur.convexHull(), results);
-	if (results.size() == 0)
-	{
-		if (in)
-		{
-			// we are inside polygon, put loop as hole
-			cvAssert(!cur.hasHole());
-			cur.loops.push_back(g_quad.duplicate(pos));
-			cur.initializeAll();
-		}
-	}
-	else
-	{
-		g_polys_todo.pop_back();
-		for (auto& l : results)
-		{
-			Poly p;
-			p.loops.push_back(l);
-			p.initializeAll();
-			g_polys_todo.push_back(p);
-		}
-	}
-}
-
 static void RenderEditUI()
 {
 	if (!g_addHoles && !g_addPoints && !g_clipMode)

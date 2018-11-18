@@ -13,31 +13,33 @@ namespace acd
 	class Loop;
 	class HullLoop;
 
-	template<typename VTYPE>
+	template<typename VTYPE, VTYPE INVALID_VAL>
 	struct IndexBase
 	{
 	private:
 		VTYPE idx;
 	public:
+		typedef IndexBase<VTYPE, INVALID_VAL>  SelfType;
 		explicit IndexBase(VTYPE _v) : idx(_v) {}
-		IndexBase(const IndexBase<VTYPE>& o) : idx(o.idx) {}
-		bool operator!=(const IndexBase<VTYPE>& o) const { return o.idx != idx; }
-		bool operator==(const IndexBase<VTYPE>& o) const { return o.idx == idx; }
-		bool operator< (const IndexBase<VTYPE>& o) const { return idx < o.idx; }
-		bool operator<= (const IndexBase<VTYPE>& o) const { return idx <= o.idx; }
-		bool operator>(const IndexBase<VTYPE>& o) const { return idx > o.idx; }
-		IndexBase<VTYPE> operator+(const IndexBase<VTYPE>& o) const { return IndexBase<VTYPE>(idx + o.idx); }
-		IndexBase<VTYPE> operator+(VTYPE inc) const { return IndexBase<VTYPE>(idx + inc); }
-		IndexBase<VTYPE> operator++(int) { idx++; return *this; }
-		IndexBase<VTYPE> operator--(int) { idx--; return *this; }
-		IndexBase<VTYPE>& operator++() { idx++; return *this; }
-		IndexBase<VTYPE>& operator--() { idx--; return *this; }
+		IndexBase(const SelfType& o) : idx(o.idx) {}
+		bool operator!=(const SelfType& o) const { return o.idx != idx; }
+		bool operator==(const SelfType& o) const { return o.idx == idx; }
+		bool operator< (const SelfType& o) const { return idx < o.idx; }
+		bool operator<= (const SelfType& o) const { return idx <= o.idx; }
+		bool operator>(const SelfType& o) const { return idx > o.idx; }
+		SelfType operator+(const SelfType& o) const { return SelfType(idx + o.idx); }
+		SelfType operator+(VTYPE inc) const { return SelfType(idx + inc); }
+		SelfType operator++(int) { idx++; return *this; }
+		SelfType operator--(int) { idx--; return *this; }
+		SelfType& operator++() { idx++; return *this; }
+		SelfType& operator--() { idx--; return *this; }
 		VTYPE val() const { return idx; }
+		bool isValid() const { return idx != INVALID_VAL; }
 	};
 
-	typedef IndexBase<size_t> HullIdx;
-	typedef IndexBase<size_t> PolyVertIdx;
-	typedef IndexBase<size_t> LoopIdx;
+	typedef IndexBase<size_t, -1> HullIdx;
+	typedef IndexBase<size_t, -1> PolyVertIdx;
+	typedef IndexBase<size_t, -1> LoopIdx;
 
 	enum class Winding : uint8_t
 	{

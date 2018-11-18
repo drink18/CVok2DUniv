@@ -251,7 +251,7 @@ namespace acd
 			}
 		}
 
-		cvAssert(bestIdx.val() != -1);
+		cvAssert(bestIdx.isValid());
 		cw.Concavity = 1000;
 		cw.loopIndex = 1;
 		cw.pocketIdx = -1;
@@ -300,7 +300,7 @@ namespace acd
 			}
 		}
 
-		cvAssert(bestPtIdx.val() != -1);
+		cvAssert(bestPtIdx.isValid());
 		cw.Concavity = bestScore;
 		cw.ptIndex = bestPtIdx;
 		cw.loopIndex = 0;
@@ -371,7 +371,7 @@ namespace acd
 			}
 		}
 
-		if (cutVtx.val() == -1)
+		if (!cutVtx.isValid())
 		{
 			// can't find a vertex as cut point , use blended normal as cut direction and find 
 			// best cutting point
@@ -418,7 +418,7 @@ namespace acd
 			}
 		}
 
-		if(bestIdx.val() == -1)
+		if(!bestIdx.isValid())
 		{
 			// can't find a vertex as cut point , use blended normal as cut direction and find 
 			// best cutting point
@@ -549,9 +549,9 @@ namespace acd
 		}
 
 		static int a = 0;
-		if (bestPtIdx.val() == -1)
+		if (!bestPtIdx.isValid())
 			++a;
-		cvAssert(bestPtIdx.val() != -1);
+		cvAssert(bestPtIdx.isValid());
 
 		return cp;
 	}
@@ -578,10 +578,10 @@ namespace acd
 			retPoly.outterLoop().AddVertex(outVtx);
 
 			// actually need to create new vtx
-			if (cutPointIdx.val() == -1)
+			if (!cutPointIdx.isValid())
 			{
-				cvAssert(cp.prevIdx.val() != -1);
-				cvAssert(cp.nextIdx.val() != -1);
+				cvAssert(cp.prevIdx.isValid());
+				cvAssert(cp.nextIdx.isValid());
 				if (outIdx == cp.prevIdx)
 				{
 					retPoly.outterLoop().AddVertex(cp.point);
