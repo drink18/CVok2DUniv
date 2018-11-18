@@ -52,7 +52,10 @@ namespace acd
 		cvVec2f vec = to - from;
 		float vecDotN = vec.dot(n);
 		if (abs(vecDotN) < eps) //parallel
+		{
+			outT = 1e5f;
 			return false;
+		}
 		outT = (o - from).dot(n) / vecDotN;
 		
 		intersect = from * (1 - outT) + to * outT;
