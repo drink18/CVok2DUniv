@@ -37,6 +37,7 @@ static cvVec2f g_curMousePos;
 static cvVec2f dragStartPos;
 static cvVec2f lastCursorPos;
 static int dumpCount = 0;
+static bool g_keepResolving = false;
 
 vector<cvColorf> g_randomColors;
 
@@ -168,6 +169,7 @@ static void RenderDebugDisplayOptions()
 
 static vector<Poly> ResolveAll()
 {
+	BROFILER_CATEGORY("Resolve All", Profiler::Color::Orchid)
 	vector<Poly> polys;
 	for (auto& p : g_polys_todo)
 	{
@@ -177,7 +179,14 @@ static vector<Poly> ResolveAll()
 	return polys;
 }
 
-static void RenderResolveWindow()
+static void ResetProgress()
+{
+	g_polys_todo.clear();
+	g_polys_done.clear();
+	g_polys_todo = g_inputs;
+}
+
+static void RenderResolveUI()
 {
 	ImGui::Begin("Resolve");
 	ImGui::Spacing();
@@ -196,10 +205,12 @@ static void RenderResolveWindow()
 	ImGui::Spacing();
 	if (ImGui::Button("Reset Progress"))
 	{
-		g_polys_todo.clear();
-		g_polys_done.clear();
-		g_polys_todo = g_inputs;
+		ResetProgress();
 	}
+
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Checkbox("Keep resolving", &g_keepResolving);
 	ImGui::End();
 }
 
@@ -223,7 +234,7 @@ static void RenderUI()
 
 	RenderEditUI();
 	if(!g_clipMode)
-		RenderResolveWindow();
+		RenderResolveUI();
 	if(!g_clipMode)
 		RenderDebugDisplayOptions();
 
@@ -695,6 +706,12 @@ int main(int narg, char** args)
 		glfwGetFramebufferSize(window, &g_camera.m_width, &g_camera.m_height);
 		glViewport(0, 0, g_camera.m_width, g_camera.m_height);
 
+		if (g_keepResolving)
+		{
+			ResetProgress();
+			auto res = ResolveAll();
+			g_polys_todo.insert(g_polys_todo.end(), res.begin(), res.end());
+		}
 		RenderPolygon();
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
